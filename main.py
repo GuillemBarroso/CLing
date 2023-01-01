@@ -42,17 +42,6 @@ while run:
             pygame.quit()
             quit()
 
-        # Changing the value of the direction variable
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RIGHT:
-                player.direction = "E"
-            elif event.key == pygame.K_LEFT:
-                player.direction = "W"
-            elif event.key == pygame.K_UP:
-                player.direction = "N"
-            elif event.key == pygame.K_DOWN:
-                player.direction = "S"
-
     # Build layout
     canvas.blit(screen.surface, (0, 0))
     canvas.blit(terminal.surface, (0, canvas.get_height() - terminal.height))

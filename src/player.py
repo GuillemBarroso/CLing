@@ -26,6 +26,18 @@ class Player:
         self.rect.y = y
         self.direction = "N"
 
+    def apply_event(self, event):
+        """Change the value of the direction variable according to event."""
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RIGHT:
+                self.direction = "E"
+            elif event.key == pygame.K_LEFT:
+                self.direction = "W"
+            elif event.key == pygame.K_UP:
+                self.direction = "N"
+            elif event.key == pygame.K_DOWN:
+                self.direction = "S"
+
     def move(self, walls=None):
         """Move player around when pressing arrow keys."""
         # Storing the key pressed using key.get_pressed() method
@@ -36,12 +48,16 @@ class Player:
         # Changing the coordinates of the player
         if key_pressed_is[locals.K_LEFT]:
             self.rect.x -= self.velocity
+            self.direction = "W"
         if key_pressed_is[locals.K_RIGHT]:
             self.rect.x += self.velocity
+            self.direction = "E"
         if key_pressed_is[locals.K_UP]:
             self.rect.y -= self.velocity
+            self.direction = "N"
         if key_pressed_is[locals.K_DOWN]:
             self.rect.y += self.velocity
+            self.direction = "S"
 
         # Check for illegal movements colliding with walls
         if walls:
