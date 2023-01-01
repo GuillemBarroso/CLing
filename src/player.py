@@ -44,7 +44,6 @@ class Player:
             self.rect.y += self.velocity
 
         # Check for illegal movements colliding with walls
-        print(self.rect.x)
         if walls:
             for wall in walls:
                 if self.rect.colliderect(wall):

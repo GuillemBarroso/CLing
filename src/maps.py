@@ -72,5 +72,7 @@ ROOM_TEST = [
     "X                                                                                                                                X",
     "X                                                                                                                                X",
     "X                                                                                                                                X",
+    "X                                                                                                                                X",
+    "X                                                                                                                                X",
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 ]

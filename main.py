@@ -5,9 +5,10 @@
 import pygame
 
 from src.canvas import get_canvas
-from src.colors import BLACK
+from src.colors import BLACK, WHITE
 from src.player import Player
 from src.room import Room
+from src.screen import Screen
 from src.terminal import Terminal
 
 # Initiate pygame and give permission to use pygame's functionality.
@@ -23,15 +24,14 @@ clock = pygame.time.Clock()
 canvas = get_canvas()
 player = Player()
 terminal = Terminal(canvas=canvas)
-room_map = Room(canvas=canvas)
+screen = Screen(canvas, terminal)
+room_map = Room(screen=screen)
 
 # Creating an Infinite loop
 run = True
 while run:
     # Set the frame rates to 60 fps
     clock.tick(60)
-
-    canvas.fill((255, 255, 255))
 
     # Iterate over the list of Event objects that was returned by pygame.event.get() method.
     events = pygame.event.get()
@@ -53,20 +53,21 @@ while run:
             elif event.key == pygame.K_DOWN:
                 player.direction = "S"
 
-    player.move(room_map.walls)
-    player.draw(canvas)
-    room_map.draw(canvas)
-
-    user_input = terminal.input.update(events)
-
+    # Build layout
+    canvas.blit(screen.surface, (0, 0))
     canvas.blit(terminal.surface, (0, canvas.get_height() - terminal.height))
+    screen.surface.fill(WHITE)
     terminal.surface.fill(BLACK)
+
+    # Draw elements on screen
+    player.move(room_map.walls)
+    player.draw(screen.surface)
+    room_map.draw(screen.surface)
+
+    # Draw elements on terminal
     terminal.input.draw(terminal.surface)
-
     terminal.draw_history()
-
-    if user_input:
-        terminal.reset_after_enter(user_input)
+    terminal.reset_after_enter(events)
 
     # Draws the surface object to the screen.
     pygame.display.update()
