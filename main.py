@@ -7,10 +7,10 @@ import pygame
 from src.canvas import get_canvas
 from src.colors import BLACK
 from src.player import Player
+from src.room import Room
 from src.terminal import Terminal
 
-# initiate pygame and give permission
-# to use pygame's functionality.
+# Initiate pygame and give permission to use pygame's functionality.
 pygame.init()
 
 # Add caption in the window
@@ -23,6 +23,7 @@ clock = pygame.time.Clock()
 canvas = get_canvas()
 player = Player()
 terminal = Terminal(canvas=canvas)
+room_map = Room(canvas=canvas)
 
 # Creating an Infinite loop
 run = True
@@ -52,8 +53,9 @@ while run:
             elif event.key == pygame.K_DOWN:
                 player.direction = "S"
 
-    player.move()
+    player.move(room_map.walls)
     player.draw(canvas)
+    room_map.draw(canvas)
 
     user_input = terminal.input.update(events)
 
