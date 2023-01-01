@@ -1,30 +1,45 @@
-import pygame
-from pygame.locals import *
+"""Module containing the player class."""
 
-class Player():
-    def __init__(self, x, y, image):
+import os
+
+import pygame
+import pygame.locals as locals
+
+
+class Player:
+    """Player class."""
+
+    def __init__(self, x=100, y=100):
+        """Initialize player class."""
         self.velocity = 5
         self.x = x
         self.y = y
-        self.image = image
+        self.player_size = (50, 50)
+        self.image_dir = "src/images"
+        self.image_name = "player.jpg"
+        self.image = pygame.transform.scale(
+            pygame.image.load(os.path.join(self.image_dir, self.image_name)),
+            self.player_size,
+        )
         self.direction = "N"
 
     def move(self):
+        """Move player around when pressing arrow keys."""
         # Storing the key pressed using key.get_pressed() method
         key_pressed_is = pygame.key.get_pressed()
 
         # Changing the coordinates of the player
-        if key_pressed_is[K_LEFT]:
+        if key_pressed_is[locals.K_LEFT]:
             self.x -= self.velocity
-        if key_pressed_is[K_RIGHT]:
+        if key_pressed_is[locals.K_RIGHT]:
             self.x += self.velocity
-        if key_pressed_is[K_UP]:
+        if key_pressed_is[locals.K_UP]:
             self.y -= self.velocity
-        if key_pressed_is[K_DOWN]:
+        if key_pressed_is[locals.K_DOWN]:
             self.y += self.velocity
 
-    def draw(self, canvas, direction):
-        self.direction = direction
+    def draw(self, canvas):
+        """Draw player on canvas."""
         if self.direction == "N":
             canvas.blit(self.image, (self.x, self.y))
         elif self.direction == "W":
