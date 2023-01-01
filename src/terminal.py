@@ -63,11 +63,13 @@ class Terminal:
             text_rect.y = self._height - self._line_height * (i_line + 2)
             self._surface.blit(text, text_rect)
 
-    def reset_after_enter(self, user_input):
+    def reset_after_enter(self, events):
         """Store user input and reset command line with an empty string."""
-        # Add input to the terminal history
-        self._history.append(f"{self._input.prompt}{user_input}")
+        user_input = self._input.update(events)
+        if user_input:
+            # Add input to the terminal history
+            self._history.append(f"{self._input.prompt}{user_input}")
 
-        # Reset input and print
-        self._input.value = ""
-        self._input.draw(self._surface)
+            # Reset input and print
+            self._input.value = ""
+            self._input.draw(self._surface)
