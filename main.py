@@ -4,7 +4,7 @@
 # Importing pygame module
 import pygame
 
-from src.canvas import get_canvas
+from src.canvas import build_canvas, get_canvas
 from src.colors import BLACK, WHITE
 from src.player import Player
 from src.room import Room
@@ -43,8 +43,7 @@ while run:
             quit()
 
     # Build layout
-    canvas.blit(screen.surface, (0, 0))
-    canvas.blit(terminal.surface, (0, canvas.get_height() - terminal.height))
+    build_canvas(canvas, screen, terminal)
     screen.surface.fill(WHITE)
     terminal.surface.fill(BLACK)
 
