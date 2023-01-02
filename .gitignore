@@ -1,2 +1,9 @@
+
+# venv
 venv
+
+# Cache
 __pycache__/
+
+# Images
+_player_big/
