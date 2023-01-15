@@ -6,12 +6,11 @@ import pygame
 
 from src.canvas import build_canvas, get_canvas
 from src.colors import BLACK, WHITE
+from src.command_line import CL
+from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 from src.player import Player
 from src.room import Room
 from src.screen import Screen
-from src.command_line import CL
-from src.events_check import EventChecker
-from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 
 # Initiate pygame and give permission to use pygame's functionality.
 pygame.init()
@@ -28,11 +27,6 @@ player = Player()
 cmd_line = CL(canvas=canvas)
 screen = Screen(canvas, cmd_line)
 room_map = Room(screen=screen)
-
-# MAX = pygame.USEREVENT + 1
-# cmd_max = False
-
-# event_checker = EventChecker()
 
 # Creating an Infinite loop
 run = True
@@ -67,7 +61,7 @@ while run:
         player.draw(screen.surface)
         room_map.draw(screen.surface)
 
-    # Post user defined events comming from CL
+    # Post user defined events coming from CL
     if cmd_line.user_input == "max":
         pygame.event.post(pygame.event.Event(CMD_FULL_SCREEN))
     elif cmd_line.user_input == "min":
