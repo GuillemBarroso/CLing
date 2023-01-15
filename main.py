@@ -9,7 +9,7 @@ from src.colors import BLACK, WHITE
 from src.player import Player
 from src.room import Room
 from src.screen import Screen
-from src.terminal import Terminal
+from src.command_line import CL
 
 # Initiate pygame and give permission to use pygame's functionality.
 pygame.init()
@@ -23,8 +23,8 @@ clock = pygame.time.Clock()
 # Initialize objects
 canvas = get_canvas()
 player = Player()
-terminal = Terminal(canvas=canvas)
-screen = Screen(canvas, terminal)
+cmd_line = CL(canvas=canvas)
+screen = Screen(canvas, cmd_line)
 room_map = Room(screen=screen)
 
 # Creating an Infinite loop
@@ -55,19 +55,19 @@ while run:
 
     # Build layout
     canvas.blit(screen.surface, (0, 0))
-    canvas.blit(terminal.surface, (0, canvas.get_height() - terminal.height))
+    canvas.blit(cmd_line.surface, (0, canvas.get_height() - cmd_line.height))
     screen.surface.fill(WHITE)
-    terminal.surface.fill(BLACK)
+    cmd_line.surface.fill(BLACK)
 
     # Draw elements on screen
     player.move(room_map.walls)
     player.draw(screen.surface)
     room_map.draw(screen.surface)
 
-    # Draw elements on terminal
-    terminal.input.draw(terminal.surface)
-    terminal.draw_history()
-    terminal.reset_after_enter(events)
+    # Draw elements on cmd_line
+    cmd_line.input.draw(cmd_line.surface)
+    cmd_line.draw_history()
+    cmd_line.reset_after_enter(events)
 
     # Draws the surface object to the screen.
     pygame.display.update()

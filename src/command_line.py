@@ -1,15 +1,15 @@
-"""Module containing the Terminal class."""
+"""Module containing the command line class."""
 import pygame
 
 from src.colors import WHITE
 from src.eztext import Input
 
 
-class Terminal:
-    """Class containing all the interactions with the game's terminal."""
+class CL:
+    """Class containing all the interactions with the game's command line."""
 
     def __init__(self, canvas):
-        """Initialize Terminal class."""
+        """Initialize command line class."""
         self._width = canvas.get_width()
         self._height = 160
         self._line_height = 30
@@ -27,36 +27,36 @@ class Terminal:
 
     @property
     def surface(self):
-        """Return surface of the terminal."""
+        """Return surface of the command line."""
         return self._surface
 
     @property
     def input(self):
-        """Return user input of the terminal."""
+        """Return user input of the command line."""
         return self._input
 
     @property
     def width(self):
-        """Return width of the terminal."""
+        """Return width of the command line."""
         return self._width
 
     @property
     def height(self):
-        """Return height of the terminal."""
+        """Return height of the command line."""
         return self._height
 
     @property
     def line_height(self):
-        """Return the height of the terminal's line."""
+        """Return the height of the command line's line."""
         return self._line_height
 
     @property
     def history(self):
-        """Return the historty of the terminal."""
+        """Return the historty of the command line."""
         return self._history
 
     def draw_history(self):
-        """Draw terminal's history on terminal."""
+        """Draw command line's history on command line."""
         for i_line in range(len(self._history)):
             text = self._input.font.render(self._history[-(i_line + 1)], True, WHITE)
             text_rect = text.get_rect()
@@ -67,7 +67,7 @@ class Terminal:
         """Store user input and reset command line with an empty string."""
         user_input = self._input.update(events)
         if user_input:
-            # Add input to the terminal history
+            # Add input to the command line history
             self._history.append(f"{self._input.prompt}{user_input}")
 
             # Reset input and print
