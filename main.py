@@ -10,6 +10,8 @@ from src.player import Player
 from src.room import Room
 from src.screen import Screen
 from src.command_line import CL
+from src.events_check import EventChecker
+from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 
 # Initiate pygame and give permission to use pygame's functionality.
 pygame.init()
@@ -27,8 +29,10 @@ cmd_line = CL(canvas=canvas)
 screen = Screen(canvas, cmd_line)
 room_map = Room(screen=screen)
 
-MAX = pygame.USEREVENT + 1
+# MAX = pygame.USEREVENT + 1
 # cmd_max = False
+
+# event_checker = EventChecker()
 
 # Creating an Infinite loop
 run = True
@@ -44,8 +48,14 @@ while run:
             run = False
             pygame.quit()
             quit()
-        if event.type == MAX:
+
+        # Enter CL full screen mode
+        if event.type == CMD_FULL_SCREEN:
             cmd_line.maximize()
+
+        # Return to regular CL view
+        if event.type == CMD_REGULAR_SIZE:
+            cmd_line.minimize()
 
     # Build layout
     build_canvas(canvas=canvas, screen=screen, cmd_line=cmd_line)
@@ -57,8 +67,11 @@ while run:
         player.draw(screen.surface)
         room_map.draw(screen.surface)
 
+    # Post user defined events comming from CL
     if cmd_line.user_input == "max":
-        pygame.event.post(pygame.event.Event(MAX))
+        pygame.event.post(pygame.event.Event(CMD_FULL_SCREEN))
+    elif cmd_line.user_input == "min":
+        pygame.event.post(pygame.event.Event(CMD_REGULAR_SIZE))
 
     # Draw elements on cmd_line
     cmd_line.surface.fill(BLACK)
