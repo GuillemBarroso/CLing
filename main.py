@@ -53,6 +53,7 @@ while run:
     room_map.draw(screen.surface)
 
     # Draw elements on cmd_line
+    cmd_line.maximize()
     cmd_line.input.draw(cmd_line.surface)
     cmd_line.draw_history()
     cmd_line.reset_after_enter(events)

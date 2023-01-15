@@ -11,9 +11,12 @@ class CL:
     def __init__(self, canvas):
         """Initialize command line class."""
         self._width = canvas.get_width()
+        self._canvas_height = canvas.get_height()
         self._height = 160
         self._line_height = 30
-        self._n_rows_shown = 4
+        self._n_rows_shown = self._get_n_rows_shown(self._height, self._line_height)
+        self._n_rows_shown_ref = self._n_rows_shown
+        self._height_ref = self._height
         self._history = []
         self._surface = pygame.Surface((self._width, self._height))
         self._input = Input(
@@ -24,6 +27,12 @@ class CL:
         )
         self._input.focus = True
         # This allows to always be able to type. This can be changed in the future.
+
+    @staticmethod
+    def _get_n_rows_shown(height, line_height):
+        """Return the number of lines that fit the space of the terminal.
+        Subtract 1 because of the active input line used by the user."""
+        return height // line_height - 1
 
     @property
     def surface(self):
@@ -77,7 +86,13 @@ class CL:
             self._input.value = ""
             self._input.draw(self._surface)
 
-    def maximize(self, canvas):
+    def maximize(self):
         """Maximize command line to fill the entire screen."""
-        self._height = canvas.get_width()
+        self._n_rows_shown = self._get_n_rows_shown(self._canvas_height, self._line_height)
+        self.draw_history()
+
+    def minimize(self):
+        """Minimise command line to its original size."""
+        self._height = self._height_ref
+        self._n_rows_shown = self._n_rows_shown_ref
         self.draw_history()
