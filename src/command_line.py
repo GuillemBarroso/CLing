@@ -18,15 +18,26 @@ class CL:
         self._n_rows_shown_ref = self._n_rows_shown
         self._height_ref = self._height
         self._history = []
-        self._surface = pygame.Surface((self._width, self._height))
-        self._input = Input(
-            maxlength=80,
-            color=(255, 255, 255),
-            y=self._height - self._line_height,
-            prompt="> ",
-        )
+        self._surface = self._get_surface(self._width, self._height)
+        self._input = self._get_input(self._height)
         self._input.focus = True
         # This allows to always be able to type. This can be changed in the future.
+        self._full_screen = False
+        self._user_input = ''
+
+    def _get_input(self, vertical_location):
+        """Return text Input object."""
+        return Input(
+            maxlength=80,
+            color=WHITE,
+            y=(vertical_location - self._line_height),
+            prompt="> ",
+        )
+
+    @staticmethod
+    def _get_surface(width, height):
+        """Return pygame Surface with a certain width and height."""
+        return pygame.Surface((width, height))
 
     @staticmethod
     def _get_n_rows_shown(height, line_height):
@@ -43,6 +54,11 @@ class CL:
     def input(self):
         """Return user input of the command line."""
         return self._input
+
+    @property
+    def user_input(self):
+        """Return command line user input after pressing return key."""
+        return self._user_input
 
     @property
     def width(self):
@@ -64,6 +80,11 @@ class CL:
         """Return the historty of the command line."""
         return self._history
 
+    @property
+    def full_screen(self):
+        """Return a boolean indicating if the command line is in full screen mode."""
+        return self._full_screen
+
     def draw_history(self):
         """Draw command line's history on command line."""
         for i_line in range(self._n_rows_shown):
@@ -77,10 +98,10 @@ class CL:
 
     def reset_after_enter(self, events):
         """Store user input and reset command line with an empty string."""
-        user_input = self._input.update(events)
-        if user_input:
+        self._user_input = self._input.update(events)
+        if self._user_input:
             # Add input to the command line history
-            self._history.append(f"{self._input.prompt}{user_input}")
+            self._history.append(f"{self._input.prompt}{self._user_input}")
 
             # Reset input and print
             self._input.value = ""
@@ -88,11 +109,18 @@ class CL:
 
     def maximize(self):
         """Maximize command line to fill the entire screen."""
-        self._n_rows_shown = self._get_n_rows_shown(self._canvas_height, self._line_height)
-        self.draw_history()
+        self._height = self._canvas_height
+        self._n_rows_shown = self._get_n_rows_shown(self._height, self._line_height)
+        self._full_screen = True
+        self._surface = self._get_surface(self._width, self._canvas_height)
+        self._input = self._get_input(self._height)
+        self._input.focus = True
 
     def minimize(self):
         """Minimise command line to its original size."""
         self._height = self._height_ref
         self._n_rows_shown = self._n_rows_shown_ref
-        self.draw_history()
+        self._full_screen = False
+        self._surface = self._get_surface(self._width, self._height)
+        self._input = self._get_input(self._height)
+        self._input.focus = True

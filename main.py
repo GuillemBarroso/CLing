@@ -27,6 +27,9 @@ cmd_line = CL(canvas=canvas)
 screen = Screen(canvas, cmd_line)
 room_map = Room(screen=screen)
 
+MAX = pygame.USEREVENT + 1
+# cmd_max = False
+
 # Creating an Infinite loop
 run = True
 while run:
@@ -41,19 +44,24 @@ while run:
             run = False
             pygame.quit()
             quit()
+        if event.type == MAX:
+            cmd_line.maximize()
 
     # Build layout
     build_canvas(canvas=canvas, screen=screen, cmd_line=cmd_line)
-    screen.surface.fill(WHITE)
-    cmd_line.surface.fill(BLACK)
 
     # Draw elements on screen
-    player.move(room_map.walls)
-    player.draw(screen.surface)
-    room_map.draw(screen.surface)
+    if not cmd_line.full_screen:
+        screen.surface.fill(WHITE)
+        player.move(room_map.walls)
+        player.draw(screen.surface)
+        room_map.draw(screen.surface)
+
+    if cmd_line.user_input == "max":
+        pygame.event.post(pygame.event.Event(MAX))
 
     # Draw elements on cmd_line
-    cmd_line.maximize()
+    cmd_line.surface.fill(BLACK)
     cmd_line.input.draw(cmd_line.surface)
     cmd_line.draw_history()
     cmd_line.reset_after_enter(events)
