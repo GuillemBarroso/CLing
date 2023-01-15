@@ -13,7 +13,7 @@ class CL:
         self._width = canvas.get_width()
         self._height = 160
         self._line_height = 30
-        self._n_rows_shown = 5
+        self._n_rows_shown = 4
         self._history = []
         self._surface = pygame.Surface((self._width, self._height))
         self._input = Input(
@@ -57,8 +57,11 @@ class CL:
 
     def draw_history(self):
         """Draw command line's history on command line."""
-        for i_line in range(len(self._history)):
-            text = self._input.font.render(self._history[-(i_line + 1)], True, WHITE)
+        for i_line in range(self._n_rows_shown):
+            try:
+                text = self._input.font.render(self._history[-(i_line + 1)], True, WHITE)
+            except IndexError:
+                break
             text_rect = text.get_rect()
             text_rect.y = self._height - self._line_height * (i_line + 2)
             self._surface.blit(text, text_rect)
@@ -73,3 +76,8 @@ class CL:
             # Reset input and print
             self._input.value = ""
             self._input.draw(self._surface)
+
+    def maximize(self, canvas):
+        """Maximize command line to fill the entire screen."""
+        self._height = canvas.get_width()
+        self.draw_history()

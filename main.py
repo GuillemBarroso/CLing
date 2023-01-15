@@ -15,7 +15,7 @@ from src.command_line import CL
 pygame.init()
 
 # Add caption in the window
-pygame.display.set_caption("Game")
+pygame.display.set_caption("CLing")
 
 # Initializing the clock. Clocks are used to track and control the frame-rate of a game
 clock = pygame.time.Clock()
