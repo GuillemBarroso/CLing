@@ -4,18 +4,20 @@
 # Importing pygame module
 import pygame
 
-from src.canvas import get_canvas
+from src.canvas import build_canvas, get_canvas
 from src.colors import BLACK, WHITE
 from src.player import Player
 from src.room import Room
 from src.screen import Screen
 from src.command_line import CL
+from src.events_check import EventChecker
+from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 
 # Initiate pygame and give permission to use pygame's functionality.
 pygame.init()
 
 # Add caption in the window
-pygame.display.set_caption("Game")
+pygame.display.set_caption("CLing")
 
 # Initializing the clock. Clocks are used to track and control the frame-rate of a game
 clock = pygame.time.Clock()
@@ -26,6 +28,11 @@ player = Player()
 cmd_line = CL(canvas=canvas)
 screen = Screen(canvas, cmd_line)
 room_map = Room(screen=screen)
+
+# MAX = pygame.USEREVENT + 1
+# cmd_max = False
+
+# event_checker = EventChecker()
 
 # Creating an Infinite loop
 run = True
@@ -42,29 +49,32 @@ while run:
             pygame.quit()
             quit()
 
-        # Changing the value of the direction variable
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RIGHT:
-                player.direction = "E"
-            elif event.key == pygame.K_LEFT:
-                player.direction = "W"
-            elif event.key == pygame.K_UP:
-                player.direction = "N"
-            elif event.key == pygame.K_DOWN:
-                player.direction = "S"
+        # Enter CL full screen mode
+        if event.type == CMD_FULL_SCREEN:
+            cmd_line.maximize()
+
+        # Return to regular CL view
+        if event.type == CMD_REGULAR_SIZE:
+            cmd_line.minimize()
 
     # Build layout
-    canvas.blit(screen.surface, (0, 0))
-    canvas.blit(cmd_line.surface, (0, canvas.get_height() - cmd_line.height))
-    screen.surface.fill(WHITE)
-    cmd_line.surface.fill(BLACK)
+    build_canvas(canvas=canvas, screen=screen, cmd_line=cmd_line)
 
     # Draw elements on screen
-    player.move(room_map.walls)
-    player.draw(screen.surface)
-    room_map.draw(screen.surface)
+    if not cmd_line.full_screen:
+        screen.surface.fill(WHITE)
+        player.move(room_map.walls)
+        player.draw(screen.surface)
+        room_map.draw(screen.surface)
+
+    # Post user defined events comming from CL
+    if cmd_line.user_input == "max":
+        pygame.event.post(pygame.event.Event(CMD_FULL_SCREEN))
+    elif cmd_line.user_input == "min":
+        pygame.event.post(pygame.event.Event(CMD_REGULAR_SIZE))
 
     # Draw elements on cmd_line
+    cmd_line.surface.fill(BLACK)
     cmd_line.input.draw(cmd_line.surface)
     cmd_line.draw_history()
     cmd_line.reset_after_enter(events)
