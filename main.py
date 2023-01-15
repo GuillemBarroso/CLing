@@ -4,7 +4,7 @@
 # Importing pygame module
 import pygame
 
-from src.canvas import get_canvas
+from src.canvas import build_canvas, get_canvas
 from src.colors import BLACK, WHITE
 from src.player import Player
 from src.room import Room
@@ -42,20 +42,8 @@ while run:
             pygame.quit()
             quit()
 
-        # Changing the value of the direction variable
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RIGHT:
-                player.direction = "E"
-            elif event.key == pygame.K_LEFT:
-                player.direction = "W"
-            elif event.key == pygame.K_UP:
-                player.direction = "N"
-            elif event.key == pygame.K_DOWN:
-                player.direction = "S"
-
     # Build layout
-    canvas.blit(screen.surface, (0, 0))
-    canvas.blit(cmd_line.surface, (0, canvas.get_height() - cmd_line.height))
+    build_canvas(canvas=canvas, screen=screen, cmd_line=cmd_line)
     screen.surface.fill(WHITE)
     cmd_line.surface.fill(BLACK)
 
