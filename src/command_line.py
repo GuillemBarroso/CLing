@@ -19,40 +19,7 @@ class CL:
         self._n_rows_shown = self._get_n_rows_shown(self._height, self._line_height)
         self._n_rows_shown_ref = self._n_rows_shown
         self._height_ref = self._height
-        self._history = [
-            "asdasdad",
-            "asdad",
-            "d",
-            "asasdasddasdad",
-            "asdasdaasdassdasdd",
-            "asdad",
-            "dad",
-            "asdasdaasdad",
-            "asdasdasdasddd",
-            "asdasdaasdsdsadasdsadsadd",
-            "asdasdasdsadasdadsadadasdasdsd",
-            "as",
-            "a",
-            "asdasdsad",
-            "asasasdsdasdad",
-            "asdasdad",
-            "asdasdasdasdsdadsdsad",
-            "asdasdaadsdad",
-            "asdasdad",
-            "asdasdad",
-            "asdasdad",
-            "asdasdad",
-            "asdasdad",
-            "asdasdeesdcsad",
-            "asdasdahetrherhd",
-            "asdasdasddasdad",
-            "asdasdad",
-            "aasdsdasdad",
-            "t",
-            "c",
-            "b",
-            "asdaassdassdad",
-        ]
+        self._history = []
         self._surface = self._get_surface(self._width, self._height)
         self._input = self._get_input(self._height)
         self._input.focus = True
@@ -60,7 +27,7 @@ class CL:
         self._full_screen = False
         self._user_input = ""
         self._scroll_id = 0
-        self._scroll_bar_width = 20
+        self._scroll_bar_width = 10
 
     def _get_input(self, vertical_location):
         """Return text Input object."""
@@ -185,7 +152,12 @@ class CL:
         """Draw scroll bar indicating which part of the history is currently being displayed."""
         bar_height = self._canvas_height * self._n_rows_shown / len(self._history)
         y_pos = self._width - self._scroll_bar_width
-        x_pos = self._height - bar_height + self._scroll_id
+        x_pos = (
+            self._height
+            - bar_height
+            - (self._scroll_id / (self._n_rows_shown - len(self._history)))
+            * (self._height - bar_height)
+        )
         scroll_bar = pygame.Rect((y_pos, x_pos, self._scroll_bar_width, bar_height))
 
         pygame.draw.rect(self._canvas, WHITE, scroll_bar)
