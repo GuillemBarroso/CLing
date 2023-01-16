@@ -71,7 +71,8 @@ while run:
     if cmd_line.full_screen == True:
         if len(cmd_line.history) > cmd_line.n_rows_shown:
             cmd_line.scrolling()
-            # Draw rectangle based on CL history size showing what history is currently shown
+            print(cmd_line._scroll_id)
+            cmd_line.draw_scroll_bar()
 
     # Draw elements on cmd_line
     cmd_line.surface.fill(BLACK)

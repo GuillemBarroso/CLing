@@ -11,6 +11,7 @@ class CL:
 
     def __init__(self, canvas):
         """Initialize command line class."""
+        self._canvas = canvas
         self._width = canvas.get_width()
         self._canvas_height = canvas.get_height()
         self._height = 160
@@ -59,6 +60,7 @@ class CL:
         self._full_screen = False
         self._user_input = ""
         self._scroll_id = 0
+        self._scroll_bar_width = 20
 
     def _get_input(self, vertical_location):
         """Return text Input object."""
@@ -178,3 +180,12 @@ class CL:
         if key_pressed_is[locals.K_DOWN] and not key_pressed_is[locals.K_UP]:
             if self._scroll_id < 0:
                 self._scroll_id += 1
+
+    def draw_scroll_bar(self):
+        """Draw scroll bar indicating which part of the history is currently being displayed."""
+        bar_height = self._canvas_height * self._n_rows_shown / len(self._history)
+        y_pos = self._width - self._scroll_bar_width
+        x_pos = self._height - bar_height + self._scroll_id
+        scroll_bar = pygame.Rect((y_pos, x_pos, self._scroll_bar_width, bar_height))
+
+        pygame.draw.rect(self._canvas, WHITE, scroll_bar)
