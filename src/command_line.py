@@ -1,5 +1,6 @@
 """Module containing the command line class."""
 import pygame
+import pygame.locals as locals
 
 from src.colors import WHITE
 from src.eztext import Input
@@ -17,13 +18,47 @@ class CL:
         self._n_rows_shown = self._get_n_rows_shown(self._height, self._line_height)
         self._n_rows_shown_ref = self._n_rows_shown
         self._height_ref = self._height
-        self._history = []
+        self._history = [
+            "asdasdad",
+            "asdad",
+            "d",
+            "asasdasddasdad",
+            "asdasdaasdassdasdd",
+            "asdad",
+            "dad",
+            "asdasdaasdad",
+            "asdasdasdasddd",
+            "asdasdaasdsdsadasdsadsadd",
+            "asdasdasdsadasdadsadadasdasdsd",
+            "as",
+            "a",
+            "asdasdsad",
+            "asasasdsdasdad",
+            "asdasdad",
+            "asdasdasdasdsdadsdsad",
+            "asdasdaadsdad",
+            "asdasdad",
+            "asdasdad",
+            "asdasdad",
+            "asdasdad",
+            "asdasdad",
+            "asdasdeesdcsad",
+            "asdasdahetrherhd",
+            "asdasdasddasdad",
+            "asdasdad",
+            "aasdsdasdad",
+            "t",
+            "c",
+            "b",
+            "asdaassdassdad",
+        ]
         self._surface = self._get_surface(self._width, self._height)
         self._input = self._get_input(self._height)
         self._input.focus = True
         # This allows to always be able to type. This can be changed in the future.
         self._full_screen = False
-        self._user_input = ''
+        self._user_input = ""
+        self._scroll_id = 0
 
     def _get_input(self, vertical_location):
         """Return text Input object."""
@@ -42,7 +77,9 @@ class CL:
     @staticmethod
     def _get_n_rows_shown(height, line_height):
         """Return the number of lines that fit the space of the terminal.
-        Subtract 1 because of the active input line used by the user."""
+
+        Subtract 1 because of the active input line used by the user.
+        """
         return height // line_height - 1
 
     @property
@@ -85,11 +122,18 @@ class CL:
         """Return a boolean indicating if the command line is in full screen mode."""
         return self._full_screen
 
+    @property
+    def n_rows_shown(self):
+        """Return number of shown rows for CL history."""
+        return self._n_rows_shown
+
     def draw_history(self):
         """Draw command line's history on command line."""
         for i_line in range(self._n_rows_shown):
             try:
-                text = self._input.font.render(self._history[-(i_line + 1)], True, WHITE)
+                text = self._input.font.render(
+                    self._history[-(i_line + 1) + self._scroll_id], True, WHITE
+                )
             except IndexError:
                 break
             text_rect = text.get_rect()
@@ -124,3 +168,13 @@ class CL:
         self._surface = self._get_surface(self._width, self._height)
         self._input = self._get_input(self._height)
         self._input.focus = True
+
+    def scrolling(self):
+        """Scroll up and down through CL history when in full scren mode."""
+        key_pressed_is = pygame.key.get_pressed()
+        if key_pressed_is[locals.K_UP] and not key_pressed_is[locals.K_DOWN]:
+            if self._scroll_id > (self._n_rows_shown - len(self._history)):
+                self._scroll_id -= 1
+        if key_pressed_is[locals.K_DOWN] and not key_pressed_is[locals.K_UP]:
+            if self._scroll_id < 0:
+                self._scroll_id += 1
