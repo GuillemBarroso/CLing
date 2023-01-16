@@ -67,6 +67,12 @@ while run:
     elif cmd_line.user_input == "min":
         pygame.event.post(pygame.event.Event(CMD_REGULAR_SIZE))
 
+    # Enable scrolling when CL in full screen mode
+    if cmd_line.full_screen == True:
+        if len(cmd_line.history) > cmd_line.n_rows_shown:
+            cmd_line.scrolling()
+            cmd_line.draw_scroll_bar()
+
     # Draw elements on cmd_line
     cmd_line.surface.fill(BLACK)
     cmd_line.input.draw(cmd_line.surface)
