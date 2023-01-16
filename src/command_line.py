@@ -128,6 +128,7 @@ class CL:
         self._surface = self._get_surface(self._width, self._canvas_height)
         self._input = self._get_input(self._height)
         self._input.focus = True
+        self._scroll_id = 0
 
     def minimize(self):
         """Minimise command line to its original size."""
@@ -137,6 +138,7 @@ class CL:
         self._surface = self._get_surface(self._width, self._height)
         self._input = self._get_input(self._height)
         self._input.focus = True
+        self._scroll_id = 0
 
     def scrolling(self):
         """Scroll up and down through CL history when in full scren mode."""
