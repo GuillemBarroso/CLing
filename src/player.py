@@ -3,11 +3,14 @@
 import pygame
 import pygame.locals as locals
 
+from src.maps import ROOM_ONE, ROOM_TWO
+from src.room import Room
+
 
 class Player:
     """Player class."""
 
-    def __init__(self, x=100, y=100):
+    def __init__(self, x=100, y=100, screen=None, room=ROOM_ONE):
         """Initialize player class."""
         self.velocity = 5
         self.player_size = (50, 50)
@@ -19,6 +22,8 @@ class Player:
         self.vel_y = 0
         self.player_frames = 0
         self.vel_tolerance = 0.1
+        self.screen = screen
+        self.current_room = Room(screen, room, "room_one")
         self._load_images()
 
     def _load_images(self):
@@ -88,7 +93,7 @@ class Player:
             elif event.key == pygame.K_DOWN:
                 self.direction = "S"
 
-    def move(self, walls=None):
+    def move(self, room):
         """Move player around when pressing arrow keys."""
         # Storing the key pressed using key.get_pressed() method
         key_pressed_is = pygame.key.get_pressed()
@@ -155,11 +160,17 @@ class Player:
         #     raise RuntimeError("Player is facing more than one direction at the same time.")
 
         # Check for illegal movements colliding with walls
-        if walls:
-            for wall in walls:
-                if self.rect.colliderect(wall):
-                    self.rect.x = old_x
-                    self.rect.y = old_y
+        for wall in room.walls:
+            if self.rect.colliderect(wall):
+                self.rect.x = old_x
+                self.rect.y = old_y
+
+        for door in room.doors:
+            if self.rect.colliderect(door):
+                if room.name == "room_one":
+                    self.current_room = Room(self.screen, ROOM_TWO, "room_two")
+                elif room.name == "room_two":
+                    self.current_room = Room(self.screen, ROOM_TWO, "room_two")
 
     def draw(self, canvas):
         """Draw player on canvas."""
