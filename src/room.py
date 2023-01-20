@@ -30,9 +30,12 @@ class Room:
                     self.walls.append(
                         pygame.Rect(x, y, self.cells_size[0], self.cells_size[1])
                     )
-                if cell == "D00":
+                if cell == "D00" or cell == "D01":
                     self.doors.append(
-                        pygame.Rect(x, y, self.cells_size[0], self.cells_size[1])
+                        (
+                            pygame.Rect(x, y, self.cells_size[0], self.cells_size[1]),
+                            cell,
+                        )
                     )
                 x += self.cells_size[0]
             x = 0

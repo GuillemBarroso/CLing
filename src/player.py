@@ -166,11 +166,11 @@ class Player:
                 self.rect.y = old_y
 
         for door in room.doors:
-            if self.rect.colliderect(door):
-                if room.name == "room_one":
+            if self.rect.colliderect(door[0]):
+                if door[1] == "D00":
                     self.current_room = Room(self.screen, ROOM_TWO, "room_two")
-                elif room.name == "room_two":
-                    self.current_room = Room(self.screen, ROOM_TWO, "room_two")
+                elif door[1] == "D01":
+                    self.current_room = Room(self.screen, ROOM_ONE, "room_one")
 
     def draw(self, canvas):
         """Draw player on canvas."""
