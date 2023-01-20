@@ -3,14 +3,14 @@
 import pygame
 import pygame.locals as locals
 
-from src.maps import ROOM_ONE, ROOM_TWO
+from src.maps import START_ROOM
 from src.room import Room
 
 
 class Player:
     """Player class."""
 
-    def __init__(self, x=100, y=100, screen=None, room=ROOM_ONE):
+    def __init__(self, x=100, y=100, screen=None, room=START_ROOM):
         """Initialize player class."""
         self.velocity = 5
         self.player_size = (50, 50)
@@ -23,7 +23,7 @@ class Player:
         self.player_frames = 0
         self.vel_tolerance = 0.1
         self.screen = screen
-        self.current_room = Room(screen, room, "room_one")
+        self.current_room = Room(screen, room)
         self._load_images()
 
     def _load_images(self):
@@ -93,7 +93,7 @@ class Player:
             elif event.key == pygame.K_DOWN:
                 self.direction = "S"
 
-    def move(self, room):
+    def move(self):
         """Move player around when pressing arrow keys."""
         # Storing the key pressed using key.get_pressed() method
         key_pressed_is = pygame.key.get_pressed()
@@ -160,17 +160,18 @@ class Player:
         #     raise RuntimeError("Player is facing more than one direction at the same time.")
 
         # Check for illegal movements colliding with walls
-        for wall in room.walls:
+        for wall in self.current_room.walls:
             if self.rect.colliderect(wall):
                 self.rect.x = old_x
                 self.rect.y = old_y
 
-        for door in room.doors:
+        for door in self.current_room.doors:
             if self.rect.colliderect(door[0]):
                 if door[1] == "D00":
-                    self.current_room = Room(self.screen, ROOM_TWO, "room_two")
+                    current_door = door
                 elif door[1] == "D01":
-                    self.current_room = Room(self.screen, ROOM_ONE, "room_one")
+                    current_door = door
+                self.get_connection_door(current_door)
 
     def draw(self, canvas):
         """Draw player on canvas."""
@@ -229,3 +230,24 @@ class Player:
             )
 
         canvas.blit(player_image, (self.rect.x, self.rect.y))
+
+    def get_connection_door(self, door):
+        """Find the connection for a certain door and redirect the player there."""
+        connections = [
+            ("D00", "D01", "START_ROOM", "CITY_MAP", 0, -100),
+            ("D01", "D00", "CITY_MAP", "START_ROOM", 0, 100),
+        ]
+
+        door_name = door[1]
+
+        for connection in connections:
+            if connection[0] == door_name:
+                next_door = connection[1]
+                next_room = connection[3]
+                self.current_room = Room(self.screen, globals()[next_room])
+                for door in self.current_room.doors:
+                    if door[1] == next_door:
+                        self.rect.x, self.rect.y = (
+                            door[0].x + connection[4],
+                            door[0].y + connection[5],
+                        )

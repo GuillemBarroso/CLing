@@ -8,7 +8,7 @@ from src.canvas import build_canvas, get_canvas
 from src.colors import BLACK, WHITE
 from src.command_line import CL
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
-from src.maps import ROOM_ONE
+from src.maps import START_ROOM
 from src.player import Player
 from src.room import Room
 from src.screen import Screen
@@ -27,7 +27,7 @@ canvas = get_canvas()
 cmd_line = CL(canvas=canvas)
 screen = Screen(canvas, cmd_line)
 player = Player(screen=screen)
-room = Room(screen, ROOM_ONE, "room_one")
+room = Room(screen, START_ROOM)
 
 # Creating an Infinite loop
 run = True
@@ -58,7 +58,7 @@ while run:
     # Draw elements on screen
     if not cmd_line.full_screen:
         screen.surface.fill(WHITE)
-        player.move(room)
+        player.move()
         player.draw(screen.surface)
         player.current_room.draw(screen.surface)
 

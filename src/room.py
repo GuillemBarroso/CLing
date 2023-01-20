@@ -2,19 +2,18 @@
 
 import pygame
 
-from src.colors import BLACK
+from src.colors import BLACK, GREY
 
 
 class Room:
     """Room class."""
 
-    def __init__(self, screen, ROOM_MAP=None, ROOM_NAME=None):
+    def __init__(self, screen, ROOM_MAP=None):
         """Initialize map class."""
         self.cells_size = (30, 30)
         self.walls = []
         self.doors = []
         self.map = ROOM_MAP
-        self.name = ROOM_NAME
         self.n_cells_x = screen.surface.get_width() // self.cells_size[0]
         self.n_cells_y = screen.surface.get_height() // self.cells_size[1]
         # self._check_map_size()
@@ -61,3 +60,5 @@ class Room:
         """Draw walls of the room."""
         for wall in self.walls:
             pygame.draw.rect(canvas, BLACK, wall)
+        for door in self.doors:
+            pygame.draw.rect(canvas, GREY, door[0])

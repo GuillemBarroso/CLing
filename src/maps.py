@@ -1,6 +1,7 @@
 """Module containing the maps of the different rooms."""
 
-ROOM_ONE = [
+global START_ROOM
+START_ROOM = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXD00D00XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XXX                                                                                                                           XXX",
     "XXX                                                                                                                           XXX",
@@ -22,7 +23,8 @@ ROOM_ONE = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 ]
 
-ROOM_TWO = [
+global CITY_MAP
+CITY_MAP = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XXX                                                                                                                           XXX",
     "XXX                                                                                                                           XXX",
@@ -38,8 +40,8 @@ ROOM_TWO = [
     "XXX                                                                                                                           XXX",
     "XXX                                                                                                                           XXX",
     "XXX                                                                                                                           XXX",
+    "XXX         D01D01                                                                                                            XXX",
     "XXX                                                                                                                           XXX",
     "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXD01D01XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 ]
