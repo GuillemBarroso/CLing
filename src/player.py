@@ -3,6 +3,7 @@
 import pygame
 import pygame.locals as locals
 
+from src.connections import CONNECTIONS
 from src.maps import START_ROOM
 from src.room import Room
 
@@ -233,14 +234,9 @@ class Player:
 
     def get_connection_door(self, door):
         """Find the connection for a certain door and redirect the player there."""
-        connections = [
-            ("D00", "D01", "START_ROOM", "CITY_MAP", 0, -100),
-            ("D01", "D00", "CITY_MAP", "START_ROOM", 0, 100),
-        ]
-
         door_name = door[1]
 
-        for connection in connections:
+        for connection in CONNECTIONS:
             if connection[0] == door_name:
                 next_door = connection[1]
                 next_room = connection[3]
