@@ -4,7 +4,7 @@ import pygame
 import pygame.locals as locals
 
 from src.connections import CONNECTIONS
-from src.maps import START_ROOM
+from src.maps import *  # noqa: F403
 from src.room import Room
 
 
