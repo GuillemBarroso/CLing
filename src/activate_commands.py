@@ -2,6 +2,7 @@
 
 import pygame
 
+from src.command_definition import commands
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 
 
@@ -26,7 +27,15 @@ def post_events_from_cl_inputs(cmd_line):
 
 def trigger_commands_that_print_output(cmd_line):
     """Capture user inputs that require a response message in the CL."""
+    cmd = commands.get(cmd_line.user_input)
     input = cmd_line.input
-    if cmd_line.user_input == "help":
-        input.value = "No help for you"
-        cmd_line.reset_after_enter(input.value)
+
+    if cmd == None:
+        input.value = f"{cmd} is not a valid command. Please use `help` to \
+            see all the available commands."
+    else:
+        if cmd == "help":
+            input.value = f"{cmd.arguments}"
+    input.prompt = " "
+    cmd_line.reset_after_enter(input.value)
+    input.prompt = "> "
