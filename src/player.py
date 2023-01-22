@@ -161,11 +161,22 @@ class Player:
         #     raise RuntimeError("Player is facing more than one direction at the same time.")
 
         # Check for illegal movements colliding with walls
+        limit_is_x = False
+        limit_is_y = False
         for wall in self.current_room.walls:
             if self.rect.colliderect(wall):
-                self.rect.x = old_x
-                self.rect.y = old_y
-
+                self.rect.x -= self.vel_x
+                if self.rect.colliderect(wall):
+                    limit_is_y = True
+                self.rect.x += self.vel_x
+                self.rect.y -= self.vel_y
+                if self.rect.colliderect(wall):
+                    limit_is_x = True
+                self.rect.y += self.vel_y
+                if limit_is_x:
+                    self.rect.x = old_x
+                if limit_is_y:
+                    self.rect.y = old_y
         for door in self.current_room.doors:
             if self.rect.colliderect(door[0]):
                 if door[1] == "D00":
