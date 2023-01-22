@@ -4,10 +4,10 @@
 # Importing pygame module
 import pygame
 
+from src.activate_commands import activate_cl_commands, post_events_from_cl_inputs
 from src.canvas import build_canvas, get_canvas
 from src.colors import BLACK, WHITE
 from src.command_line import CL
-from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 from src.maps import START_ROOM
 from src.player import Player
 from src.room import Room
@@ -44,13 +44,7 @@ while run:
             pygame.quit()
             quit()
 
-        # Enter CL full screen mode
-        if event.type == CMD_FULL_SCREEN:
-            cmd_line.maximize()
-
-        # Return to regular CL view
-        if event.type == CMD_REGULAR_SIZE:
-            cmd_line.minimize()
+        activate_cl_commands(event, cmd_line)
 
     # Build layout
     build_canvas(canvas=canvas, screen=screen, cmd_line=cmd_line)
@@ -62,11 +56,7 @@ while run:
         player.draw(screen.surface)
         player.current_room.draw(screen.surface)
 
-    # Post user defined events coming from CL
-    if cmd_line.user_input == "max":
-        pygame.event.post(pygame.event.Event(CMD_FULL_SCREEN))
-    elif cmd_line.user_input == "min":
-        pygame.event.post(pygame.event.Event(CMD_REGULAR_SIZE))
+    post_events_from_cl_inputs(cmd_line)
 
     # Enable scrolling when CL in full screen mode
     if cmd_line.full_screen == True:
