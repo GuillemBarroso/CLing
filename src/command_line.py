@@ -109,16 +109,14 @@ class CL:
             text_rect.y = self._height - self._line_height * (i_line + 2)
             self._surface.blit(text, text_rect)
 
-    def reset_after_enter(self, events):
+    def reset_after_enter(self, user_input):
         """Store user input and reset command line with an empty string."""
-        self._user_input = self._input.update(events)
-        if self._user_input:
-            # Add input to the command line history
-            self._history.append(f"{self._input.prompt}{self._user_input}")
+        # Add input to the command line history
+        self._history.append(f"{self._input.prompt}{user_input}")
 
-            # Reset input and print
-            self._input.value = ""
-            self._input.draw(self._surface)
+        # Reset input and print
+        self._input.value = ""
+        self._input.draw(self._surface)
 
     def maximize(self):
         """Maximize command line to fill the entire screen."""

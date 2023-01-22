@@ -22,3 +22,11 @@ def post_events_from_cl_inputs(cmd_line):
         pygame.event.post(pygame.event.Event(CMD_FULL_SCREEN))
     elif cmd_line.user_input == "min":
         pygame.event.post(pygame.event.Event(CMD_REGULAR_SIZE))
+
+
+def trigger_commands_that_print_output(cmd_line):
+    """Capture user inputs that require a response message in the CL."""
+    input = cmd_line.input
+    if cmd_line.user_input == "help":
+        input.value = "No help for you"
+        cmd_line.reset_after_enter(input.value)
