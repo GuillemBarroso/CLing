@@ -73,8 +73,8 @@ while run:
     cmd_line._user_input = cmd_line._input.update(events)
     if cmd_line._user_input:
         post_events_from_cl_inputs(cmd_line)
-        trigger_commands_that_print_output(cmd_line)
         cmd_line.reset_after_enter(cmd_line._user_input)
+        trigger_commands_that_print_output(cmd_line)
 
     # Draws the surface object to the screen.
     pygame.display.update()
