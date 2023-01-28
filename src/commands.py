@@ -24,10 +24,11 @@ class Help(Command):
         parameters = {
             "name": "help",
             "short_name": "h",
-            "description": "Provides information on the accepted commands.",
-            "extended_description": "'help' will list all the available commands. The listed "
-            "commands can be also used as arguments to obtain more information "
-            "about that command.",
+            "description": "Provides information about the command line commands used to "
+            "interact with the game.",
+            "extended_description": "During the game, you will learn different commands to "
+            "interact with the different elements of the game. Use the help command to check "
+            "the use of a particular command.",
             "arguments": ["test", "test2"],
             "examples": ["help", "help <command>", "h <command>"],
         }

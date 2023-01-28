@@ -111,8 +111,18 @@ class CL:
 
     def reset_after_enter(self, user_input):
         """Store user input and reset command line with an empty string."""
-        # Add input to the command line history
-        self._history.append(f"{self._input.prompt}{user_input}")
+        MAX_CL_LENGTH = 160
+        if len(user_input) > MAX_CL_LENGTH:
+            lines = [
+                user_input[i : i + MAX_CL_LENGTH]
+                for i in range(0, len(user_input), MAX_CL_LENGTH)
+            ]
+        else:
+            lines = [user_input]
+
+        for line in lines:
+            # Add input to the command line history
+            self._history.append(f"{self._input.prompt}{line}")
 
         # Reset input and print
         self._input.value = ""
