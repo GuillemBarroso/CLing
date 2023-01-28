@@ -1,5 +1,7 @@
 """Module containing the Command class."""
 
+COMMAND_LIST = ["help", "h", "command line", "cl"]
+
 
 class Command:
     """Command class containing all the information for a CL command."""
@@ -29,7 +31,7 @@ class Help(Command):
             "extended_description": "During the game, you will learn different commands to "
             "interact with the different elements of the game. Use the help command to check "
             "the use of a particular command.",
-            "arguments": ["test", "test2"],
+            "arguments": COMMAND_LIST,
             "examples": ["help", "help <command>", "h <command>"],
         }
         super().__init__(**parameters)
@@ -41,12 +43,12 @@ class Cmd_line(Command):
     def __init__(self):
         """Initialize."""
         parameters = {
-            "name": "command_line",
+            "name": "command line",
             "short_name": "cl",
             "description": "Interaction with the command line.",
             "extended_description": "This command allows the user to modify certain "
             "behaviors of the command line.",
-            "arguments": [[("full_screen", "fc"), ("on", "off")]],
-            "examples": ["command_line full_screen on", "cl fc off"],
+            "arguments": [[("full screen", "fc"), ("on", "off")]["clear"]],
+            "examples": ["command line full screen on", "cl fc off", "cl clear"],
         }
         super().__init__(**parameters)

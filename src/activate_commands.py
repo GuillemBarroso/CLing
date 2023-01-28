@@ -2,7 +2,7 @@
 
 import pygame
 
-from src.commands import Cmd_line, Help
+from src.commands import COMMAND_LIST, Cmd_line, Help
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 
 
@@ -30,11 +30,14 @@ def trigger_commands_that_print_output(cmd_line):
     input = cmd_line.input
     help = Help()
     cl = Cmd_line()
-
     if cmd_line.user_input == help.name or cmd_line.user_input == help.short_name:
-        input.value = f"{help.description} {help.extended_description}"
+        look_for_arguments(cmd_line.user_input, help)
+        input.value = (
+            f"{help.description} {help.extended_description}. Usage: {help.examples}"
+        )
 
     elif cmd_line.user_input == cl.name or cmd_line.user_input == cl.short_name:
+        look_for_arguments(cmd_line.user_input, cl)
         pass
     else:
         input.value = (
@@ -45,3 +48,20 @@ def trigger_commands_that_print_output(cmd_line):
     input.prompt = "  "
     cmd_line.reset_after_enter(input.value)
     input.prompt = "> "
+
+
+def look_for_arguments(user_input, cmd):
+    """Return the arguments introduced by the users after the command."""
+    for command in COMMAND_LIST:
+        index_ini = user_input.find(command)
+        if not index_ini == -1:
+            break
+
+    assert (index_ini == 0, "The command must be introduced in the first place")
+    index_end = index_ini + len(command)
+    user_input[index_end:].split(" ")
+
+    for arg in cmd.arguments:
+        if arg in user_input:
+            pass
+    test = 1
