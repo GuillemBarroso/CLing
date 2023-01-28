@@ -112,13 +112,7 @@ class CL:
     def reset_after_enter(self, user_input):
         """Store user input and reset command line with an empty string."""
         MAX_CL_LENGTH = 160
-        if len(user_input) > MAX_CL_LENGTH:
-            lines = [
-                user_input[i : i + MAX_CL_LENGTH]
-                for i in range(0, len(user_input), MAX_CL_LENGTH)
-            ]
-        else:
-            lines = [user_input]
+        lines = self.split_long_user_input(user_input, MAX_CL_LENGTH)
 
         for line in lines:
             # Add input to the command line history
@@ -171,3 +165,16 @@ class CL:
         scroll_bar = pygame.Rect((y_pos, x_pos, self._scroll_bar_width, bar_height))
 
         pygame.draw.rect(self._canvas, WHITE, scroll_bar)
+
+    @staticmethod
+    def split_long_user_input(user_input, MAX_CL_LENGTH):
+        """Split user input if it is longer than MAX_CL_LENGTH."""
+        if len(user_input) > MAX_CL_LENGTH:
+            # TODO: split only in spaces. Do not split words by half.
+            lines = [
+                user_input[i : i + MAX_CL_LENGTH]
+                for i in range(0, len(user_input), MAX_CL_LENGTH)
+            ]
+        else:
+            lines = [user_input]
+        return lines
