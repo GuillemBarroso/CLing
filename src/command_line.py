@@ -28,6 +28,7 @@ class CL:
         self._user_input = ""
         self._scroll_id = 0
         self._scroll_bar_width = 10
+        self._MAX_CL_LENGTH = 160
 
     def _get_input(self, vertical_location):
         """Return text Input object."""
@@ -111,8 +112,7 @@ class CL:
 
     def reset_after_enter(self, user_input):
         """Store user input and reset command line with an empty string."""
-        MAX_CL_LENGTH = 160
-        lines = self.split_long_user_input(user_input, MAX_CL_LENGTH)
+        lines = self.split_long_user_input(user_input, self._MAX_CL_LENGTH)
 
         for line in lines:
             # Add input to the command line history

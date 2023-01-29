@@ -26,6 +26,7 @@ def trigger_user_commands(cmd_line):
     user_command, arguments, message = get_command_from_user_input(cmd_line.user_input)
     if message:
         input.value = message
+        write_command_resonse(cmd_line)
     else:
         if user_command == help.name or user_command == help.short_name:
             if arguments:
