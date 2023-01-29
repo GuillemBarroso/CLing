@@ -1,5 +1,7 @@
 """Module containing the Command class."""
 
+import pygame
+
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 
 COMMAND_LIST = ["help", "h", "command line", "cl"]
