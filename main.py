@@ -8,10 +8,7 @@ from src.activate_commands import activate_cl_commands
 from src.canvas import build_canvas, get_canvas
 from src.colors import BLACK, WHITE
 from src.command_line import CL
-from src.execute_commands import (  # post_events_from_cl_inputs,
-    activate_cl_commands,
-    trigger_user_commands,
-)
+from src.execute_commands import activate_cl_commands, trigger_user_commands
 from src.maps import START_ROOM
 from src.player import Player
 from src.room import Room
