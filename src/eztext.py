@@ -38,7 +38,7 @@ class Input:
             options,
             ["x", "0"],
             ["y", "0"],
-            ["font", 'pygame.font.Font("src/fonts/Times_New_Roman.ttf", 25)'],
+            ["font", 'pygame.font.Font("src/fonts/Times_New_Roman.ttf", 18)'],
             ["color", "(0,0,0)"],
             [
                 "restricted",

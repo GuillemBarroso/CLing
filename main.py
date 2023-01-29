@@ -7,7 +7,10 @@ import pygame
 from src.canvas import build_canvas, get_canvas
 from src.colors import BLACK, WHITE
 from src.command_line import CL
-from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
+from src.execute_commands import (  # post_events_from_cl_inputs,
+    activate_cl_commands,
+    trigger_user_commands,
+)
 from src.maps import START_ROOM
 from src.player import Player
 from src.room import Room
@@ -44,13 +47,7 @@ while run:
             pygame.quit()
             quit()
 
-        # Enter CL full screen mode
-        if event.type == CMD_FULL_SCREEN:
-            cmd_line.maximize()
-
-        # Return to regular CL view
-        if event.type == CMD_REGULAR_SIZE:
-            cmd_line.minimize()
+        activate_cl_commands(event, cmd_line)
 
     # Build layout
     build_canvas(canvas=canvas, screen=screen, cmd_line=cmd_line)
@@ -62,12 +59,6 @@ while run:
         player.draw(screen.surface)
         player.current_room.draw(screen.surface)
 
-    # Post user defined events coming from CL
-    if cmd_line.user_input == "max":
-        pygame.event.post(pygame.event.Event(CMD_FULL_SCREEN))
-    elif cmd_line.user_input == "min":
-        pygame.event.post(pygame.event.Event(CMD_REGULAR_SIZE))
-
     # Enable scrolling when CL in full screen mode
     if cmd_line.full_screen == True:
         if len(cmd_line.history) > cmd_line.n_rows_shown:
@@ -78,7 +69,10 @@ while run:
     cmd_line.surface.fill(BLACK)
     cmd_line.input.draw(cmd_line.surface)
     cmd_line.draw_history()
-    cmd_line.reset_after_enter(events)
+    cmd_line._user_input = cmd_line._input.update(events)
+    if cmd_line._user_input:
+        cmd_line.reset_after_enter(cmd_line._user_input)
+        trigger_user_commands(cmd_line)
 
     # Draws the surface object to the screen.
     pygame.display.update()

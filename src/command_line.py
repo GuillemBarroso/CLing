@@ -109,16 +109,18 @@ class CL:
             text_rect.y = self._height - self._line_height * (i_line + 2)
             self._surface.blit(text, text_rect)
 
-    def reset_after_enter(self, events):
+    def reset_after_enter(self, user_input):
         """Store user input and reset command line with an empty string."""
-        self._user_input = self._input.update(events)
-        if self._user_input:
-            # Add input to the command line history
-            self._history.append(f"{self._input.prompt}{self._user_input}")
+        MAX_CL_LENGTH = 160
+        lines = self.split_long_user_input(user_input, MAX_CL_LENGTH)
 
-            # Reset input and print
-            self._input.value = ""
-            self._input.draw(self._surface)
+        for line in lines:
+            # Add input to the command line history
+            self._history.append(f"{self._input.prompt}{line}")
+
+        # Reset input and print
+        self._input.value = ""
+        self._input.draw(self._surface)
 
     def maximize(self):
         """Maximize command line to fill the entire screen."""
@@ -163,3 +165,16 @@ class CL:
         scroll_bar = pygame.Rect((y_pos, x_pos, self._scroll_bar_width, bar_height))
 
         pygame.draw.rect(self._canvas, WHITE, scroll_bar)
+
+    @staticmethod
+    def split_long_user_input(user_input, MAX_CL_LENGTH):
+        """Split user input if it is longer than MAX_CL_LENGTH."""
+        if len(user_input) > MAX_CL_LENGTH:
+            # TODO: split only in spaces. Do not split words by half.
+            lines = [
+                user_input[i : i + MAX_CL_LENGTH]
+                for i in range(0, len(user_input), MAX_CL_LENGTH)
+            ]
+        else:
+            lines = [user_input]
+        return lines
