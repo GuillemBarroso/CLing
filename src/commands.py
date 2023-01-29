@@ -50,7 +50,7 @@ class Cmd_line(Command):
             "behaviors of the command line.",
             "arguments": [
                 [("full screen", "fc"), ("on", "off")],
-                ["clear"],
+                "clear",
             ],
             "examples": ["command line full screen on", "cl fc off", "cl clear"],
         }

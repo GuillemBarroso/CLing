@@ -4,14 +4,13 @@
 # Importing pygame module
 import pygame
 
-from src.activate_commands import (
-    activate_cl_commands,
-    post_events_from_cl_inputs,
-    trigger_commands_that_print_output,
-)
 from src.canvas import build_canvas, get_canvas
 from src.colors import BLACK, WHITE
 from src.command_line import CL
+from src.execute_commands import (  # post_events_from_cl_inputs,
+    activate_cl_commands,
+    trigger_user_commands,
+)
 from src.maps import START_ROOM
 from src.player import Player
 from src.room import Room
@@ -72,9 +71,8 @@ while run:
     cmd_line.draw_history()
     cmd_line._user_input = cmd_line._input.update(events)
     if cmd_line._user_input:
-        post_events_from_cl_inputs(cmd_line)
         cmd_line.reset_after_enter(cmd_line._user_input)
-        trigger_commands_that_print_output(cmd_line)
+        trigger_user_commands(cmd_line)
 
     # Draws the surface object to the screen.
     pygame.display.update()
