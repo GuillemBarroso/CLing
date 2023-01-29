@@ -30,15 +30,17 @@ def trigger_commands_that_print_output(cmd_line):
     input = cmd_line.input
     help = Help()
     cl = Cmd_line()
-    if cmd_line.user_input == help.name or cmd_line.user_input == help.short_name:
-        look_for_arguments(cmd_line.user_input, help)
-        input.value = (
-            f"{help.description} {help.extended_description}. Usage: {help.examples}"
-        )
 
-    elif cmd_line.user_input == cl.name or cmd_line.user_input == cl.short_name:
-        look_for_arguments(cmd_line.user_input, cl)
-        pass
+    user_command, arguments = get_command_from_user_input(cmd_line.user_input)
+
+    if user_command == help.name or user_command == help.short_name:
+        if arguments:
+            arg, value, message = check_arguments(arguments, help)
+        else:
+            input.value = f"{help.description} {help.extended_description}. Usage: {help.examples}"
+
+    elif user_command == cl.name or user_command == cl.short_name:
+        arg, value, message = check_arguments(arguments, cl)
     else:
         input.value = (
             f"'{cmd_line.user_input}' is not a valid command. Please "
@@ -50,18 +52,61 @@ def trigger_commands_that_print_output(cmd_line):
     input.prompt = "> "
 
 
-def look_for_arguments(user_input, cmd):
-    """Return the arguments introduced by the users after the command."""
+def get_command_from_user_input(user_input):
+    """Return main command and the arguments introduced by the user."""
     for command in COMMAND_LIST:
         index_ini = user_input.find(command)
         if not index_ini == -1:
             break
+    assert index_ini == 0, "The command must be introduced in the first place"
+    index_end = len(command)
+    return user_input[index_ini:index_end], user_input[index_end:]
 
-    assert (index_ini == 0, "The command must be introduced in the first place")
-    index_end = index_ini + len(command)
-    user_input[index_end:].split(" ")
 
-    for arg in cmd.arguments:
-        if arg in user_input:
-            pass
-    test = 1
+def check_arguments(arguments, cmd):
+    """Return the arguments introduced by the users after the command."""
+    user_args = [arg for arg in arguments.split(" ") if arg]
+
+    arg, all_args, arg_requires_val, message = find_argument(user_args, cmd)
+
+    if message:
+        return None, None, message
+
+    if arg_requires_val:
+        if all_args:
+            value, all_args, message = find_arg_value(arg, all_args, cmd)
+            if message:
+                return None, None, message
+        else:
+            return f"Missing value for argument '{arg}' in command '{cmd.name}'"
+    else:
+        value = None
+
+    assert len(all_args) == 0, "Only one argument can be introduced at a time"
+    return arg, value, ""
+
+
+def find_argument(user_args, cmd):
+    """Find argument in user input."""
+    for cmd_args in cmd.arguments:
+        if user_args[0] in cmd_args[0]:
+            try:
+                cmd_args[1]
+                arg_requires_val = True
+            except IndexError:
+                arg_requires_val = False
+            return user_args[0], user_args[1:], arg_requires_val, ""
+    else:
+        return None, None, f"Invalid argument '{user_args[0]}' for command '{cmd.name}'"
+
+
+def find_arg_value(arg, all_args, cmd):
+    """Find value for a particular argument in user input."""
+    for cmd_args in cmd.arguments:
+        if arg in cmd_args[0]:
+            if all_args[0] in cmd_args[1]:
+                return all_args[0], all_args[1:], ""
+            else:
+                message = f"Invalid value '{all_args[0]}' for argument `{arg}`"
+                " in ocmmand `{cmd.name}`"
+                return None, None, message

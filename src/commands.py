@@ -48,7 +48,10 @@ class Cmd_line(Command):
             "description": "Interaction with the command line.",
             "extended_description": "This command allows the user to modify certain "
             "behaviors of the command line.",
-            "arguments": [[("full screen", "fc"), ("on", "off")]["clear"]],
+            "arguments": [
+                [("full screen", "fc"), ("on", "off")],
+                ["clear"],
+            ],
             "examples": ["command line full screen on", "cl fc off", "cl clear"],
         }
         super().__init__(**parameters)
