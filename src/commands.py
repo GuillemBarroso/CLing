@@ -119,12 +119,12 @@ class Help(Command):
                     out_string += f"'{name}' or "
                 out_string = out_string[:-4]
                 try:
-                    out_string += " which take values "
+                    out_string += ", which takes values: "
                     for val in arg[1]:
                         out_string += f"'{val}' or "
                     out_string = out_string[:-4]
                 except IndexError:
-                    out_string = out_string[:-19]
+                    out_string = out_string[:-22]
             elif type(arg) == str:
                 out_string += arg
             cmd_line.input.value = out_string
