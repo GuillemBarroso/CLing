@@ -4,8 +4,6 @@ import pygame
 
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 
-COMMAND_LIST = ["help", "h", "command line", "cl"]
-
 
 class Command:
     """Command class containing all the information for a CL command."""
@@ -66,6 +64,9 @@ class Command:
         return user_args, message
 
 
+HELP_ARGUMENTS = [[("command line", "cl")]]
+
+
 class Help(Command):
     """Help command."""
 
@@ -79,7 +80,7 @@ class Help(Command):
             "extended_description": "During the game, you will learn different commands to "
             "interact with the different elements of the game. Use the help command to check "
             "the use of a particular command.",
-            "arguments": COMMAND_LIST,
+            "arguments": HELP_ARGUMENTS,
             "examples": ["help", "help <command>", "h <command>"],
         }
         super().__init__(**parameters)
@@ -90,22 +91,49 @@ class Help(Command):
             args, message = self.parse_arguments(arguments)
             if message:
                 cmd_line.input.value = message
+                write_command_resonse(cmd_line)
             elif len(args) > 1:
                 cmd_line.input.value = (
                     "When using 'help', only one command can be requested."
                 )
+                write_command_resonse(cmd_line)
             else:
                 cmd = cmd_dict[args[0]]
-                cmd_line.input.value = (
-                    f"{cmd.name}: {cmd.description} {cmd.extended_description}"
-                    f"Available arguments are: {cmd.arguments}. Usage: {cmd.examples}"
-                )
+                self.get_cmd_help_string(cmd_line, cmd)
         else:
-            cmd_line.input.value = (
-                f"{self.description} {self.extended_description}. "
-                f"Usage: {self.examples}"
-            )
+            self.get_cmd_help_string(cmd_line, self)
+
+    def get_cmd_help_string(self, cmd_line, cmd):
+        """Print description of a command with its possible arguments and examples."""
+        cmd_line.input.value = (
+            f"'{cmd.name}' or '{cmd.short_name}': "
+            f"{cmd.description} {cmd.extended_description}"
+        )
         write_command_resonse(cmd_line)
+        cmd_line.input.value = "Available arguments are:"
+        write_command_resonse(cmd_line)
+        for arg in cmd.arguments:
+            out_string = f"  - "
+            if type(arg) == list:
+                for name in arg[0]:
+                    out_string += f"'{name}' or "
+                out_string = out_string[:-4]
+                try:
+                    out_string += ", which takes values: "
+                    for val in arg[1]:
+                        out_string += f"'{val}' or "
+                    out_string = out_string[:-4]
+                except IndexError:
+                    out_string = out_string[:-22]
+            elif type(arg) == str:
+                out_string += arg
+            cmd_line.input.value = out_string
+            write_command_resonse(cmd_line)
+        cmd_line.input.value = "Usage:"
+        write_command_resonse(cmd_line)
+        for example in cmd.examples:
+            cmd_line.input.value = f"  - {example}"
+            write_command_resonse(cmd_line)
 
 
 class Cmd_line(Command):

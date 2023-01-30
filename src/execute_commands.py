@@ -1,6 +1,6 @@
 """Module in charge of triggering CL commands."""
 
-from src.commands import COMMAND_LIST, cmd_dict, write_command_resonse
+from src.commands import cmd_dict, write_command_resonse
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 
 
@@ -30,7 +30,7 @@ def trigger_user_commands(cmd_line):
 
 def get_command_from_user_input(user_input):
     """Return main command and the arguments introduced by the user."""
-    for command in COMMAND_LIST:
+    for command in cmd_dict.keys():
         index_ini = user_input.find(command)
         if not index_ini == -1:
             break

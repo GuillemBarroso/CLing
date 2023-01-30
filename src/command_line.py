@@ -15,7 +15,7 @@ class CL:
         self._width = canvas.get_width()
         self._canvas_height = canvas.get_height()
         self._height = 160
-        self._line_height = 30
+        self._line_height = 25
         self._n_rows_shown = self._get_n_rows_shown(self._height, self._line_height)
         self._n_rows_shown_ref = self._n_rows_shown
         self._height_ref = self._height
