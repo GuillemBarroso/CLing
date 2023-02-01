@@ -65,6 +65,6 @@ city_map_description = (
 
 # Create the dictionary with all the room maps and room descriptions
 rooms_dict = {
-    "start_room": (start_room, start_room_desription),
-    "city_map": (city_map, city_map_description),
+    "start_room": (start_room, start_room_desription, "CAVE"),
+    "city_map": (city_map, city_map_description, "VALLEY"),
 }

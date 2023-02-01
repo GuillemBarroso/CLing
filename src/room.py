@@ -17,6 +17,7 @@ class Room:
         self.cmd_line = cmd_line
         self.room_map = room[0]
         self.room_description = room[1]
+        self.room_name = room[2]
         self.n_cells_x = screen.surface.get_width() // self.cells_size[0]
         self.n_cells_y = screen.surface.get_height() // self.cells_size[1]
         # self._check_map_size()
@@ -62,7 +63,7 @@ class Room:
 
     def _display_room_description(self):
         self.cmd_line.input.value = self.room_description
-        write_command_response(self.cmd_line)
+        write_command_response(self.cmd_line, prompt=f"{self.room_name}: ")
         self.cmd_line.input.value = ""
         write_command_response(self.cmd_line)
 

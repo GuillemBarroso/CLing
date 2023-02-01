@@ -117,6 +117,7 @@ class CL:
         for line in lines:
             # Add input to the command line history
             self._history.append(f"{self._input.prompt}{line}")
+            self._input.prompt = ""
 
         # Reset input and print
         self._input.value = ""
