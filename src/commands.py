@@ -91,12 +91,12 @@ class Help(Command):
             args, message = self.parse_arguments(arguments)
             if message:
                 cmd_line.input.value = message
-                write_command_resonse(cmd_line)
+                write_command_response(cmd_line)
             elif len(args) > 1:
                 cmd_line.input.value = (
                     "When using 'help', only one command can be requested."
                 )
-                write_command_resonse(cmd_line)
+                write_command_response(cmd_line)
             else:
                 cmd = cmd_dict[args[0]]
                 self.get_cmd_help_string(cmd_line, cmd)
@@ -109,9 +109,9 @@ class Help(Command):
             f"'{cmd.name}' or '{cmd.short_name}': "
             f"{cmd.description} {cmd.extended_description}"
         )
-        write_command_resonse(cmd_line)
+        write_command_response(cmd_line)
         cmd_line.input.value = "Available arguments are:"
-        write_command_resonse(cmd_line)
+        write_command_response(cmd_line)
         for arg in cmd.arguments:
             out_string = f"  - "
             if type(arg) == list:
@@ -128,12 +128,12 @@ class Help(Command):
             elif type(arg) == str:
                 out_string += arg
             cmd_line.input.value = out_string
-            write_command_resonse(cmd_line)
+            write_command_response(cmd_line)
         cmd_line.input.value = "Usage:"
-        write_command_resonse(cmd_line)
+        write_command_response(cmd_line)
         for example in cmd.examples:
             cmd_line.input.value = f"  - {example}"
-            write_command_resonse(cmd_line)
+            write_command_response(cmd_line)
 
 
 class Cmd_line(Command):
@@ -160,7 +160,7 @@ class Cmd_line(Command):
         args, message = self.parse_arguments(arguments)
         if message:
             cmd_line.input.value = message
-            write_command_resonse(cmd_line)
+            write_command_response(cmd_line)
         else:
             for i, arg in enumerate(args):
                 if arg == "full screen" or arg == "fc":
@@ -188,8 +188,8 @@ cmd_dict = {
 }
 
 
-def write_command_resonse(cmd_line):
+def write_command_response(cmd_line, prompt="  "):
     """Write on CL the content of input.value and store it in CL history."""
-    cmd_line.input.prompt = "  "
+    cmd_line.input.prompt = prompt
     cmd_line.reset_after_enter(cmd_line.input.value)
     cmd_line.input.prompt = "> "

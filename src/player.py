@@ -4,16 +4,16 @@ import pygame
 import pygame.locals as locals
 
 from src.connections import CONNECTIONS
-from src.maps import *  # noqa: F403
+from src.maps import rooms_dict
 from src.room import Room
 
 
 class Player:
     """Player class."""
 
-    def __init__(self, x=100, y=100, screen=None, room=START_ROOM):
+    def __init__(self, screen, cmd_line, x=100, y=100, room=rooms_dict["start_room"]):
         """Initialize player class."""
-        self.velocity = 5
+        self.velocity = 3
         self.player_size = (50, 50)
         self.image_dir = "src/images/player"
         self.rect = pygame.Rect((0, 0), self.player_size)
@@ -24,7 +24,8 @@ class Player:
         self.player_frames = 0
         self.vel_tolerance = 0.1
         self.screen = screen
-        self.current_room = Room(screen, room)
+        self.cmd_line = cmd_line
+        self.current_room = Room(self.screen, self.cmd_line, room)
         self._load_images()
 
     def _load_images(self):
@@ -251,7 +252,9 @@ class Player:
             if connection[0] == door_name:
                 next_door = connection[1]
                 next_room = connection[3]
-                self.current_room = Room(self.screen, globals()[next_room])
+                self.current_room = Room(
+                    self.screen, self.cmd_line, rooms_dict[next_room]
+                )
                 for door in self.current_room.doors:
                     if door[1] == next_door:
                         self.rect.x, self.rect.y = (

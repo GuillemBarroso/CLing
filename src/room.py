@@ -3,26 +3,31 @@
 import pygame
 
 from src.colors import BLACK, GREY
+from src.commands import write_command_response
 
 
 class Room:
     """Room class."""
 
-    def __init__(self, screen, ROOM_MAP=None):
+    def __init__(self, screen, cmd_line, room=None):
         """Initialize map class."""
         self.cells_size = (30, 30)
         self.walls = []
         self.doors = []
-        self.map = ROOM_MAP
+        self.cmd_line = cmd_line
+        self.room_map = room[0]
+        self.room_description = room[1]
+        self.room_name = room[2]
         self.n_cells_x = screen.surface.get_width() // self.cells_size[0]
         self.n_cells_y = screen.surface.get_height() // self.cells_size[1]
         # self._check_map_size()
         self._build()
+        self._display_room_description()
 
     def _build(self):
         """Build room map creating walls."""
         x, y = 0, 0
-        for raw in self.map:
+        for raw in self.room_map:
             for i in range(0, len(raw), 3):
                 cell = raw[i : i + 3]
                 if cell == "XXX":
@@ -41,20 +46,26 @@ class Room:
             y += self.cells_size[1]
 
     def _check_map_size(self):
-        if not len(self.map) == self.n_cells_y:
+        if not len(self.room_map) == self.n_cells_y:
             text = (
-                f"Number of raws of the room's map ({len(self.map)}) "
+                f"Number of raws of the room's map ({len(self.room_map)}) "
                 + f"does not match the number of y cells of the screen ({self.n_cells_y})."
             )
             raise ValueError(text)
 
-        for i_raw, raw in enumerate(self.map):
+        for i_raw, raw in enumerate(self.room_map):
             if not len(raw) // 3 == self.n_cells_x:
                 text = (
                     f"Number of columns ({len(raw)}) in raw {i_raw} does not "
                     + f"match the number of the x cells of the screen ({self.n_cells_x})"
                 )
                 raise ValueError(text)
+
+    def _display_room_description(self):
+        self.cmd_line.input.value = self.room_description
+        write_command_response(self.cmd_line, prompt=f"{self.room_name}: ")
+        self.cmd_line.input.value = ""
+        write_command_response(self.cmd_line)
 
     def draw(self, canvas):
         """Draw walls of the room."""
