@@ -13,7 +13,7 @@ class Player:
 
     def __init__(self, screen, cmd_line, x=100, y=100, room=rooms_dict["start_room"]):
         """Initialize player class."""
-        self.velocity = 5
+        self.velocity = 3
         self.player_size = (50, 50)
         self.image_dir = "src/images/player"
         self.rect = pygame.Rect((0, 0), self.player_size)
