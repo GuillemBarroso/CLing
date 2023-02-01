@@ -4,14 +4,14 @@ import pygame
 import pygame.locals as locals
 
 from src.connections import CONNECTIONS
-from src.maps import *  # noqa: F403
+from src.maps import rooms_dict
 from src.room import Room
 
 
 class Player:
     """Player class."""
 
-    def __init__(self, x=100, y=100, screen=None, room=START_ROOM):
+    def __init__(self, x=100, y=100, screen=None, room=rooms_dict["start_room"][0]):
         """Initialize player class."""
         self.velocity = 5
         self.player_size = (50, 50)
@@ -251,7 +251,7 @@ class Player:
             if connection[0] == door_name:
                 next_door = connection[1]
                 next_room = connection[3]
-                self.current_room = Room(self.screen, globals()[next_room])
+                self.current_room = Room(self.screen, rooms_dict[next_room][0])
                 for door in self.current_room.doors:
                     if door[1] == next_door:
                         self.rect.x, self.rect.y = (

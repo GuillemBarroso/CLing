@@ -12,6 +12,6 @@
 # Note that the position shitfs (4 and 5) are required so the player does not appear
 # on top of the door itself, which would return it back to the previous room.
 CONNECTIONS = [
-    ("D00", "D01", "START_ROOM", "CITY_MAP", 0, -50),
-    ("D01", "D00", "CITY_MAP", "START_ROOM", 0, 50),
+    ("D00", "D01", "start_room", "city_map", 0, -50),
+    ("D01", "D00", "city_map", "start_room", 0, 50),
 ]
