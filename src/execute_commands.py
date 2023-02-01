@@ -1,6 +1,6 @@
 """Module in charge of triggering CL commands."""
 
-from src.commands import cmd_dict, write_command_resonse
+from src.commands import cmd_dict, write_command_response
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 
 
@@ -22,7 +22,7 @@ def trigger_user_commands(cmd_line):
     user_command, arguments, message = get_command_from_user_input(cmd_line.user_input)
     if message:
         input.value = message
-        write_command_resonse(cmd_line)
+        write_command_response(cmd_line)
     else:
         command = cmd_dict[user_command]
         command.execute(cmd_line, arguments)

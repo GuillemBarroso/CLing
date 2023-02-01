@@ -9,9 +9,7 @@ from src.canvas import build_canvas, get_canvas
 from src.colors import BLACK, WHITE
 from src.command_line import CL
 from src.execute_commands import activate_cl_commands, trigger_user_commands
-from src.maps import rooms_dict
 from src.player import Player
-from src.room import Room
 from src.screen import Screen
 
 # Initiate pygame and give permission to use pygame's functionality.
@@ -27,8 +25,8 @@ clock = pygame.time.Clock()
 canvas = get_canvas()
 cmd_line = CL(canvas=canvas)
 screen = Screen(canvas, cmd_line)
-player = Player(screen=screen)
-room = Room(screen, rooms_dict["start_room"][0])
+player = Player(screen, cmd_line)
+# room = Room(screen, cmd_line, rooms_dict["start_room"])
 
 # Creating an Infinite loop
 run = True
