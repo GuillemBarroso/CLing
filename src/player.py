@@ -1,5 +1,7 @@
 """Module containing the player class."""
 
+import math
+
 import pygame
 import pygame.locals as locals
 
@@ -178,6 +180,7 @@ class Player:
                     self.rect.x = old_x
                 if limit_is_y:
                     self.rect.y = old_y
+
         for door in self.current_room.doors:
             if self.rect.colliderect(door.rect):
                 if door.name == "D00":
@@ -264,3 +267,20 @@ class Player:
                         break
             if door_found:
                 break
+
+    def get_closest_object_in_room(self):
+        """Find closest interactable objects to the playrer. NOW ONLY WALLS."""
+        closest_objects = []
+        distances = []
+        dist = 100
+        walls = self.current_room.walls
+        cx = self.rect.centerx
+        cy = self.rect.centery
+        for wall in walls:
+            wall_x = wall.rect.centerx
+            wall_y = wall.rect.centery
+            distance = math.sqrt(abs(cx - wall_x) ** 2 + abs(cy - wall_y) ** 2)
+            if dist > distance:
+                closest_objects.append(wall)
+                distances.append(distance)
+        return closest_objects, distances

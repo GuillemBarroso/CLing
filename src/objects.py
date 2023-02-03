@@ -13,6 +13,10 @@ class Wall:
         self.rect = pygame.Rect(x, y, width, height)
         self.color = BLACK
 
+    def look_at(self):
+        """Return message when the Wall is being looked at."""
+        return "You see a rock solid wall."
+
 
 class Door:
     """Door object."""
@@ -24,15 +28,24 @@ class Door:
         self.color = GREY
 
 
-class BreakableDoor:
+class BreakableWall:
     """Wall that can be broken."""
 
-    def __init__(self, x, y, width, height, breakable):
+    def __init__(self, x, y, width, height, name):
         """Initialize object."""
         self.rect = pygame.Rect(x, y, width, height)
-        self.is_breakable = breakable
+        self.name = name
         self.is_broken = False
+        self.color = BLACK
 
-    def break_door(self):
-        """Break door and allow to pass through."""
+    def look_at(self):
+        """Return message when the BreakableWall is being looked at."""
+        return (
+            "This wall looks slightly different than the others. You notice a small "
+            "crak. Maybe you could break that wall and scape from this damn hole!"
+        )
+
+    def break_wall(self):
+        """Break wall so it becomes a door."""
         self.is_broken = True
+        self.color = GREY

@@ -3,7 +3,7 @@
 import pygame
 
 from src.commands import write_command_response
-from src.objects import Door, Wall
+from src.objects import BreakableWall, Door, Wall
 
 
 class Room:
@@ -34,9 +34,15 @@ class Room:
                     self.walls.append(
                         Wall(x, y, self.cells_size[0], self.cells_size[1])
                     )
-                if cell == "D00" or cell == "D01":
+                if cell == "D01":
                     self.doors.append(
                         Door(x, y, self.cells_size[0], self.cells_size[1], cell)
+                    )
+                if cell == "D00":
+                    self.walls.append(
+                        BreakableWall(
+                            x, y, self.cells_size[0], self.cells_size[1], cell
+                        )
                     )
                 x += self.cells_size[0]
             x = 0

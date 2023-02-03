@@ -64,7 +64,7 @@ class Command:
         return user_args, message
 
 
-HELP_ARGUMENTS = [[("command line", "cl")]]
+HELP_ARGUMENTS = [[("command line", "cl")], "look at"]
 
 
 class Help(Command):
@@ -85,7 +85,7 @@ class Help(Command):
         }
         super().__init__(**parameters)
 
-    def execute(self, cmd_line, arguments):
+    def execute(self, cmd_line, arguments, _):
         """Execute command."""
         if arguments:
             args, message = self.parse_arguments(arguments)
@@ -155,7 +155,7 @@ class Cmd_line(Command):
         }
         super().__init__(**parameters)
 
-    def execute(self, cmd_line, arguments):
+    def execute(self, cmd_line, arguments, _):
         """Execute command."""
         args, message = self.parse_arguments(arguments)
         if message:
@@ -177,14 +177,60 @@ class Cmd_line(Command):
                     cmd_line._history = []
 
 
+class Look_at(Command):
+    """Look at command."""
+
+    def __init__(self):
+        """Initialize."""
+        parameters = {
+            "name": "look at",
+            "short_name": "look at",
+            "description": "Look at an object of the game.",
+            "extended_description": "Some objectes within the game may revel additional "
+            "information when looking at them.",
+            "arguments": [
+                "wall",
+            ],
+            "examples": ["look at wall"],
+        }
+        super().__init__(**parameters)
+
+    @staticmethod
+    def _get_clostest_object_from_player(closest_objects, distances):
+        min_distance = 1e5
+        for i, obj in enumerate(closest_objects):
+            if min_distance > distances[i]:
+                closest_object = obj
+        return closest_object
+
+    def execute(self, cmd_line, arguments, player):
+        """Execute command."""
+        args, message = self.parse_arguments(arguments)
+        if message:
+            cmd_line.input.value = message
+            write_command_response(cmd_line)
+        elif len(args) > 1:
+            cmd_line.input.value = "The 'look at' command only accepts one argument"
+            write_command_response(cmd_line)
+        else:
+            closest_objects, distances = player.get_closest_object_in_room()
+            closest_object = self._get_clostest_object_from_player(
+                closest_objects, distances
+            )
+            cmd_line.input.value = closest_object.look_at()
+            write_command_response(cmd_line)
+
+
 help = Help()
 cl = Cmd_line()
+look_at = Look_at()
 
 cmd_dict = {
     "help": help,
     "h": help,
     "command line": cl,
     "cl": cl,
+    "look at": look_at,
 }
 
 

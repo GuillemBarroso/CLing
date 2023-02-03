@@ -15,7 +15,7 @@ def activate_cl_commands(event, cmd_line):
         cmd_line.minimize()
 
 
-def trigger_user_commands(cmd_line):
+def trigger_user_commands(cmd_line, player):
     """Capture user inputs that require a response message in the CL."""
     input = cmd_line.input
 
@@ -25,7 +25,7 @@ def trigger_user_commands(cmd_line):
         write_command_response(cmd_line)
     else:
         command = cmd_dict[user_command]
-        command.execute(cmd_line, arguments)
+        command.execute(cmd_line, arguments, player)
 
 
 def get_command_from_user_input(user_input):
