@@ -2,8 +2,8 @@
 
 import pygame
 
-from src.colors import BLACK, GREY
 from src.commands import write_command_response
+from src.objects import Door, Wall
 
 
 class Room:
@@ -32,14 +32,11 @@ class Room:
                 cell = raw[i : i + 3]
                 if cell == "XXX":
                     self.walls.append(
-                        pygame.Rect(x, y, self.cells_size[0], self.cells_size[1])
+                        Wall(x, y, self.cells_size[0], self.cells_size[1])
                     )
                 if cell == "D00" or cell == "D01":
                     self.doors.append(
-                        (
-                            pygame.Rect(x, y, self.cells_size[0], self.cells_size[1]),
-                            cell,
-                        )
+                        Door(x, y, self.cells_size[0], self.cells_size[1], cell)
                     )
                 x += self.cells_size[0]
             x = 0
@@ -70,6 +67,6 @@ class Room:
     def draw(self, canvas):
         """Draw walls of the room."""
         for wall in self.walls:
-            pygame.draw.rect(canvas, BLACK, wall)
+            pygame.draw.rect(canvas, wall.color, wall.rect)
         for door in self.doors:
-            pygame.draw.rect(canvas, GREY, door[0])
+            pygame.draw.rect(canvas, door.color, door.rect)

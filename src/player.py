@@ -165,13 +165,13 @@ class Player:
         limit_is_x = False
         limit_is_y = False
         for wall in self.current_room.walls:
-            if self.rect.colliderect(wall):
+            if self.rect.colliderect(wall.rect):
                 self.rect.x -= self.vel_x
-                if self.rect.colliderect(wall):
+                if self.rect.colliderect(wall.rect):
                     limit_is_y = True
                 self.rect.x += self.vel_x
                 self.rect.y -= self.vel_y
-                if self.rect.colliderect(wall):
+                if self.rect.colliderect(wall.rect):
                     limit_is_x = True
                 self.rect.y += self.vel_y
                 if limit_is_x:
@@ -179,10 +179,10 @@ class Player:
                 if limit_is_y:
                     self.rect.y = old_y
         for door in self.current_room.doors:
-            if self.rect.colliderect(door[0]):
-                if door[1] == "D00":
+            if self.rect.colliderect(door.rect):
+                if door.name == "D00":
                     current_door = door
-                elif door[1] == "D01":
+                elif door.name == "D01":
                     current_door = door
                 self.get_connection_door(current_door)
 
@@ -246,18 +246,21 @@ class Player:
 
     def get_connection_door(self, door):
         """Find the connection for a certain door and redirect the player there."""
-        door_name = door[1]
-
+        door_found = False
         for connection in CONNECTIONS:
-            if connection[0] == door_name:
+            if connection[0] == door.name:
                 next_door = connection[1]
                 next_room = connection[3]
                 self.current_room = Room(
                     self.screen, self.cmd_line, rooms_dict[next_room]
                 )
                 for door in self.current_room.doors:
-                    if door[1] == next_door:
+                    if door.name == next_door:
                         self.rect.x, self.rect.y = (
-                            door[0].x + connection[4],
-                            door[0].y + connection[5],
+                            door.rect.x + connection[4],
+                            door.rect.y + connection[5],
                         )
+                        door_found = True
+                        break
+            if door_found:
+                break
