@@ -3,6 +3,7 @@
 import pygame
 
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
+from src.objects import BreakableWall, Door, Wall
 
 
 class Command:
@@ -203,6 +204,22 @@ class Look_at(Command):
                 closest_object = obj
         return closest_object
 
+    @staticmethod
+    def _find_user_object_among_closest_objects(closest_objects, distances, user_obj):
+        """Filter closest_objects list with only the types that the user requested."""
+        # TODO: IMPROVE THIS IF CONDITIONS THAT WILL GROW FOR ALL OBJECTS!!!!!
+        if user_obj == "wall":
+            for i, obj in enumerate(closest_objects):
+                if not type(obj) == Wall or type(obj) == BreakableWall:
+                    closest_objects.remove(obj)
+                    distances.pop(i)
+        elif user_obj == "door":
+            for i, obj in enumerate(closest_objects):
+                if not type(obj) == Door:
+                    closest_objects.remove(obj)
+                    distances.pop(i)
+        return closest_objects, distances
+
     def execute(self, cmd_line, arguments, player):
         """Execute command."""
         args, message = self.parse_arguments(arguments)
@@ -214,11 +231,25 @@ class Look_at(Command):
             write_command_response(cmd_line)
         else:
             closest_objects, distances = player.get_closest_object_in_room()
-            closest_object = self._get_clostest_object_from_player(
-                closest_objects, distances
-            )
-            cmd_line.input.value = closest_object.look_at()
-            write_command_response(cmd_line)
+            if not closest_objects:
+                cmd_line.input.value = "No nearby objects to interact with."
+                write_command_response(cmd_line)
+            else:
+                (
+                    closest_objects,
+                    distances,
+                ) = self._find_user_object_among_closest_objects(
+                    closest_objects, distances, args[0]
+                )
+                if not closest_objects:
+                    cmd_line.input.value = f"You do not see a {args[0]} nearby."
+                    write_command_response(cmd_line)
+                else:
+                    closest_object = self._get_clostest_object_from_player(
+                        closest_objects, distances
+                    )
+                    cmd_line.input.value = closest_object.look_at()
+                    write_command_response(cmd_line)
 
 
 help = Help()
