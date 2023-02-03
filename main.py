@@ -26,7 +26,6 @@ canvas = get_canvas()
 cmd_line = CL(canvas=canvas)
 screen = Screen(canvas, cmd_line)
 player = Player(screen, cmd_line)
-# room = Room(screen, cmd_line, rooms_dict["start_room"])
 
 # Creating an Infinite loop
 run = True

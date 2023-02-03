@@ -22,3 +22,17 @@ class Door:
         self.rect = pygame.Rect(x, y, width, height)
         self.name = name
         self.color = GREY
+
+
+class BreakableDoor:
+    """Wall that can be broken."""
+
+    def __init__(self, x, y, width, height, breakable):
+        """Initialize object."""
+        self.rect = pygame.Rect(x, y, width, height)
+        self.is_breakable = breakable
+        self.is_broken = False
+
+    def break_door(self):
+        """Break door and allow to pass through."""
+        self.is_broken = True
