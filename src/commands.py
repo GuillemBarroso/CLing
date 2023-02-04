@@ -2,8 +2,9 @@
 
 import pygame
 
+from src.command_line import write_command_response
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
-from src.objects import BreakableWall, Door, Wall
+from src.object_interaction import get_closest_object_requested_by_user
 
 
 class Command:
@@ -196,30 +197,6 @@ class Look_at(Command):
         }
         super().__init__(**parameters)
 
-    @staticmethod
-    def _get_clostest_object_from_player(closest_objects, distances):
-        min_distance = 1e5
-        for i, obj in enumerate(closest_objects):
-            if min_distance > distances[i]:
-                closest_object = obj
-        return closest_object
-
-    @staticmethod
-    def _find_user_object_among_closest_objects(closest_objects, distances, user_obj):
-        """Filter closest_objects list with only the types that the user requested."""
-        # TODO: IMPROVE THIS IF CONDITIONS THAT WILL GROW FOR ALL OBJECTS!!!!!
-        if user_obj == "wall":
-            for i, obj in enumerate(closest_objects):
-                if not type(obj) == Wall or type(obj) == BreakableWall:
-                    closest_objects.remove(obj)
-                    distances.pop(i)
-        elif user_obj == "door":
-            for i, obj in enumerate(closest_objects):
-                if not type(obj) == Door:
-                    closest_objects.remove(obj)
-                    distances.pop(i)
-        return closest_objects, distances
-
     def execute(self, cmd_line, arguments, player):
         """Execute command."""
         args, message = self.parse_arguments(arguments)
@@ -230,31 +207,39 @@ class Look_at(Command):
             cmd_line.input.value = "The 'look at' command only accepts one argument"
             write_command_response(cmd_line)
         else:
-            closest_objects, distances = player.get_closest_object_in_room()
-            if not closest_objects:
-                cmd_line.input.value = "No nearby objects to interact with."
-                write_command_response(cmd_line)
-            else:
-                (
-                    closest_objects,
-                    distances,
-                ) = self._find_user_object_among_closest_objects(
-                    closest_objects, distances, args[0]
-                )
-                if not closest_objects:
-                    cmd_line.input.value = f"You do not see a {args[0]} nearby."
-                    write_command_response(cmd_line)
-                else:
-                    closest_object = self._get_clostest_object_from_player(
-                        closest_objects, distances
-                    )
-                    cmd_line.input.value = closest_object.look_at()
-                    write_command_response(cmd_line)
+            closest_object = get_closest_object_requested_by_user(
+                cmd_line, args, player
+            )
+            cmd_line.input.value = closest_object.look_at()
+            write_command_response(cmd_line)
+
+
+class Break(Command):
+    """Break command."""
+
+    def __init__(self):
+        """Initialize."""
+        parameters = {
+            "name": "break",
+            "short_name": "",
+            "description": "Break an object.",
+            "extended_description": "Some objectes will be able to be broken by the player.",
+            "arguments": [
+                "wall",
+            ],
+            "examples": ["break wall"],
+        }
+        super().__init__(**parameters)
+
+    def execute(self, cmd_line, arguments, player):
+        """Execute command."""
+        pass
 
 
 help = Help()
 cl = Cmd_line()
 look_at = Look_at()
+break_ = Break()
 
 cmd_dict = {
     "help": help,
@@ -262,11 +247,5 @@ cmd_dict = {
     "command line": cl,
     "cl": cl,
     "look at": look_at,
+    "break": break_,
 }
-
-
-def write_command_response(cmd_line, prompt="  "):
-    """Write on CL the content of input.value and store it in CL history."""
-    cmd_line.input.prompt = prompt
-    cmd_line.reset_after_enter(cmd_line.input.value)
-    cmd_line.input.prompt = "> "
