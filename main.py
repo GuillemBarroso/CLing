@@ -4,7 +4,6 @@
 # Importing pygame module
 import pygame
 
-from src.activate_commands import activate_cl_commands
 from src.canvas import build_canvas, get_canvas
 from src.colors import BLACK, WHITE
 from src.command_line import CL
@@ -26,7 +25,6 @@ canvas = get_canvas()
 cmd_line = CL(canvas=canvas)
 screen = Screen(canvas, cmd_line)
 player = Player(screen, cmd_line)
-# room = Room(screen, cmd_line, rooms_dict["start_room"])
 
 # Creating an Infinite loop
 run = True
@@ -68,7 +66,7 @@ while run:
     cmd_line._user_input = cmd_line._input.update(events)
     if cmd_line._user_input:
         cmd_line.reset_after_enter(cmd_line._user_input)
-        trigger_user_commands(cmd_line)
+        trigger_user_commands(cmd_line, player)
 
     # Draws the surface object to the screen.
     pygame.display.update()

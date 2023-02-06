@@ -179,3 +179,10 @@ class CL:
         else:
             lines = [user_input]
         return lines
+
+
+def write_command_response(cmd_line, prompt="  "):
+    """Write on CL the content of input.value and store it in CL history."""
+    cmd_line.input.prompt = prompt
+    cmd_line.reset_after_enter(cmd_line.input.value)
+    cmd_line.input.prompt = "> "

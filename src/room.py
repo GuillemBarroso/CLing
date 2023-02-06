@@ -2,8 +2,8 @@
 
 import pygame
 
-from src.colors import BLACK, GREY
 from src.commands import write_command_response
+from src.objects import BreakableWall, Door, Wall
 
 
 class Room:
@@ -11,13 +11,14 @@ class Room:
 
     def __init__(self, screen, cmd_line, room=None):
         """Initialize map class."""
-        self.cells_size = (30, 30)
         self.walls = []
         self.doors = []
+        self.hidden_doors = []
         self.cmd_line = cmd_line
         self.room_map = room[0]
         self.room_description = room[1]
-        self.room_name = room[2]
+        self.cells_size = room[2]
+        self.room_name = room[3]
         self.n_cells_x = screen.surface.get_width() // self.cells_size[0]
         self.n_cells_y = screen.surface.get_height() // self.cells_size[1]
         # self._check_map_size()
@@ -32,13 +33,16 @@ class Room:
                 cell = raw[i : i + 3]
                 if cell == "XXX":
                     self.walls.append(
-                        pygame.Rect(x, y, self.cells_size[0], self.cells_size[1])
+                        Wall(x, y, self.cells_size[0], self.cells_size[1])
                     )
-                if cell == "D00" or cell == "D01":
+                if cell == "D01":
                     self.doors.append(
-                        (
-                            pygame.Rect(x, y, self.cells_size[0], self.cells_size[1]),
-                            cell,
+                        Door(x, y, self.cells_size[0], self.cells_size[1], cell)
+                    )
+                if cell == "D00":
+                    self.hidden_doors.append(
+                        BreakableWall(
+                            x, y, self.cells_size[0], self.cells_size[1], cell
                         )
                     )
                 x += self.cells_size[0]
@@ -70,6 +74,8 @@ class Room:
     def draw(self, canvas):
         """Draw walls of the room."""
         for wall in self.walls:
-            pygame.draw.rect(canvas, BLACK, wall)
+            pygame.draw.rect(canvas, wall.color, wall.rect)
         for door in self.doors:
-            pygame.draw.rect(canvas, GREY, door[0])
+            pygame.draw.rect(canvas, door.color, door.rect)
+        for door in self.hidden_doors:
+            pygame.draw.rect(canvas, door.color, door.rect)

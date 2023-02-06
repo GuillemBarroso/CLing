@@ -1,5 +1,7 @@
 """Module containing the player class."""
 
+import math
+
 import pygame
 import pygame.locals as locals
 
@@ -11,14 +13,11 @@ from src.room import Room
 class Player:
     """Player class."""
 
-    def __init__(self, screen, cmd_line, x=100, y=100, room=rooms_dict["start_room"]):
+    def __init__(self, screen, cmd_line, room=rooms_dict["start_room"]):
         """Initialize player class."""
         self.velocity = 3
         self.player_size = (50, 50)
         self.image_dir = "src/images/player"
-        self.rect = pygame.Rect((0, 0), self.player_size)
-        self.rect.x = x
-        self.rect.y = y
         self.vel_x = 0
         self.vel_y = 0
         self.player_frames = 0
@@ -26,6 +25,9 @@ class Player:
         self.screen = screen
         self.cmd_line = cmd_line
         self.current_room = Room(self.screen, self.cmd_line, room)
+        self.rect = pygame.Rect((0, 0), self.player_size)
+        self.rect.x = room[4][0]
+        self.rect.y = room[4][1]
         self._load_images()
 
     def _load_images(self):
@@ -164,27 +166,32 @@ class Player:
         # Check for illegal movements colliding with walls
         limit_is_x = False
         limit_is_y = False
-        for wall in self.current_room.walls:
-            if self.rect.colliderect(wall):
-                self.rect.x -= self.vel_x
-                if self.rect.colliderect(wall):
-                    limit_is_y = True
-                self.rect.x += self.vel_x
-                self.rect.y -= self.vel_y
-                if self.rect.colliderect(wall):
-                    limit_is_x = True
-                self.rect.y += self.vel_y
-                if limit_is_x:
-                    self.rect.x = old_x
-                if limit_is_y:
-                    self.rect.y = old_y
-        for door in self.current_room.doors:
-            if self.rect.colliderect(door[0]):
-                if door[1] == "D00":
-                    current_door = door
-                elif door[1] == "D01":
-                    current_door = door
-                self.get_connection_door(current_door)
+        all_walls = self.current_room.walls + self.current_room.hidden_doors
+        for wall in all_walls:
+            if wall.is_open == False:
+                if self.rect.colliderect(wall.rect):
+                    self.rect.x -= self.vel_x
+                    if self.rect.colliderect(wall.rect):
+                        limit_is_y = True
+                    self.rect.x += self.vel_x
+                    self.rect.y -= self.vel_y
+                    if self.rect.colliderect(wall.rect):
+                        limit_is_x = True
+                    self.rect.y += self.vel_y
+                    if limit_is_x:
+                        self.rect.x = old_x
+                    if limit_is_y:
+                        self.rect.y = old_y
+
+        all_doors = self.current_room.doors + self.current_room.hidden_doors
+        for door in all_doors:
+            if door.is_open == True:
+                if self.rect.colliderect(door.rect):
+                    if door.name == "D00":
+                        current_door = door
+                    elif door.name == "D01":
+                        current_door = door
+                    self.get_connection_door(current_door)
 
     def draw(self, canvas):
         """Draw player on canvas."""
@@ -246,18 +253,39 @@ class Player:
 
     def get_connection_door(self, door):
         """Find the connection for a certain door and redirect the player there."""
-        door_name = door[1]
-
+        door_found = False
         for connection in CONNECTIONS:
-            if connection[0] == door_name:
+            if connection[0] == door.name:
                 next_door = connection[1]
                 next_room = connection[3]
                 self.current_room = Room(
                     self.screen, self.cmd_line, rooms_dict[next_room]
                 )
-                for door in self.current_room.doors:
-                    if door[1] == next_door:
+                all_doors = self.current_room.doors + self.current_room.hidden_doors
+                for door in all_doors:
+                    if door.name == next_door:
                         self.rect.x, self.rect.y = (
-                            door[0].x + connection[4],
-                            door[0].y + connection[5],
+                            door.rect.x + connection[4],
+                            door.rect.y + connection[5],
                         )
+                        door_found = True
+                        break
+            if door_found:
+                break
+
+    def get_closest_object_in_room(self):
+        """Find closest interactable objects to the player."""
+        closest_objects = []
+        distances = []
+        dist = 100
+        cx = self.rect.centerx
+        cy = self.rect.centery
+        interact_objects = self.current_room.walls + self.current_room.hidden_doors
+        for obj in interact_objects:
+            obj_x = obj.rect.centerx
+            obj_y = obj.rect.centery
+            distance = math.sqrt(abs(cx - obj_x) ** 2 + abs(cy - obj_y) ** 2)
+            if dist > distance:
+                closest_objects.append(obj)
+                distances.append(distance)
+        return closest_objects, distances

@@ -2,7 +2,10 @@
 
 import pygame
 
+from src.command_line import write_command_response
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
+from src.object_interaction import get_closest_object_requested_by_user
+from src.objects import BreakableWall, Wall
 
 
 class Command:
@@ -64,7 +67,7 @@ class Command:
         return user_args, message
 
 
-HELP_ARGUMENTS = [[("command line", "cl")]]
+HELP_ARGUMENTS = [[("command line", "cl")], "look at"]
 
 
 class Help(Command):
@@ -85,7 +88,7 @@ class Help(Command):
         }
         super().__init__(**parameters)
 
-    def execute(self, cmd_line, arguments):
+    def execute(self, cmd_line, arguments, _):
         """Execute command."""
         if arguments:
             args, message = self.parse_arguments(arguments)
@@ -155,7 +158,7 @@ class Cmd_line(Command):
         }
         super().__init__(**parameters)
 
-    def execute(self, cmd_line, arguments):
+    def execute(self, cmd_line, arguments, _):
         """Execute command."""
         args, message = self.parse_arguments(arguments)
         if message:
@@ -177,19 +180,95 @@ class Cmd_line(Command):
                     cmd_line._history = []
 
 
+class Look_at(Command):
+    """Look at command."""
+
+    def __init__(self):
+        """Initialize."""
+        parameters = {
+            "name": "look at",
+            "short_name": "look at",
+            "description": "Look at an object of the game.",
+            "extended_description": "Some objectes within the game may revel additional "
+            "information when looking at them.",
+            "arguments": [
+                "wall",
+            ],
+            "examples": ["look at wall"],
+        }
+        super().__init__(**parameters)
+
+    def execute(self, cmd_line, arguments, player):
+        """Execute command."""
+        args, message = self.parse_arguments(arguments)
+        if message:
+            cmd_line.input.value = message
+            write_command_response(cmd_line)
+        elif len(args) > 1:
+            cmd_line.input.value = "The 'look at' command only accepts one argument"
+            write_command_response(cmd_line)
+        else:
+            if args[0] == "wall":
+                accepted_types = [Wall, BreakableWall]
+                closest_object = get_closest_object_requested_by_user(
+                    cmd_line, args, player, accepted_types
+                )
+                if closest_object:
+                    cmd_line.input.value = closest_object.look_at()
+                    write_command_response(cmd_line)
+            else:
+                cmd_line.input.value = "Unknown argument for command 'look at'."
+
+
+class Break(Command):
+    """Break command."""
+
+    def __init__(self):
+        """Initialize."""
+        parameters = {
+            "name": "break",
+            "short_name": "",
+            "description": "Break an object.",
+            "extended_description": "Some objectes will be able to be broken by the player.",
+            "arguments": [
+                "wall",
+            ],
+            "examples": ["break wall"],
+        }
+        super().__init__(**parameters)
+
+    def execute(self, cmd_line, arguments, player):
+        """Execute command."""
+        args, message = self.parse_arguments(arguments)
+        if message:
+            cmd_line.input.value = message
+            write_command_response(cmd_line)
+        elif len(args) > 1:
+            cmd_line.input.value = "The 'break' command only accepts one argument"
+            write_command_response(cmd_line)
+        else:
+            if args[0] == "wall":
+                accepted_types = [type(BreakableWall)]
+                closest_object = get_closest_object_requested_by_user(
+                    cmd_line, args, player, accepted_types
+                )
+                if closest_object:
+                    cmd_line.input.value = closest_object.break_wall()
+                    write_command_response(cmd_line)
+            else:
+                cmd_line.input.value = "Unknown argument for command 'look at'."
+
+
 help = Help()
 cl = Cmd_line()
+look_at = Look_at()
+break_ = Break()
 
 cmd_dict = {
     "help": help,
     "h": help,
     "command line": cl,
     "cl": cl,
+    "look at": look_at,
+    "break": break_,
 }
-
-
-def write_command_response(cmd_line, prompt="  "):
-    """Write on CL the content of input.value and store it in CL history."""
-    cmd_line.input.prompt = prompt
-    cmd_line.reset_after_enter(cmd_line.input.value)
-    cmd_line.input.prompt = "> "
