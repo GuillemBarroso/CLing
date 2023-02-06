@@ -14,6 +14,7 @@ class Room:
         self.cells_size = (30, 30)
         self.walls = []
         self.doors = []
+        self.hidden_doors = []
         self.cmd_line = cmd_line
         self.room_map = room[0]
         self.room_description = room[1]
@@ -39,7 +40,7 @@ class Room:
                         Door(x, y, self.cells_size[0], self.cells_size[1], cell)
                     )
                 if cell == "D00":
-                    self.walls.append(
+                    self.hidden_doors.append(
                         BreakableWall(
                             x, y, self.cells_size[0], self.cells_size[1], cell
                         )
@@ -75,4 +76,6 @@ class Room:
         for wall in self.walls:
             pygame.draw.rect(canvas, wall.color, wall.rect)
         for door in self.doors:
+            pygame.draw.rect(canvas, door.color, door.rect)
+        for door in self.hidden_doors:
             pygame.draw.rect(canvas, door.color, door.rect)
