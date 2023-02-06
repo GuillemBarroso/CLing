@@ -11,14 +11,14 @@ class Room:
 
     def __init__(self, screen, cmd_line, room=None):
         """Initialize map class."""
-        self.cells_size = (30, 30)
         self.walls = []
         self.doors = []
         self.hidden_doors = []
         self.cmd_line = cmd_line
         self.room_map = room[0]
         self.room_description = room[1]
-        self.room_name = room[2]
+        self.cells_size = room[2]
+        self.room_name = room[3]
         self.n_cells_x = screen.surface.get_width() // self.cells_size[0]
         self.n_cells_y = screen.surface.get_height() // self.cells_size[1]
         # self._check_map_size()

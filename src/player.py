@@ -13,14 +13,11 @@ from src.room import Room
 class Player:
     """Player class."""
 
-    def __init__(self, screen, cmd_line, x=100, y=100, room=rooms_dict["start_room"]):
+    def __init__(self, screen, cmd_line, room=rooms_dict["start_room"]):
         """Initialize player class."""
         self.velocity = 3
         self.player_size = (50, 50)
         self.image_dir = "src/images/player"
-        self.rect = pygame.Rect((0, 0), self.player_size)
-        self.rect.x = x
-        self.rect.y = y
         self.vel_x = 0
         self.vel_y = 0
         self.player_frames = 0
@@ -28,6 +25,9 @@ class Player:
         self.screen = screen
         self.cmd_line = cmd_line
         self.current_room = Room(self.screen, self.cmd_line, room)
+        self.rect = pygame.Rect((0, 0), self.player_size)
+        self.rect.x = room[4][0]
+        self.rect.y = room[4][1]
         self._load_images()
 
     def _load_images(self):
@@ -261,7 +261,8 @@ class Player:
                 self.current_room = Room(
                     self.screen, self.cmd_line, rooms_dict[next_room]
                 )
-                for door in self.current_room.doors:
+                all_doors = self.current_room.doors + self.current_room.hidden_doors
+                for door in all_doors:
                     if door.name == next_door:
                         self.rect.x, self.rect.y = (
                             door.rect.x + connection[4],

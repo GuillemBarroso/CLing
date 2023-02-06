@@ -1,27 +1,21 @@
 """Module containing the maps of the different rooms and its descriptions."""
 
 start_room = [
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXD00D00XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXX                                                                                                                           XXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXD00XXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXX                           XXXXXX",
+    "XXXXXX                           XXXXXX",
+    "XXXXXX                           XXXXXX",
+    "XXXXXX                           XXXXXX",
+    "XXXXXX                           XXXXXX",
+    "XXXXXX                           XXXXXX",
+    "XXXXXX                           XXXXXX",
+    "XXXXXX                           XXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 ]
-
+start_room_cell_size = (100, 50)
+start_room_initial_position = (640, 360)
 start_room_desription = (
     "As you awaken in the dimly lit room, confusion sets in. Your surroundings are unfamiliar "
     "and disorienting, leaving you feeling lost and unsure of what to do next. You quickly "
@@ -51,6 +45,7 @@ city_map = [
     "XXX                                                                                                                           XXX",
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 ]
+city_map_cell_size = (30, 30)
 
 city_map_description = (
     "As you step out of the dark and confining room, you're greeted by "
@@ -65,6 +60,12 @@ city_map_description = (
 
 # Create the dictionary with all the room maps and room descriptions
 rooms_dict = {
-    "start_room": (start_room, start_room_desription, "CAVE"),
-    "city_map": (city_map, city_map_description, "VALLEY"),
+    "start_room": (
+        start_room,
+        start_room_desription,
+        start_room_cell_size,
+        "CAVE",
+        start_room_initial_position,
+    ),
+    "city_map": (city_map, city_map_description, city_map_cell_size, "VALLEY"),
 }
