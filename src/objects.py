@@ -56,3 +56,14 @@ class BreakableWall:
         self.is_open = True
         self.color = GREY
         return "You manage to smash the wall and open a hole to pass through."
+
+
+class Tree(pygame.sprite.Sprite):
+    """Tree object."""
+
+    def __init__(self, x, y):
+        """Initialize object."""
+        # super().__init__(group)
+        self.image = pygame.image.load("src/images/env/tree.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (100, 100))
+        self.rect = self.image.get_rect(center=(x, y))

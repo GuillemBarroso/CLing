@@ -248,7 +248,7 @@ class Break(Command):
             write_command_response(cmd_line)
         else:
             if args[0] == "wall":
-                accepted_types = [type(BreakableWall)]
+                accepted_types = [BreakableWall]
                 closest_object = get_closest_object_requested_by_user(
                     cmd_line, args, player, accepted_types
                 )

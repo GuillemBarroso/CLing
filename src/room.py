@@ -3,7 +3,7 @@
 import pygame
 
 from src.commands import write_command_response
-from src.objects import BreakableWall, Door, Wall
+from src.objects import BreakableWall, Door, Tree, Wall
 
 
 class Room:
@@ -14,6 +14,7 @@ class Room:
         self.walls = []
         self.doors = []
         self.hidden_doors = []
+        self.trees = []
         self.cmd_line = cmd_line
         self.room_map = room[0]
         self.room_description = room[1]
@@ -45,6 +46,8 @@ class Room:
                             x, y, self.cells_size[0], self.cells_size[1], cell
                         )
                     )
+                if cell == "T01":
+                    self.trees.append(Tree(x, y))
                 x += self.cells_size[0]
             x = 0
             y += self.cells_size[1]
@@ -79,3 +82,5 @@ class Room:
             pygame.draw.rect(canvas, door.color, door.rect)
         for door in self.hidden_doors:
             pygame.draw.rect(canvas, door.color, door.rect)
+        for tree in self.trees:
+            canvas.blit(tree.image, (tree.rect.x, tree.rect.y))
