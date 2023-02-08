@@ -10,11 +10,12 @@ from src.maps import rooms_dict
 from src.room import Room
 
 
-class Player:
+class Player(pygame.sprite.Sprite):
     """Player class."""
 
-    def __init__(self, screen, cmd_line, room=rooms_dict["start_room"]):
+    def __init__(self, game, room=rooms_dict["start_room"]):
         """Initialize player class."""
+        self.game = game
         self.velocity = 3
         self.player_size = (50, 50)
         self.image_dir = "src/images/player"
@@ -22,13 +23,17 @@ class Player:
         self.vel_y = 0
         self.player_frames = 0
         self.vel_tolerance = 0.1
-        self.screen = screen
-        self.cmd_line = cmd_line
-        self.current_room = Room(self.screen, self.cmd_line, room)
+        self.screen = self.game.screen
+        self.cmd_line = self.game.cmd_line
+        self.current_room = Room(self.game, room)
         self.rect = pygame.Rect((0, 0), self.player_size)
         self.rect.x = room[4][0]
         self.rect.y = room[4][1]
         self._load_images()
+        self.image = None
+        self._layer = 1
+        self.groups = self.game.all_sprites
+        pygame.sprite.Sprite.__init__(self, self.groups)
 
     def _load_images(self):
         n_images_walking = 5
@@ -72,18 +77,17 @@ class Player:
             if self.player_frames >= 30:
                 self.player_frames = 1
             if self.player_frames < 5:
-                player_image = player_images[0]
+                self.image = player_images[0]
             elif self.player_frames < 10:
-                player_image = player_images[1]
+                self.image = player_images[1]
             elif self.player_frames < 15:
-                player_image = player_images[2]
+                self.image = player_images[2]
             elif self.player_frames < 20:
-                player_image = player_images[3]
+                self.image = player_images[3]
             elif self.player_frames < 30:
-                player_image = player_images[4]
+                self.image = player_images[4]
         elif state == "standing":
-            player_image = player_images[0]
-        return player_image
+            self.image = player_images[0]
 
     def apply_event(self, event):
         """Change the value of the direction variable according to event."""
@@ -193,6 +197,10 @@ class Player:
                         current_door = door
                     self.get_connection_door(current_door)
 
+    def update(self):
+        """Update sprite."""
+        pass
+
     def draw(self, canvas):
         """Draw player on canvas."""
         if (
@@ -205,51 +213,33 @@ class Player:
 
         facing = False
         if self.facing_NE:
-            player_image = self._get_player_image_per_frame(
-                self.player_images_north_east, state
-            )
+            self._get_player_image_per_frame(self.player_images_north_east, state)
             facing = True
         if self.facing_NW:
-            player_image = self._get_player_image_per_frame(
-                self.player_images_north_west, state
-            )
+            self._get_player_image_per_frame(self.player_images_north_west, state)
             facing = True
         if self.facing_SE:
-            player_image = self._get_player_image_per_frame(
-                self.player_images_south_east, state
-            )
+            self._get_player_image_per_frame(self.player_images_south_east, state)
             facing = True
         if self.facing_SW:
-            player_image = self._get_player_image_per_frame(
-                self.player_images_south_west, state
-            )
+            self._get_player_image_per_frame(self.player_images_south_west, state)
             facing = True
         if self.facing_N:
-            player_image = self._get_player_image_per_frame(
-                self.player_images_north, state
-            )
+            self._get_player_image_per_frame(self.player_images_north, state)
             facing = True
         if self.facing_W:
-            player_image = self._get_player_image_per_frame(
-                self.player_images_west, state
-            )
+            self._get_player_image_per_frame(self.player_images_west, state)
             facing = True
         if self.facing_E:
-            player_image = self._get_player_image_per_frame(
-                self.player_images_east, state
-            )
+            self._get_player_image_per_frame(self.player_images_east, state)
             facing = True
         if self.facing_S:
-            player_image = self._get_player_image_per_frame(
-                self.player_images_south, state
-            )
+            self._get_player_image_per_frame(self.player_images_south, state)
 
         if not facing:
-            player_image = self._get_player_image_per_frame(
-                self.player_images_south, state
-            )
+            self._get_player_image_per_frame(self.player_images_south, state)
 
-        canvas.blit(player_image, (self.rect.x, self.rect.y))
+        canvas.blit(self.image, (self.rect.x, self.rect.y))
 
     def get_connection_door(self, door):
         """Find the connection for a certain door and redirect the player there."""

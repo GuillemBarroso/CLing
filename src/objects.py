@@ -5,14 +5,27 @@ import pygame
 from src.colors import BLACK, GREY
 
 
-class Wall:
+class Wall(pygame.sprite.Sprite):
     """Wall object."""
 
-    def __init__(self, x, y, width, height):
+    def __init__(self, game, x, y, width, height):
         """Initialize object."""
-        self.rect = pygame.Rect(x, y, width, height)
         self.color = BLACK
+        self.image = pygame.Surface([width, height])
+        self.image.fill(self.color)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+        self._layer = 1
+        self.groups = game.all_sprites
+        pygame.sprite.Sprite.__init__(self, self.groups)
+
         self.is_open = False
+
+    def update(self):
+        """Update sprite."""
+        pass
 
     def look_at(self):
         """Return message when the Wall is being looked at."""
@@ -23,26 +36,50 @@ class Wall:
         return "You cannot break a rock solid wall!"
 
 
-class Door:
+class Door(pygame.sprite.Sprite):
     """Door object."""
 
-    def __init__(self, x, y, width, height, name):
+    def __init__(self, game, x, y, width, height, name):
         """Initialize object."""
-        self.rect = pygame.Rect(x, y, width, height)
-        self.name = name
         self.color = GREY
+        self.image = pygame.Surface([width, height])
+        self.image.fill(self.color)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.name = name
         self.is_open = True
 
+        self._layer = 1
+        self.groups = game.all_sprites
+        pygame.sprite.Sprite.__init__(self, self.groups)
 
-class BreakableWall:
+    def update(self):
+        """Update sprite."""
+        pass
+
+
+class BreakableWall(pygame.sprite.Sprite):
     """Wall that can be broken."""
 
-    def __init__(self, x, y, width, height, name):
+    def __init__(self, game, x, y, width, height, name):
         """Initialize object."""
-        self.rect = pygame.Rect(x, y, width, height)
+        self.color = BLACK
+        self.image = pygame.Surface([width, height])
+        self.image.fill(self.color)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
         self.name = name
         self.is_open = False
-        self.color = BLACK
+
+        self._layer = 1
+        self.groups = game.all_sprites
+        pygame.sprite.Sprite.__init__(self, self.groups)
+
+    def update(self):
+        """Update sprite."""
+        pass
 
     def look_at(self):
         """Return message when the BreakableWall is being looked at."""

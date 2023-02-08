@@ -9,18 +9,19 @@ from src.objects import BreakableWall, Door, Wall
 class Room:
     """Room class."""
 
-    def __init__(self, screen, cmd_line, room=None):
+    def __init__(self, game, room=None):
         """Initialize map class."""
+        self.game = game
         self.walls = []
         self.doors = []
         self.hidden_doors = []
-        self.cmd_line = cmd_line
+        self.cmd_line = self.game.cmd_line
         self.room_map = room[0]
         self.room_description = room[1]
         self.cells_size = room[2]
         self.room_name = room[3]
-        self.n_cells_x = screen.surface.get_width() // self.cells_size[0]
-        self.n_cells_y = screen.surface.get_height() // self.cells_size[1]
+        self.n_cells_x = self.game.screen.surface.get_width() // self.cells_size[0]
+        self.n_cells_y = self.game.screen.surface.get_height() // self.cells_size[1]
         # self._check_map_size()
         self._build()
         self._display_room_description()
@@ -33,16 +34,28 @@ class Room:
                 cell = raw[i : i + 3]
                 if cell == "XXX":
                     self.walls.append(
-                        Wall(x, y, self.cells_size[0], self.cells_size[1])
+                        Wall(self.game, x, y, self.cells_size[0], self.cells_size[1])
                     )
                 if cell == "D01":
                     self.doors.append(
-                        Door(x, y, self.cells_size[0], self.cells_size[1], cell)
+                        Door(
+                            self.game,
+                            x,
+                            y,
+                            self.cells_size[0],
+                            self.cells_size[1],
+                            cell,
+                        )
                     )
                 if cell == "D00":
                     self.hidden_doors.append(
                         BreakableWall(
-                            x, y, self.cells_size[0], self.cells_size[1], cell
+                            self.game,
+                            x,
+                            y,
+                            self.cells_size[0],
+                            self.cells_size[1],
+                            cell,
                         )
                     )
                 x += self.cells_size[0]
