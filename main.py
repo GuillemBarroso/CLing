@@ -42,6 +42,7 @@ while run:
             quit()
 
         activate_cl_commands(event, cmd_line)
+        cmd_line.check_focus(event)
 
     # Build layout
     build_canvas(canvas=canvas, screen=screen, cmd_line=cmd_line)
