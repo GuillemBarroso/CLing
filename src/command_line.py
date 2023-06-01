@@ -22,8 +22,7 @@ class CL:
         self._history = []
         self._surface = self._get_surface(self._width, self._height)
         self._input = self._get_input(self._height)
-        self._input.focus = True
-        # This allows to always be able to type. This can be changed in the future.
+        self._input.focus = False
         self._full_screen = False
         self._user_input = ""
         self._scroll_id = 0
@@ -36,7 +35,7 @@ class CL:
             maxlength=80,
             color=WHITE,
             y=(vertical_location - self._line_height),
-            prompt="> ",
+            prompt="",
         )
 
     @staticmethod
@@ -97,6 +96,29 @@ class CL:
         """Return number of shown rows for CL history."""
         return self._n_rows_shown
 
+    def check_prompt(self):
+        """Check the CL prompt."""
+        if self._input.focus:
+            self._input.prompt = "> "
+        else:
+            self._input.prompt = ""
+
+    def check_focus(self, event):
+        """Check whether CL is on focus mode or not."""
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN and self._input.focus == False:
+                self._input.focus = True
+            elif (
+                event.key == pygame.K_RETURN
+                and self._input.focus == True
+                and self._input.value == ""
+            ):
+                self._input.focus = False
+            if event.key == pygame.K_ESCAPE:
+                self._input.focus = False
+                self._input.value = ""
+        self.check_prompt()
+
     def draw_history(self):
         """Draw command line's history on command line."""
         for i_line in range(self._n_rows_shown):
@@ -121,6 +143,8 @@ class CL:
 
         # Reset input and print
         self._input.value = ""
+        self._input.focus = False
+        self.check_prompt()
         self._input.draw(self._surface)
 
     def maximize(self):
@@ -183,6 +207,6 @@ class CL:
 
 def write_command_response(cmd_line, prompt="  "):
     """Write on CL the content of input.value and store it in CL history."""
+    cmd_line.input.focus = False
     cmd_line.input.prompt = prompt
     cmd_line.reset_after_enter(cmd_line.input.value)
-    cmd_line.input.prompt = "> "
