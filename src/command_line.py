@@ -23,7 +23,6 @@ class CL:
         self._surface = self._get_surface(self._width, self._height)
         self._input = self._get_input(self._height)
         self._input.focus = False
-        # This allows to always be able to type. This can be changed in the future.
         self._full_screen = False
         self._user_input = ""
         self._scroll_id = 0
@@ -211,4 +210,3 @@ def write_command_response(cmd_line, prompt="  "):
     cmd_line.input.focus = False
     cmd_line.input.prompt = prompt
     cmd_line.reset_after_enter(cmd_line.input.value)
-    # cmd_line.input.prompt = "> "
