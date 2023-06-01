@@ -115,16 +115,16 @@ class Player:
         self.facing_SW = False
 
         # Changing the coordinates of the player
-        if key_pressed_is[locals.K_LEFT] and not key_pressed_is[locals.K_RIGHT]:
+        if key_pressed_is[locals.K_a] and not key_pressed_is[locals.K_d]:
             self.vel_x -= self.velocity
             self.facing_W = True
-        if key_pressed_is[locals.K_RIGHT] and not key_pressed_is[locals.K_LEFT]:
+        if key_pressed_is[locals.K_d] and not key_pressed_is[locals.K_a]:
             self.vel_x += self.velocity
             self.facing_E = True
-        if key_pressed_is[locals.K_UP] and not key_pressed_is[locals.K_DOWN]:
+        if key_pressed_is[locals.K_w] and not key_pressed_is[locals.K_s]:
             self.vel_y -= self.velocity
             self.facing_N = True
-        if key_pressed_is[locals.K_DOWN] and not key_pressed_is[locals.K_UP]:
+        if key_pressed_is[locals.K_s] and not key_pressed_is[locals.K_w]:
             self.vel_y += self.velocity
             self.facing_S = True
 
