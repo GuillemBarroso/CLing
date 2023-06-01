@@ -115,6 +115,9 @@ class CL:
                 and self._input.value == ""
             ):
                 self._input.focus = False
+            if event.key == pygame.K_ESCAPE:
+                self._input.focus = False
+                self._input.value = ""
         self.check_prompt()
 
     def draw_history(self):
