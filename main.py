@@ -50,7 +50,8 @@ while run:
     # Draw elements on screen
     if not cmd_line.full_screen:
         screen.surface.fill(WHITE)
-        player.move()
+        if not cmd_line.input.focus:
+            player.move()
         player.draw(screen.surface)
         player.current_room.draw(screen.surface)
 

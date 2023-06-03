@@ -3,7 +3,7 @@
 import pygame
 
 from src.commands import write_command_response
-from src.objects import BreakableWall, Door, Wall
+from src.objects import NPC, BreakableWall, Door, Wall
 
 
 class Room:
@@ -14,6 +14,7 @@ class Room:
         self.walls = []
         self.doors = []
         self.hidden_doors = []
+        self.npcs = []
         self.cmd_line = cmd_line
         self.room_map = room[0]
         self.room_description = room[1]
@@ -21,6 +22,11 @@ class Room:
         self.room_name = room[3]
         self.n_cells_x = screen.surface.get_width() // self.cells_size[0]
         self.n_cells_y = screen.surface.get_height() // self.cells_size[1]
+        ## TODO: move the loading image and scale it properly
+        self.img_guide = pygame.image.load(
+            "src/images/NPCs/npc_guide.jpg"
+        ).convert_alpha()
+        self.img_guide = pygame.transform.scale(self.img_guide, (30, 30))
         # self._check_map_size()
         self._build()
         self._display_room_description()
@@ -43,6 +49,17 @@ class Room:
                     self.hidden_doors.append(
                         BreakableWall(
                             x, y, self.cells_size[0], self.cells_size[1], cell
+                        )
+                    )
+                if cell == "g01":
+                    self.npcs.append(
+                        NPC(
+                            x,
+                            y,
+                            self.cells_size[0],
+                            self.cells_size[1],
+                            "test",
+                            self.img_guide,
                         )
                     )
                 x += self.cells_size[0]
@@ -79,3 +96,5 @@ class Room:
             pygame.draw.rect(canvas, door.color, door.rect)
         for door in self.hidden_doors:
             pygame.draw.rect(canvas, door.color, door.rect)
+        for npc in self.npcs:
+            canvas.blit(npc.image, (npc.rect.x, npc.rect.y))

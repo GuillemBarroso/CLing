@@ -26,7 +26,7 @@ start_room_desription = (
 
 city_map = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XXX                                                                                                                           XXX",
+    "XXX                                                                     g01                                                   XXX",
     "XXX                                                                                                                           XXX",
     "XXX                                    XXXXXXXXXXXX                                                                           XXX",
     "XXX                                    XXXXXXXXXXXX                                                                           XXX",

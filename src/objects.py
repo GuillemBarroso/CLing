@@ -56,3 +56,14 @@ class BreakableWall:
         self.is_open = True
         self.color = GREY
         return "You manage to smash the wall and open a hole to pass through."
+
+
+class NPC:
+    """Class for Non-Playable Characters."""
+
+    def __init__(self, x, y, width, height, name, image):
+        """Initialize object."""
+        self.rect = pygame.Rect(x, y, width, height)
+        self.name = name
+        self.image = image
+        self.is_open = False

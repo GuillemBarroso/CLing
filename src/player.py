@@ -87,6 +87,7 @@ class Player:
 
     def apply_event(self, event):
         """Change the value of the direction variable according to event."""
+        ## TODO: change this to ASDW
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RIGHT:
                 self.direction = "E"
@@ -166,7 +167,11 @@ class Player:
         # Check for illegal movements colliding with walls
         limit_is_x = False
         limit_is_y = False
-        all_walls = self.current_room.walls + self.current_room.hidden_doors
+        all_walls = (
+            self.current_room.walls
+            + self.current_room.hidden_doors
+            + self.current_room.npcs
+        )
         for wall in all_walls:
             if wall.is_open == False:
                 if self.rect.colliderect(wall.rect):
