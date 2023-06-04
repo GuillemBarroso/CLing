@@ -1,5 +1,7 @@
 """Module containing a generic entity."""
 
+from math import sin
+
 import pygame
 
 
@@ -40,3 +42,11 @@ class Entity(pygame.sprite.Sprite):
                         self.hitbox.bottom = sprite.hitbox.top
                     if self.direction.y < 0:  # moving up
                         self.hitbox.top = sprite.hitbox.bottom
+
+    def wave_value(self):
+        """Sign wave going from 0 to 255 several times."""
+        value = sin(pygame.time.get_ticks())
+        if value >= 0:
+            return 255
+        else:
+            return 0
