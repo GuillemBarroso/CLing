@@ -1,10 +1,11 @@
 """Level and Camera objects file."""
 
-from random import choice
+from random import choice, randint
 
 import pygame
 
 from src.enemy import Enemy
+from src.particles import AnimationPlayer
 from src.player import Player
 from src.settings import TILESIZE
 from src.tile import Tile
@@ -35,6 +36,9 @@ class Level:
 
         # User interface
         self.ui = UI(screen)
+
+        # Particles
+        self.animation_player = AnimationPlayer()
 
     def create_map(self):
         """Create map from csv files."""
@@ -105,6 +109,7 @@ class Level:
                                     [self.visible_sprites, self.attackable_sprites],
                                     self.obstacle_sprites,
                                     self.damage_player,
+                                    self.trigger_death_particles,
                                 )
 
     def create_attack(self):
@@ -136,6 +141,12 @@ class Level:
                 if collision_sprites:
                     for target_sprite in collision_sprites:
                         if target_sprite.sprite_type == "grass":
+                            pos = target_sprite.rect.center
+                            offset = pygame.math.Vector2(0, 75)
+                            for leaf in range(randint(3, 6)):
+                                self.animation_player.create_grass_particles(
+                                    pos - offset, [self.visible_sprites]
+                                )
                             target_sprite.kill()
                         else:
                             target_sprite.get_damage(
@@ -148,7 +159,15 @@ class Level:
             self.player.health -= amount
             self.player.vulnerable = False
             self.player.hurt_time = pygame.time.get_ticks()
-            # particles
+
+            # Spawn particles
+            self.animation_player.create_particles(
+                attack_type, self.player.rect.center, [self.visible_sprites]
+            )
+
+    def trigger_death_particles(self, pos, particle_type):
+        """Display particles upon monster death."""
+        self.animation_player.create_particles(particle_type, pos, self.visible_sprites)
 
     def run(self):
         """Update and draw game."""

@@ -10,7 +10,15 @@ from src.utils import import_folder
 class Enemy(Entity):
     """Class containing the Enemey information."""
 
-    def __init__(self, monster_name, pos, groups, obstacle_sprites, damage_player):
+    def __init__(
+        self,
+        monster_name,
+        pos,
+        groups,
+        obstacle_sprites,
+        damage_player,
+        trigger_death_particles,
+    ):
         """Initialize Enemy object."""
         super().__init__(groups)
         self.sprite_type = "enemy"
@@ -43,6 +51,7 @@ class Enemy(Entity):
         self.attack_time = None
         self.attack_cooldown = 400  # TODO: move to monster data
         self.damage_player = damage_player
+        self.trigger_death_particles = trigger_death_particles
 
         # Invencibility timer
         self.vulnerable = True
@@ -135,6 +144,7 @@ class Enemy(Entity):
         """Check if enemies are dead."""
         if self.health <= 0:
             self.kill()
+            self.trigger_death_particles(self.rect.center, self.monster_name)
 
     def hit_reaction(self):
         """Backwards reaction of enemies upon being hit."""

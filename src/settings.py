@@ -102,7 +102,7 @@ monster_data = {
         "health": 70,
         "exp": 120,
         "damage": 6,
-        "attack_type": "leave_attack",
+        "attack_type": "leaf_attack",
         "attack_sound": "src/audio/attack/slash.wav",
         "speed": 3,
         "resistance": 3,
