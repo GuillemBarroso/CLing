@@ -7,6 +7,7 @@ import pygame
 from src.player import Player
 from src.settings import TILESIZE
 from src.tile import Tile
+from src.ui import UI
 from src.utils import import_csv_layout, import_folder
 from src.weapon import Weapon
 
@@ -28,6 +29,9 @@ class Level:
 
         # Sprite setup
         self.create_map()
+
+        # User interface
+        self.ui = UI(screen)
 
     def create_map(self):
         """Create map from csv files."""
@@ -90,6 +94,7 @@ class Level:
         """Update and draw game."""
         self.visible_sprites.custom_draw(self.player)
         self.visible_sprites.update()
+        self.ui.display(self.player)
 
 
 class YsortedCameraGroup(pygame.sprite.Group):

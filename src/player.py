@@ -31,7 +31,6 @@ class Player(pygame.sprite.Sprite):
 
         # Movement
         self.direction = pygame.math.Vector2()
-        self.speed = 5
         self.attacking = False
         self.attack_cooldown = 400
         self.attack_time = None
@@ -42,6 +41,16 @@ class Player(pygame.sprite.Sprite):
         self.destroy_attack = destroy_attack
         self.weapon_index = 0
         self.weapon = list(weapon_data.keys())[self.weapon_index]
+        self.can_switch_weapon = True
+        self.weapon_switch_time = None
+        self.switch_duration_cooldown = 200
+
+        # Stats
+        self.stats = {"health": 100, "energy": 60, "attack": 10, "magic": 4, "speed": 5}
+        self.health = self.stats["health"]
+        self.energy = self.stats["energy"]
+        self.speed = self.stats["speed"]
+        self.exp = 123
 
     def import_player_assets(self):
         """Import player images to construct walking animations."""
@@ -94,11 +103,22 @@ class Player(pygame.sprite.Sprite):
                 self.attack_time = pygame.time.get_ticks()
                 self.create_attack()
 
-            # Attack input
+            # Magic input
             if keys_pressed[pygame.K_LCTRL]:
                 self.attacking = True
                 self.attack_time = pygame.time.get_ticks()
                 self.create_attack()
+
+            # Switch weapon
+            if keys_pressed[pygame.K_q] and self.can_switch_weapon:
+                self.can_switch_weapon = False
+                self.weapon_switch_time = pygame.time.get_ticks()
+                if self.weapon_index < len(list(weapon_data.keys())) - 1:
+                    self.weapon_index += 1
+                else:
+                    self.weapon_index = 0
+
+                self.weapon = list(weapon_data.keys())[self.weapon_index]
 
     def get_status(self):
         """Get player status based on direction."""
@@ -157,6 +177,10 @@ class Player(pygame.sprite.Sprite):
             if current_time - self.attack_time >= self.attack_cooldown:
                 self.attacking = False
                 self.destroy_attack()
+
+        if not self.can_switch_weapon:
+            if current_time - self.weapon_switch_time >= self.switch_duration_cooldown:
+                self.can_switch_weapon = True
 
     def animate(self):
         """Animate player movement."""
