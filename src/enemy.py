@@ -43,6 +43,11 @@ class Enemy(Entity):
         self.attack_time = None
         self.attack_cooldown = 400  # TODO: move to monster data
 
+        # Invencibility timer
+        self.vulnerable = True
+        self.hit_time = None
+        self.invencibility_duration = 300
+
     def import_graphics(self, name):
         """Import graphics to animate enemies."""
         self.animations = {"idle": [], "move": [], "attack": []}
@@ -96,18 +101,38 @@ class Enemy(Entity):
         self.image = animation[int(self.frame_index)]
         self.rect = self.image.get_rect(center=self.hitbox.center)
 
-    def cooldown(self):
+    def cooldowns(self):
         """Enemy attack cooldown."""
+        current_time = pygame.time.get_ticks()
         if not self.can_attack:
-            current_time = pygame.time.get_ticks()
             if current_time - self.attack_time >= self.attack_cooldown:
                 self.can_attack = True
+
+        if not self.vulnerable:
+            if current_time - self.hit_time >= self.invencibility_duration:
+                self.vulnerable = True
+
+    def get_damage(self, player, attack_type):
+        """Get player damage to enemies."""
+        if self.vulnerable:
+            if attack_type == "weapon":
+                self.health -= player.get_full_weapon_damage()
+            else:
+                pass  # magic damage
+            self.hit_time = pygame.time.get_ticks()
+            self.vulnerable = False
+
+    def check_death(self):
+        """Check if enemies are dead."""
+        if self.health <= 0:
+            self.kill()
 
     def update(self):
         """Update enemies actions."""
         self.move(self.speed)
         self.animate()
-        self.cooldown()
+        self.cooldowns()
+        self.check_death()
 
     def enemy_update(self, player):
         """Update enemy."""
