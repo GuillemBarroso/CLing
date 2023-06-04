@@ -5,6 +5,7 @@ from random import choice, randint
 import pygame
 
 from src.enemy import Enemy
+from src.magic import MagicPlayer
 from src.particles import AnimationPlayer
 from src.player import Player
 from src.settings import TILESIZE
@@ -39,6 +40,7 @@ class Level:
 
         # Particles
         self.animation_player = AnimationPlayer()
+        self.magic_player = MagicPlayer(self.animation_player)
 
     def create_map(self):
         """Create map from csv files."""
@@ -120,10 +122,13 @@ class Level:
 
     def create_magic(self, style, strength, cost):
         """Create magic spell based on current magic style."""
-        # TODO: Finish this to display magic images
-        print(style)
-        print(cost)
-        print(strength)
+        if style == "heal":
+            self.magic_player.heal(self.player, strength, cost, [self.visible_sprites])
+
+        if style == "flame":
+            self.magic_player.flame(
+                self.player, cost, [self.visible_sprites, self.attack_sprites]
+            )
 
     def destroy_attack(self):
         """Destroy current attack image."""
