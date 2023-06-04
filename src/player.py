@@ -5,6 +5,9 @@
 import pygame
 import pygame.locals as locals
 
+from src.settings import weapon_data
+from src.utils import import_folder
+
 # from src.connections import CONNECTIONS
 # from src.maps import rooms_dict
 # from src.room import Room
@@ -13,35 +16,110 @@ import pygame.locals as locals
 class Player(pygame.sprite.Sprite):
     """Player object that will control the player in the game."""
 
-    def __init__(self, pos, groups, obstacle_sprites):
+    def __init__(self, pos, groups, obstacle_sprites, create_attack, destroy_attack):
         """Initialize player object."""
         super().__init__(groups)
         self.image = pygame.image.load("src/images/test/player.png").convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(0, -26)
 
+        # Player graphics setup
+        self.import_player_assets()
+        self.status = "down"
+        self.frame_index = 0
+        self.animation_speed = 0.15
+
+        # Movement
         self.direction = pygame.math.Vector2()
         self.speed = 5
-
+        self.attacking = False
+        self.attack_cooldown = 400
+        self.attack_time = None
         self.obstacle_sprites = obstacle_sprites
+
+        # Weapon
+        self.create_attack = create_attack
+        self.destroy_attack = destroy_attack
+        self.weapon_index = 0
+        self.weapon = list(weapon_data.keys())[self.weapon_index]
+
+    def import_player_assets(self):
+        """Import player images to construct walking animations."""
+        character_path = "src/images/player_test"
+        self.animations = {
+            "up": [],
+            "down": [],
+            "left": [],
+            "right": [],
+            "up_idle": [],
+            "down_idle": [],
+            "left_idle": [],
+            "right_idle": [],
+            "up_attack": [],
+            "down_attack": [],
+            "left_attack": [],
+            "right_attack": [],
+        }
+
+        for animation in self.animations.keys():
+            full_path = character_path + "/" + animation
+            self.animations[animation] = import_folder(full_path)
 
     def input(self):
         """Get user's input from keyboard."""
-        keys_pressed = pygame.key.get_pressed()
+        if not self.attacking:
+            keys_pressed = pygame.key.get_pressed()
+            # Move input
+            if keys_pressed[locals.K_w]:
+                self.direction.y = -1
+                self.status = "up"
+            elif keys_pressed[locals.K_s]:
+                self.status = "down"
+                self.direction.y = 1
+            else:
+                self.direction.y = 0
 
-        if keys_pressed[locals.K_w]:
-            self.direction.y = -1
-        elif keys_pressed[locals.K_s]:
-            self.direction.y = 1
-        else:
-            self.direction.y = 0
+            if keys_pressed[locals.K_a]:
+                self.direction.x = -1
+                self.status = "left"
+            elif keys_pressed[locals.K_d]:
+                self.direction.x = 1
+                self.status = "right"
+            else:
+                self.direction.x = 0
 
-        if keys_pressed[locals.K_a]:
-            self.direction.x = -1
-        elif keys_pressed[locals.K_d]:
-            self.direction.x = 1
-        else:
+            # Attack input
+            if keys_pressed[pygame.K_SPACE]:
+                self.attacking = True
+                self.attack_time = pygame.time.get_ticks()
+                self.create_attack()
+
+            # Attack input
+            if keys_pressed[pygame.K_LCTRL]:
+                self.attacking = True
+                self.attack_time = pygame.time.get_ticks()
+                self.create_attack()
+
+    def get_status(self):
+        """Get player status based on direction."""
+        # idle
+        if self.direction.x == 0 and self.direction.y == 0:
+            if not "idle" in self.status and not "attack" in self.status:
+                self.status = self.status + "_idle"
+
+        # attack
+        if self.attacking:
+            # TODO: do we want this?? not able to move while attacking?
             self.direction.x = 0
+            self.direction.y = 0
+            if not "attack" in self.status:
+                if "idle" in self.status:
+                    self.status = self.status.replace("_idle", "_attack")
+                else:
+                    self.status = self.status + "_attack"
+        else:
+            if "attack" in self.status:
+                self.status = self.status.replace("_attack", "")
 
     def move(self, speed):
         """Move player rectangle and hitbox (used for overlapping)."""
@@ -71,9 +149,34 @@ class Player(pygame.sprite.Sprite):
                     if self.direction.y < 0:  # moving up
                         self.hitbox.top = sprite.hitbox.bottom
 
+    def cooldowns(self):
+        """Set attack cooldowns."""
+        current_time = pygame.time.get_ticks()
+
+        if self.attacking:
+            if current_time - self.attack_time >= self.attack_cooldown:
+                self.attacking = False
+                self.destroy_attack()
+
+    def animate(self):
+        """Animate player movement."""
+        animation = self.animations[self.status]
+
+        # Loop over frame index
+        self.frame_index += self.animation_speed
+        if self.frame_index >= len(animation):
+            self.frame_index = 0
+
+        # Set image
+        self.image = animation[int(self.frame_index)]
+        self.rect = self.image.get_rect(center=self.hitbox.center)
+
     def update(self):
         """Update player."""
         self.input()
+        self.cooldowns()
+        self.get_status()
+        self.animate()
         self.move(self.speed)
 
 

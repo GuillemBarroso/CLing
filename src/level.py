@@ -8,6 +8,7 @@ from src.player import Player
 from src.settings import TILESIZE
 from src.tile import Tile
 from src.utils import import_csv_layout, import_folder
+from src.weapon import Weapon
 
 
 class Level:
@@ -21,6 +22,9 @@ class Level:
         # Sprite group setup
         self.visible_sprites = YsortedCameraGroup(self.display_surface)
         self.obstacle_sprites = pygame.sprite.Group()
+
+        # Attack sprites
+        self.current_attack = None
 
         # Sprite setup
         self.create_map()
@@ -65,8 +69,22 @@ class Level:
                             )
 
         self.player = Player(
-            (2000, 1200), [self.visible_sprites], self.obstacle_sprites
+            (2000, 1200),
+            [self.visible_sprites],
+            self.obstacle_sprites,
+            self.create_attack,
+            self.destroy_attack,
         )
+
+    def create_attack(self):
+        """Create attack based on current attack."""
+        self.current_attack = Weapon(self.player, [self.visible_sprites])
+
+    def destroy_attack(self):
+        """Destroy current attack image."""
+        if self.current_attack:
+            self.current_attack.kill()
+        self.current_attack = None
 
     def run(self):
         """Update and draw game."""
