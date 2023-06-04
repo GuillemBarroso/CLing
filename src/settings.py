@@ -48,3 +48,17 @@ weapon_data = {
     },
     "sai": {"cooldown": 80, "damage": 10, "graphic": "src/images/weapons/sai/full.png"},
 }
+
+# Magic settings
+magic_data = {
+    "flame": {
+        "strength": 5,
+        "cost": 20,
+        "graphic": "src/images/particles/flame/fire.png",
+    },
+    "heal": {
+        "strength": 20,
+        "cost": 10,
+        "graphic": "src/images/particles/heal/heal.png",
+    },
+}

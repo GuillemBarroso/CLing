@@ -15,6 +15,7 @@ from src.settings import (
     UI_BORDER_COLOR_ACTIVE,
     UI_FONT,
     UI_FONT_SIZE,
+    magic_data,
     weapon_data,
 )
 
@@ -38,6 +39,12 @@ class UI:
             path = weapon["graphic"]
             weapon = pygame.image.load(path).convert_alpha()
             self.weapon_graphics.append(weapon)
+
+        # Convert magic dict
+        self.magic_graphics = []
+        for magic in magic_data.values():
+            magic = pygame.image.load(magic["graphic"]).convert_alpha()
+            self.magic_graphics.append(magic)
 
     def show_bar(self, current, max_amount, bg_rect, color):
         """Display generic bar."""
@@ -79,12 +86,21 @@ class UI:
 
     def weapon_overlay(self, weapon_index, has_switched):
         """Construct weapon image in screen."""
-        bg_rect = self.selection_box(
-            10, 470, has_switched
-        )  # TODO: DO THIS DEPENDING ON SCREEN SIZE
+        # TODO: DO THIS DEPENDING ON SCREEN SIZE
+        bg_rect = self.selection_box(10, 470, has_switched)
         weapon_surf = self.weapon_graphics[weapon_index]
         weapon_rect = weapon_surf.get_rect(center=bg_rect.center)
+
         self.display_surface.blit(weapon_surf, weapon_rect)
+
+    def magic_overlay(self, magic_index, has_switched):
+        """Construct magic image in screen."""
+        # TODO: DO THIS DEPENDING ON SCREEN SIZE
+        bg_rect = self.selection_box(95, 470, has_switched)
+        magic_surf = self.magic_graphics[magic_index]
+        magic_rect = magic_surf.get_rect(center=bg_rect.center)
+
+        self.display_surface.blit(magic_surf, magic_rect)
 
     def display(self, player):
         """Display all UI elements."""
@@ -95,5 +111,7 @@ class UI:
             player.energy, player.stats["energy"], self.energy_bar_rect, ENERGY_COLOR
         )
         self.show_exp(player.exp)
+
         self.weapon_overlay(player.weapon_index, not player.can_switch_weapon)
+        self.magic_overlay(player.magic_index, not player.can_switch_magic)
         # self.selection_box(95, 470) # TODO: DO THIS DEPENDING ON SCREEN SIZE

@@ -78,11 +78,19 @@ class Level:
             self.obstacle_sprites,
             self.create_attack,
             self.destroy_attack,
+            self.create_magic,
         )
 
     def create_attack(self):
         """Create attack based on current attack."""
         self.current_attack = Weapon(self.player, [self.visible_sprites])
+
+    def create_magic(self, style, strength, cost):
+        """Create magic spell based on current magic style."""
+        # TODO: Finish this to display magic images
+        print(style)
+        print(cost)
+        print(strength)
 
     def destroy_attack(self):
         """Destroy current attack image."""
