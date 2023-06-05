@@ -78,6 +78,10 @@ class Player(Entity):
         self.hurt_time = None
         self.invulnerablility_duration = 500
 
+        # Sound effects
+        self.weapon_attack_sound = pygame.mixer.Sound("src/audio/sword.wav")
+        self.weapon_attack_sound.set_volume(0.4)
+
     def import_player_assets(self):
         """Import player images to construct walking animations."""
         character_path = "src/images/player_test"
@@ -128,6 +132,7 @@ class Player(Entity):
                 self.attacking = True
                 self.attack_time = pygame.time.get_ticks()
                 self.create_attack()
+                self.weapon_attack_sound.play()
 
             # Magic input
             if keys_pressed[pygame.K_LCTRL]:

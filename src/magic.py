@@ -13,10 +13,15 @@ class MagicPlayer:
     def __init__(self, animation_player):
         """Initialize object."""
         self.animation_player = animation_player
+        self.sounds = {  ## TODO: Move this to settings
+            "heal": pygame.mixer.Sound("src/audio/heal.wav"),
+            "flame": pygame.mixer.Sound("src/audio/Fire.wav"),
+        }
 
     def heal(self, player, strength, cost, groups):
         """Heal spell."""
         if player.energy >= cost:
+            self.sounds["heal"].play()
             player.health += strength
             player.energy -= cost
             if player.health >= player.stats["health"]:
@@ -28,6 +33,7 @@ class MagicPlayer:
         """Flame spell."""
         if player.energy >= cost:
             player.energy -= cost
+            self.sounds["flame"].play()
 
             if player.status.split("_")[0] == "right":
                 direction = pygame.math.Vector2(1, 0)
