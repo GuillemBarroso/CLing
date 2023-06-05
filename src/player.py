@@ -6,7 +6,7 @@ import pygame
 import pygame.locals as locals
 
 from src.entity import Entity
-from src.settings import magic_data, weapon_data
+from src.settings import HITBOX_OFFSET, magic_data, weapon_data
 from src.utils import import_folder
 
 # from src.connections import CONNECTIONS
@@ -24,7 +24,7 @@ class Player(Entity):
         super().__init__(groups)
         self.image = pygame.image.load("src/images/test/player.png").convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
-        self.hitbox = self.rect.inflate(0, -26)
+        self.hitbox = self.rect.inflate(-6, HITBOX_OFFSET["player"])
 
         # Player graphics setup
         self.import_player_assets()

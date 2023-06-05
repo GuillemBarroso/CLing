@@ -9,7 +9,7 @@ from src.colors import BLACK
 from src.command_line import CL
 from src.level import Level
 from src.screen import Screen
-from src.settings import FPS
+from src.settings import FPS, WATER_COLOR
 
 
 class Game:
@@ -47,7 +47,7 @@ class Game:
             build_canvas(self.canvas, self.screen, self.cmd_line)
 
             # Draw on screen
-            self.screen.surface.fill(BLACK)
+            self.screen.surface.fill(WATER_COLOR)
             self.level.run()
 
             # Draw on command line
