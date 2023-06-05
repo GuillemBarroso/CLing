@@ -1,8 +1,10 @@
 """Module containing the canvas class."""
 import pygame
 
+from src.settings import HEIGHT, WIDTH
 
-def get_canvas(WIDTH=1280, HEIGHT=720):
+
+def get_canvas():
     """Return canvas with a certain width and height."""
     return pygame.display.set_mode((WIDTH, HEIGHT))
 
