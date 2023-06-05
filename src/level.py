@@ -19,11 +19,14 @@ from src.weapon import Weapon
 class Level:
     """Level object that will draw objects in a layered manner."""
 
-    def __init__(self, screen):
+    def __init__(self, screen, cl_focus):
         """Initialize Level object."""
         # Get displace surface
         self.display_surface = screen.surface
         self.game_paused = False
+
+        # Get CL focus info
+        self.cl_focus = cl_focus
 
         # Sprite group setup
         self.visible_sprites = YsortedCameraGroup(self.display_surface)
@@ -152,7 +155,7 @@ class Level:
                         if target_sprite.sprite_type == "grass":
                             pos = target_sprite.rect.center
                             offset = pygame.math.Vector2(0, 75)
-                            for leaf in range(randint(3, 6)):
+                            for _ in range(randint(3, 6)):
                                 self.animation_player.create_grass_particles(
                                     pos - offset, [self.visible_sprites]
                                 )
@@ -186,15 +189,16 @@ class Level:
         """Open upgrade menu with the game being paused."""
         self.game_paused = not self.game_paused
 
-    def run(self):
+    def run(self, cl_focus):
         """Update and draw game."""
-        self.visible_sprites.custom_draw(self.player)
+        self.visible_sprites.custom_draw(self.player, cl_focus)
         self.ui.display(self.player)
 
         if self.game_paused:
             self.upgrade.display()
         else:
             self.visible_sprites.update()
+            self.visible_sprites.player_update(cl_focus)
             self.visible_sprites.enemy_update(self.player)
             self.player_attack_logic()
 
@@ -214,7 +218,7 @@ class YsortedCameraGroup(pygame.sprite.Group):
         self.floor_surf = pygame.image.load("src/images/map/map_ground.png").convert()
         self.floor_rect = self.floor_surf.get_rect(topleft=(0, 0))
 
-    def custom_draw(self, player):
+    def custom_draw(self, player, cl_focus):
         """Custom draw for sprites."""
         # Get offset
         self.offset.x = player.rect.centerx - self.half_width
@@ -238,3 +242,14 @@ class YsortedCameraGroup(pygame.sprite.Group):
         ]
         for enemy in enemy_sprites:
             enemy.enemy_update(player)
+
+    def player_update(self, cl_focus):
+        """Update player sprite."""
+        player_sprites = [
+            sprite
+            for sprite in self.sprites()
+            if hasattr(sprite, "sprite_type") and sprite.sprite_type == "player"
+        ]
+        for player in player_sprites:
+            if not cl_focus:
+                player.player_movement()

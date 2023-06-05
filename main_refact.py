@@ -7,6 +7,7 @@ import pygame
 from src.canvas import build_canvas, get_canvas
 from src.colors import BLACK
 from src.command_line import CL
+from src.execute_commands import activate_cl_commands
 from src.level import Level
 from src.screen import Screen
 from src.settings import FPS, WATER_COLOR
@@ -26,7 +27,7 @@ class Game:
         self.cmd_line = CL(canvas=self.canvas)
         self.screen = Screen(self.canvas, self.cmd_line)
 
-        self.level = Level(self.screen)
+        self.level = Level(self.screen, self.cmd_line.input.focus)
 
         # Sound effect
         main_sound = pygame.mixer.Sound("src/audio/main.ogg")
@@ -42,8 +43,11 @@ class Game:
                     pygame.quit()
                     sys.exit()
 
+                # Check for events interacting with the CL
+                activate_cl_commands(event, self.cmd_line)
                 self.cmd_line.check_focus(event)
 
+                # Pause game and toggle menu screen
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_m:
                         self.level.toggle_menu()
@@ -53,7 +57,13 @@ class Game:
 
             # Draw on screen
             self.screen.surface.fill(WATER_COLOR)
-            self.level.run()
+            self.level.run(self.cmd_line.input.focus)
+
+            # Enable scrolling when CL in full screen mode
+            if self.cmd_line.full_screen == True:
+                if len(self.cmd_line.history) > self.cmd_line.n_rows_shown:
+                    self.cmd_line.scrolling()
+                    self.cmd_line.draw_scroll_bar()
 
             # Draw on command line
             self.cmd_line.surface.fill(BLACK)
@@ -62,7 +72,7 @@ class Game:
             self.cmd_line._user_input = self.cmd_line._input.update(events)
             if self.cmd_line._user_input:
                 self.cmd_line.reset_after_enter(self.cmd_line._user_input)
-                # trigger_user_commands(cmd_line, player)
+                # trigger_user_commands(self.cmd_line, player)
 
             # Update
             pygame.display.update()

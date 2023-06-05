@@ -22,6 +22,7 @@ class Player(Entity):
     ):
         """Initialize player object."""
         super().__init__(groups)
+        self.sprite_type = "player"
         self.image = pygame.image.load("src/images/test/player.png").convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(-6, HITBOX_OFFSET["player"])
@@ -261,13 +262,16 @@ class Player(Entity):
             self.energy = self.stats["energy"]
 
     def update(self):
-        """Update player."""
+        """Update player but not its movement."""
         self.input()
         self.cooldowns()
+        self.energy_recovery()
+
+    def player_movement(self):
+        """Apply player movement from keyboard input."""
         self.get_status()
         self.animate()
         self.move(self.stats["speed"])
-        self.energy_recovery()
 
 
 # class Player:
