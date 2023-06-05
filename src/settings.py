@@ -24,6 +24,12 @@ UI_BG_COLOR = "#222222"
 UI_BORDER_COLOR = "#111111"
 TEXT_COLOR = "#EEEEEE"
 
+# Upgrade menu
+TEXT_COLOR_SELECTED = "#111111"
+BAR_COLOR = "#EEEEEE"
+BAR_COLOR_SELECTED = "#111111"
+UPGRADE_BG_COLOR_SELECTED = "#EEEEEE"
+
 # Weapon settings
 weapon_data = {
     "sword": {

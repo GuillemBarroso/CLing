@@ -11,6 +11,7 @@ from src.player import Player
 from src.settings import TILESIZE
 from src.tile import Tile
 from src.ui import UI
+from src.upgrade import Upgrade
 from src.utils import import_csv_layout, import_folder
 from src.weapon import Weapon
 
@@ -22,6 +23,7 @@ class Level:
         """Initialize Level object."""
         # Get displace surface
         self.display_surface = screen.surface
+        self.game_paused = False
 
         # Sprite group setup
         self.visible_sprites = YsortedCameraGroup(self.display_surface)
@@ -37,6 +39,7 @@ class Level:
 
         # User interface
         self.ui = UI(screen)
+        self.upgrade = Upgrade(self.player)
 
         # Particles
         self.animation_player = AnimationPlayer()
@@ -112,6 +115,7 @@ class Level:
                                     self.obstacle_sprites,
                                     self.damage_player,
                                     self.trigger_death_particles,
+                                    self.add_exp,
                                 )
 
     def create_attack(self):
@@ -174,13 +178,25 @@ class Level:
         """Display particles upon monster death."""
         self.animation_player.create_particles(particle_type, pos, self.visible_sprites)
 
+    def add_exp(self, amount):
+        """Gain player experience."""
+        self.player.exp += amount
+
+    def toggle_menu(self):
+        """Open upgrade menu with the game being paused."""
+        self.game_paused = not self.game_paused
+
     def run(self):
         """Update and draw game."""
         self.visible_sprites.custom_draw(self.player)
-        self.visible_sprites.update()
-        self.visible_sprites.enemy_update(self.player)
-        self.player_attack_logic()
         self.ui.display(self.player)
+
+        if self.game_paused:
+            self.upgrade.display()
+        else:
+            self.visible_sprites.update()
+            self.visible_sprites.enemy_update(self.player)
+            self.player_attack_logic()
 
 
 class YsortedCameraGroup(pygame.sprite.Group):

@@ -36,7 +36,12 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+
                 self.cmd_line.check_focus(event)
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_m:
+                        self.level.toggle_menu()
 
             # Build layout
             build_canvas(self.canvas, self.screen, self.cmd_line)
