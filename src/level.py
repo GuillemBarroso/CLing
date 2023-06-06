@@ -19,11 +19,14 @@ from src.weapon import Weapon
 class Level:
     """Level object that will draw objects in a layered manner."""
 
-    def __init__(self, screen):
+    def __init__(self, screen, cmd_line):
         """Initialize Level object."""
         # Get displace surface
         self.display_surface = screen.surface
         self.game_paused = False
+
+        # Get Command Line focus info
+        self.cmd_line = cmd_line
 
         # Sprite group setup
         self.visible_sprites = YsortedCameraGroup(self.display_surface)
@@ -152,7 +155,7 @@ class Level:
                         if target_sprite.sprite_type == "grass":
                             pos = target_sprite.rect.center
                             offset = pygame.math.Vector2(0, 75)
-                            for leaf in range(randint(3, 6)):
+                            for _ in range(randint(3, 6)):
                                 self.animation_player.create_grass_particles(
                                     pos - offset, [self.visible_sprites]
                                 )
@@ -186,17 +189,25 @@ class Level:
         """Open upgrade menu with the game being paused."""
         self.game_paused = not self.game_paused
 
-    def run(self):
-        """Update and draw game."""
+    def run(self, events):
+        """Run al Level interactions, draw and display UI, sprites and CL."""
         self.visible_sprites.custom_draw(self.player)
         self.ui.display(self.player)
 
         if self.game_paused:
+            # Display menu when game is paused
             self.upgrade.display()
         else:
+            # Game actions
             self.visible_sprites.update()
+            self.visible_sprites.player_update(self.cmd_line.input.focus)
             self.visible_sprites.enemy_update(self.player)
             self.player_attack_logic()
+
+        # Command Line actions
+        self.cmd_line.scrolling_full_screen()
+        self.cmd_line.draw()
+        self.cmd_line.resolve_user_commands(events, self.player)
 
 
 class YsortedCameraGroup(pygame.sprite.Group):
@@ -238,3 +249,14 @@ class YsortedCameraGroup(pygame.sprite.Group):
         ]
         for enemy in enemy_sprites:
             enemy.enemy_update(player)
+
+    def player_update(self, cl_focus):
+        """Update player sprite."""
+        player_sprites = [
+            sprite
+            for sprite in self.sprites()
+            if hasattr(sprite, "sprite_type") and sprite.sprite_type == "player"
+        ]
+        for player in player_sprites:
+            if not cl_focus:
+                player.player_movement()

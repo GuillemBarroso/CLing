@@ -1,6 +1,6 @@
 """Module containing the player class."""
 
-# import math
+import math
 
 import pygame
 import pygame.locals as locals
@@ -22,6 +22,7 @@ class Player(Entity):
     ):
         """Initialize player object."""
         super().__init__(groups)
+        self.sprite_type = "player"
         self.image = pygame.image.load("src/images/test/player.png").convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(-6, HITBOX_OFFSET["player"])
@@ -261,13 +262,33 @@ class Player(Entity):
             self.energy = self.stats["energy"]
 
     def update(self):
-        """Update player."""
-        self.input()
+        """Update player but not its movement."""
         self.cooldowns()
+        self.energy_recovery()
+
+    def player_movement(self):
+        """Apply player movement from keyboard input."""
+        self.input()
         self.get_status()
         self.animate()
         self.move(self.stats["speed"])
-        self.energy_recovery()
+
+    def get_closest_object_in_room(self):
+        """Find closest interactable objects to the player."""
+        closest_objects = []
+        distances = []
+        dist = 100
+        cx = self.rect.centerx
+        cy = self.rect.centery
+        interact_objects = self.current_room.walls + self.current_room.hidden_doors
+        for obj in interact_objects:
+            obj_x = obj.rect.centerx
+            obj_y = obj.rect.centery
+            distance = math.sqrt(abs(cx - obj_x) ** 2 + abs(cy - obj_y) ** 2)
+            if dist > distance:
+                closest_objects.append(obj)
+                distances.append(distance)
+        return closest_objects, distances
 
 
 # class Player:
