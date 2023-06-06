@@ -52,10 +52,10 @@ class Game:
                     if event.key == pygame.K_m:
                         self.level.toggle_menu()
 
-            # Build layout
+            # Build layout screen + command line
             build_canvas(self.canvas, self.screen, self.cmd_line)
 
-            # Draw on screen
+            # Draw and update on screen and command line
             self.screen.surface.fill(WATER_COLOR)
             self.level.run(events)
 
