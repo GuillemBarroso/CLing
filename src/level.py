@@ -19,14 +19,14 @@ from src.weapon import Weapon
 class Level:
     """Level object that will draw objects in a layered manner."""
 
-    def __init__(self, screen, cl_focus):
+    def __init__(self, screen, cmd_line):
         """Initialize Level object."""
         # Get displace surface
         self.display_surface = screen.surface
         self.game_paused = False
 
-        # Get CL focus info
-        self.cl_focus = cl_focus
+        # Get Command Line focus info
+        self.cmd_line = cmd_line
 
         # Sprite group setup
         self.visible_sprites = YsortedCameraGroup(self.display_surface)
@@ -189,16 +189,16 @@ class Level:
         """Open upgrade menu with the game being paused."""
         self.game_paused = not self.game_paused
 
-    def run(self, cl_focus):
+    def run(self):
         """Update and draw game."""
-        self.visible_sprites.custom_draw(self.player, cl_focus)
+        self.visible_sprites.custom_draw(self.player)
         self.ui.display(self.player)
 
         if self.game_paused:
             self.upgrade.display()
         else:
             self.visible_sprites.update()
-            self.visible_sprites.player_update(cl_focus)
+            self.visible_sprites.player_update(self.cmd_line.input.focus)
             self.visible_sprites.enemy_update(self.player)
             self.player_attack_logic()
 
@@ -218,7 +218,7 @@ class YsortedCameraGroup(pygame.sprite.Group):
         self.floor_surf = pygame.image.load("src/images/map/map_ground.png").convert()
         self.floor_rect = self.floor_surf.get_rect(topleft=(0, 0))
 
-    def custom_draw(self, player, cl_focus):
+    def custom_draw(self, player):
         """Custom draw for sprites."""
         # Get offset
         self.offset.x = player.rect.centerx - self.half_width

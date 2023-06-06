@@ -263,12 +263,12 @@ class Player(Entity):
 
     def update(self):
         """Update player but not its movement."""
-        self.input()
         self.cooldowns()
         self.energy_recovery()
 
     def player_movement(self):
         """Apply player movement from keyboard input."""
+        self.input()
         self.get_status()
         self.animate()
         self.move(self.stats["speed"])

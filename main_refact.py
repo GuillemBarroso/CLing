@@ -27,11 +27,12 @@ class Game:
         self.cmd_line = CL(canvas=self.canvas)
         self.screen = Screen(self.canvas, self.cmd_line)
 
-        self.level = Level(self.screen, self.cmd_line.input.focus)
+        # Initialize Level object with all game interactions
+        self.level = Level(self.screen, self.cmd_line)
 
         # Sound effect
         main_sound = pygame.mixer.Sound("src/audio/main.ogg")
-        main_sound.set_volume(0.5)
+        main_sound.set_volume(0.1)
         main_sound.play(loops=-1)
 
     def run(self):
@@ -57,7 +58,7 @@ class Game:
 
             # Draw on screen
             self.screen.surface.fill(WATER_COLOR)
-            self.level.run(self.cmd_line.input.focus)
+            self.level.run()
 
             # Enable scrolling when CL in full screen mode
             if self.cmd_line.full_screen == True:
