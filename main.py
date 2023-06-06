@@ -6,7 +6,6 @@ import pygame
 
 from src.canvas import build_canvas, get_canvas
 from src.command_line import CL
-from src.execute_commands import activate_cl_commands
 from src.level import Level
 from src.screen import Screen
 from src.settings import FPS, WATER_COLOR
@@ -44,7 +43,7 @@ class Game:
                     sys.exit()
 
                 # Check for events interacting with the CL
-                activate_cl_commands(event, self.cmd_line)
+                self.cmd_line.activate_cl_commands(event)
                 self.cmd_line.check_focus(event)
 
                 # Pause game and toggle menu screen

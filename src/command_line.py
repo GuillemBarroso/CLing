@@ -4,6 +4,7 @@ import pygame.locals as locals
 
 from src.colors import BLACK, WHITE
 from src.commands import cmd_dict
+from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 from src.eztext import Input
 
 
@@ -255,3 +256,16 @@ class CL:
         if self._user_input:
             self.reset_after_enter(self._user_input)
             self.trigger_user_commands(player)
+
+    def activate_cl_commands(self, event):
+        """Activate CL commands coming from events."""
+        # Enter CL full screen mode
+        if event.type == CMD_FULL_SCREEN:
+            self.maximize()
+            self._full_screen = True
+
+        # Return to regular CL view
+        if event.type == CMD_REGULAR_SIZE:
+            self.minimize()
+            self._full_screen = False
+            self.input.focus = False
