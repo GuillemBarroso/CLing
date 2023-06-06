@@ -2,7 +2,6 @@
 
 import pygame
 
-from src.command_line import write_command_response
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
 from src.object_interaction import get_closest_object_requested_by_user
 from src.objects import BreakableWall, Wall
@@ -94,12 +93,12 @@ class Help(Command):
             args, message = self.parse_arguments(arguments)
             if message:
                 cmd_line.input.value = message
-                write_command_response(cmd_line)
+                cmd_line.write_command_response(cmd_line)
             elif len(args) > 1:
                 cmd_line.input.value = (
                     "When using 'help', only one command can be requested."
                 )
-                write_command_response(cmd_line)
+                cmd_line.write_command_response(cmd_line)
             else:
                 cmd = cmd_dict[args[0]]
                 self.get_cmd_help_string(cmd_line, cmd)
@@ -112,9 +111,9 @@ class Help(Command):
             f"'{cmd.name}' or '{cmd.short_name}': "
             f"{cmd.description} {cmd.extended_description}"
         )
-        write_command_response(cmd_line)
+        cmd_line.write_command_response(cmd_line)
         cmd_line.input.value = "Available arguments are:"
-        write_command_response(cmd_line)
+        cmd_line.write_command_response(cmd_line)
         for arg in cmd.arguments:
             out_string = f"  - "
             if type(arg) == list:
@@ -131,12 +130,12 @@ class Help(Command):
             elif type(arg) == str:
                 out_string += arg
             cmd_line.input.value = out_string
-            write_command_response(cmd_line)
+            cmd_line.write_command_response(cmd_line)
         cmd_line.input.value = "Usage:"
-        write_command_response(cmd_line)
+        cmd_line.write_command_response(cmd_line)
         for example in cmd.examples:
             cmd_line.input.value = f"  - {example}"
-            write_command_response(cmd_line)
+            cmd_line.write_command_response(cmd_line)
 
 
 class Cmd_line(Command):
@@ -163,7 +162,7 @@ class Cmd_line(Command):
         args, message = self.parse_arguments(arguments)
         if message:
             cmd_line.input.value = message
-            write_command_response(cmd_line)
+            cmd_line.write_command_response(cmd_line)
         else:
             for i, arg in enumerate(args):
                 if arg == "full screen" or arg == "fc":
@@ -203,10 +202,10 @@ class Look_at(Command):
         args, message = self.parse_arguments(arguments)
         if message:
             cmd_line.input.value = message
-            write_command_response(cmd_line)
+            cmd_line.write_command_response(cmd_line)
         elif len(args) > 1:
             cmd_line.input.value = "The 'look at' command only accepts one argument"
-            write_command_response(cmd_line)
+            cmd_line.write_command_response(cmd_line)
         else:
             if args[0] == "wall":
                 accepted_types = [Wall, BreakableWall]
@@ -215,7 +214,7 @@ class Look_at(Command):
                 )
                 if closest_object:
                     cmd_line.input.value = closest_object.look_at()
-                    write_command_response(cmd_line)
+                    cmd_line.write_command_response(cmd_line)
             else:
                 cmd_line.input.value = "Unknown argument for command 'look at'."
 
@@ -242,10 +241,10 @@ class Break(Command):
         args, message = self.parse_arguments(arguments)
         if message:
             cmd_line.input.value = message
-            write_command_response(cmd_line)
+            cmd_line.write_command_response(cmd_line)
         elif len(args) > 1:
             cmd_line.input.value = "The 'break' command only accepts one argument"
-            write_command_response(cmd_line)
+            cmd_line.write_command_response(cmd_line)
         else:
             if args[0] == "wall":
                 accepted_types = [type(BreakableWall)]
@@ -254,7 +253,7 @@ class Break(Command):
                 )
                 if closest_object:
                     cmd_line.input.value = closest_object.break_wall()
-                    write_command_response(cmd_line)
+                    cmd_line.write_command_response(cmd_line)
             else:
                 cmd_line.input.value = "Unknown argument for command 'look at'."
 

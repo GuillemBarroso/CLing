@@ -1,14 +1,12 @@
 """Module with functions that determine the interaction of the player with the room objects."""
 
-from src.command_line import write_command_response
-
 
 def get_closest_object_requested_by_user(cmd_line, args, player, accepted_types):
     """Return the closest user-requested object to the player."""
     closest_objects, distances = player.get_closest_object_in_room()
     if not closest_objects:
         cmd_line.input.value = "No nearby objects to interact with."
-        write_command_response(cmd_line)
+        cmd_line.write_command_response(cmd_line)
         closest_object = None
     else:
         (closest_objects, distances,) = find_user_object_among_closest_objects(
@@ -16,7 +14,7 @@ def get_closest_object_requested_by_user(cmd_line, args, player, accepted_types)
         )
         if not closest_objects:
             cmd_line.input.value = f"You do not see a {args[0]} nearby."
-            write_command_response(cmd_line)
+            cmd_line.write_command_response(cmd_line)
         else:
             closest_object = get_clostest_object_from_player(closest_objects, distances)
     return closest_object

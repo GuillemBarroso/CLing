@@ -1,6 +1,6 @@
 """Module containing the player class."""
 
-# import math
+import math
 
 import pygame
 import pygame.locals as locals
@@ -272,6 +272,23 @@ class Player(Entity):
         self.get_status()
         self.animate()
         self.move(self.stats["speed"])
+
+    def get_closest_object_in_room(self):
+        """Find closest interactable objects to the player."""
+        closest_objects = []
+        distances = []
+        dist = 100
+        cx = self.rect.centerx
+        cy = self.rect.centery
+        interact_objects = self.current_room.walls + self.current_room.hidden_doors
+        for obj in interact_objects:
+            obj_x = obj.rect.centerx
+            obj_y = obj.rect.centery
+            distance = math.sqrt(abs(cx - obj_x) ** 2 + abs(cy - obj_y) ** 2)
+            if dist > distance:
+                closest_objects.append(obj)
+                distances.append(distance)
+        return closest_objects, distances
 
 
 # class Player:

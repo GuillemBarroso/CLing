@@ -189,18 +189,25 @@ class Level:
         """Open upgrade menu with the game being paused."""
         self.game_paused = not self.game_paused
 
-    def run(self):
-        """Update and draw game."""
+    def run(self, events):
+        """Run al Level interactions, draw and display UI, sprites and CL."""
         self.visible_sprites.custom_draw(self.player)
         self.ui.display(self.player)
 
         if self.game_paused:
+            # Display menu when game is paused
             self.upgrade.display()
         else:
+            # Game actions
             self.visible_sprites.update()
             self.visible_sprites.player_update(self.cmd_line.input.focus)
             self.visible_sprites.enemy_update(self.player)
             self.player_attack_logic()
+
+        # Command Line actions
+        self.cmd_line.scrolling_full_screen()
+        self.cmd_line.draw()
+        self.cmd_line.resolve_user_commands(events, self.player)
 
 
 class YsortedCameraGroup(pygame.sprite.Group):

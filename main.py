@@ -1,74 +1,69 @@
-"""Main module of the game. Run this module to start the game."""
+"""Main file of the game."""
 
+import sys
 
-# Importing pygame module
 import pygame
 
 from src.canvas import build_canvas, get_canvas
-from src.colors import BLACK, WHITE
 from src.command_line import CL
-from src.execute_commands import activate_cl_commands, trigger_user_commands
-from src.player import Player
+from src.execute_commands import activate_cl_commands
+from src.level import Level
 from src.screen import Screen
+from src.settings import FPS, WATER_COLOR
 
-# Initiate pygame and give permission to use pygame's functionality.
-pygame.init()
 
-# Add caption in the window
-pygame.display.set_caption("CLing")
+class Game:
+    """Game object."""
 
-# Initializing the clock. Clocks are used to track and control the frame-rate of a game
-clock = pygame.time.Clock()
+    def __init__(self):
+        """Initialize pygame and set caption."""
+        pygame.init()
+        pygame.display.set_caption("CLing")
+        self.clock = pygame.time.Clock()
 
-# Initialize objects
-canvas = get_canvas()
-cmd_line = CL(canvas=canvas)
-screen = Screen(canvas, cmd_line)
-player = Player(screen, cmd_line)
+        # Create canvas with a screen and a command line
+        self.canvas = get_canvas()
+        self.cmd_line = CL(canvas=self.canvas)
+        self.screen = Screen(self.canvas, self.cmd_line)
 
-# Creating an Infinite loop
-run = True
-while run:
-    # Set the frame rates to 60 fps
-    clock.tick(60)
+        # Initialize Level object with all game interactions
+        self.level = Level(self.screen, self.cmd_line)
 
-    # Iterate over the list of Event objects that was returned by pygame.event.get() method.
-    events = pygame.event.get()
-    for event in events:
-        # Closing the window and program if the type of the event is QUIT
-        if event.type == pygame.QUIT:
-            run = False
-            pygame.quit()
-            quit()
+        # Sound effect
+        main_sound = pygame.mixer.Sound("src/audio/main.ogg")
+        main_sound.set_volume(0.01)
+        main_sound.play(loops=-1)
 
-        activate_cl_commands(event, cmd_line)
-        cmd_line.check_focus(event)
+    def run(self):
+        """Run game."""
+        while True:
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-    # Build layout
-    build_canvas(canvas=canvas, screen=screen, cmd_line=cmd_line)
+                # Check for events interacting with the CL
+                activate_cl_commands(event, self.cmd_line)
+                self.cmd_line.check_focus(event)
 
-    # Draw elements on screen
-    if not cmd_line.full_screen:
-        screen.surface.fill(WHITE)
-        if not cmd_line.input.focus:
-            player.move()
-        player.draw(screen.surface)
-        player.current_room.draw(screen.surface)
+                # Pause game and toggle menu screen
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_m:
+                        self.level.toggle_menu()
 
-    # Enable scrolling when CL in full screen mode
-    if cmd_line.full_screen == True:
-        if len(cmd_line.history) > cmd_line.n_rows_shown:
-            cmd_line.scrolling()
-            cmd_line.draw_scroll_bar()
+            # Build layout
+            build_canvas(self.canvas, self.screen, self.cmd_line)
 
-    # Draw elements on cmd_line
-    cmd_line.surface.fill(BLACK)
-    cmd_line.input.draw(cmd_line.surface)
-    cmd_line.draw_history()
-    cmd_line._user_input = cmd_line._input.update(events)
-    if cmd_line._user_input:
-        cmd_line.reset_after_enter(cmd_line._user_input)
-        trigger_user_commands(cmd_line, player)
+            # Draw on screen
+            self.screen.surface.fill(WATER_COLOR)
+            self.level.run(events)
 
-    # Draws the surface object to the screen.
-    pygame.display.update()
+            # Update
+            pygame.display.update()
+            self.clock.tick(FPS)
+
+
+if __name__ == "__main__":
+    game = Game()
+    game.run()

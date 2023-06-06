@@ -2,7 +2,8 @@
 import pygame
 import pygame.locals as locals
 
-from src.colors import WHITE
+from src.colors import BLACK, WHITE
+from src.commands import cmd_dict
 from src.eztext import Input
 
 
@@ -105,18 +106,20 @@ class CL:
 
     def check_focus(self, event):
         """Check whether CL is on focus mode or not."""
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN and self._input.focus == False:
-                self._input.focus = True
-            elif (
-                event.key == pygame.K_RETURN
-                and self._input.focus == True
-                and self._input.value == ""
-            ):
-                self._input.focus = False
-            if event.key == pygame.K_ESCAPE:
-                self._input.focus = False
-                self._input.value = ""
+        if not self.full_screen:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN and self._input.focus == False:
+                    self._input.focus = True
+                elif (
+                    event.key == pygame.K_RETURN
+                    and self._input.focus == True
+                    and self._input.value == ""
+                ):
+                    self._input.focus = False
+                if event.key == pygame.K_ESCAPE:
+                    self._input.focus = False
+                    self._input.value = ""
+
         self.check_prompt()
 
     def draw_history(self):
@@ -143,7 +146,8 @@ class CL:
 
         # Reset input and print
         self._input.value = ""
-        self._input.focus = False
+        if not self.full_screen:
+            self._input.focus = False
         self.check_prompt()
         self._input.draw(self._surface)
 
@@ -204,9 +208,50 @@ class CL:
             lines = [user_input]
         return lines
 
+    @staticmethod
+    def get_command_from_user_input(user_input):
+        """Return main command and the arguments introduced by the user."""
+        for command in cmd_dict.keys():
+            index_ini = user_input.find(command)
+            if not index_ini == -1:
+                break
+        else:
+            message = f"Command '{user_input}' is not a valid command"
+            return None, None, message
+        assert index_ini == 0, "The command must be introduced in the first place"
+        index_end = len(command)
+        return user_input[index_ini:index_end], user_input[index_end:], ""
 
-def write_command_response(cmd_line, prompt="  "):
-    """Write on CL the content of input.value and store it in CL history."""
-    cmd_line.input.focus = False
-    cmd_line.input.prompt = prompt
-    cmd_line.reset_after_enter(cmd_line.input.value)
+    def trigger_user_commands(self, player):
+        """Capture user inputs that require a response message in the CL."""
+        input = self.input
+
+        user_command, arguments, message = self.get_command_from_user_input(
+            self.user_input
+        )
+        if message:
+            input.value = message
+            self.reset_after_enter(self.input.value)
+        else:
+            command = cmd_dict[user_command]
+            command.execute(self, arguments, player)
+
+    def scrolling_full_screen(self):
+        """Enable scrolling when CL in full screen mode."""
+        if self.full_screen == True:
+            if len(self.history) > self.n_rows_shown:
+                self.scrolling()
+                self.draw_scroll_bar()
+
+    def draw(self):
+        """Draw on command line."""
+        self.surface.fill(BLACK)
+        self.input.draw(self.surface)
+        self.draw_history()
+
+    def resolve_user_commands(self, events, player):
+        """Resolve commands introduced by the user via command line."""
+        self._user_input = self._input.update(events)
+        if self._user_input:
+            self.reset_after_enter(self._user_input)
+            self.trigger_user_commands(player)
