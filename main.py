@@ -46,10 +46,10 @@ class Game:
                 self.cmd_line.activate_cl_commands(event, self.level)
                 self.cmd_line.check_focus(event)
 
-                # Pause game and toggle menu screen
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_m:
-                        self.level.toggle_menu()
+                # # Pause game and toggle menu screen
+                # if event.type == pygame.KEYDOWN:
+                #     if event.key == pygame.K_m:
+                #         self.level.toggle_menu()
 
             # Build layout screen + command line
             build_canvas(self.canvas, self.screen, self.cmd_line)
