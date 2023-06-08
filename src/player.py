@@ -7,6 +7,7 @@ import pygame.locals as locals
 
 from src.entity import Entity
 from src.settings import HITBOX_OFFSET, magic_data, weapon_data
+from src.tile_interaction import PLAYER_ACTION_RADIUS, TILE_PRIORITY
 from src.utils import import_folder
 
 # from src.connections import CONNECTIONS
@@ -273,22 +274,22 @@ class Player(Entity):
         self.animate()
         self.move(self.stats["speed"])
 
-    def get_closest_object_in_room(self):
-        """Find closest interactable objects to the player."""
-        closest_objects = []
+    def get_closest_sprites(self, sprites):
+        """Find closest interactable sprites to the player."""
+        closest_sprites = []
         distances = []
-        dist = 100
         cx = self.rect.centerx
         cy = self.rect.centery
-        interact_objects = self.current_room.walls + self.current_room.hidden_doors
-        for obj in interact_objects:
-            obj_x = obj.rect.centerx
-            obj_y = obj.rect.centery
+        for sprite in sprites:
+            obj_x = sprite.rect.centerx
+            obj_y = sprite.rect.centery
+            tile_priority = TILE_PRIORITY[sprite.sprite_type]
             distance = math.sqrt(abs(cx - obj_x) ** 2 + abs(cy - obj_y) ** 2)
-            if dist > distance:
-                closest_objects.append(obj)
+            distance /= tile_priority
+            if PLAYER_ACTION_RADIUS > distance:
+                closest_sprites.append(sprite)
                 distances.append(distance)
-        return closest_objects, distances
+        return closest_sprites, distances
 
 
 # class Player:

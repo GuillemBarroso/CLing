@@ -4,7 +4,7 @@ import pygame.locals as locals
 
 from src.colors import BLACK, WHITE
 from src.commands import cmd_dict
-from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
+from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE, VALLEY
 from src.eztext import Input
 
 
@@ -30,6 +30,7 @@ class CL:
         self._scroll_id = 0
         self._scroll_bar_width = 10
         self._MAX_CL_LENGTH = 160
+        self.map_state = "entry_cave"
 
     def _get_input(self, vertical_location):
         """Return text Input object."""
@@ -214,16 +215,22 @@ class CL:
         """Return main command and the arguments introduced by the user."""
         for command in cmd_dict.keys():
             index_ini = user_input.find(command)
-            if not index_ini == -1:
+            if index_ini == 0:
                 break
         else:
             message = f"Command '{user_input}' is not a valid command"
             return None, None, message
         assert index_ini == 0, "The command must be introduced in the first place"
         index_end = len(command)
-        return user_input[index_ini:index_end], user_input[index_end:], ""
+        return user_input[index_ini:index_end], user_input[index_end + 1 :], ""
 
-    def trigger_user_commands(self, player):
+    def write_command_response(self, prompt="  "):
+        """Write on CL the content of input.value and store it in CL history."""
+        self.input.focus = False
+        self.input.prompt = prompt
+        self.reset_after_enter(self.input.value)
+
+    def trigger_user_commands(self, player, sprites):
         """Capture user inputs that require a response message in the CL."""
         input = self.input
 
@@ -235,7 +242,7 @@ class CL:
             self.reset_after_enter(self.input.value)
         else:
             command = cmd_dict[user_command]
-            command.execute(self, arguments, player)
+            command.execute(self, arguments, player, sprites)
 
     def scrolling_full_screen(self):
         """Enable scrolling when CL in full screen mode."""
@@ -250,14 +257,14 @@ class CL:
         self.input.draw(self.surface)
         self.draw_history()
 
-    def resolve_user_commands(self, events, player):
+    def resolve_user_commands(self, events, player, sprites):
         """Resolve commands introduced by the user via command line."""
         self._user_input = self._input.update(events)
         if self._user_input:
             self.reset_after_enter(self._user_input)
-            self.trigger_user_commands(player)
+            self.trigger_user_commands(player, sprites)
 
-    def activate_cl_commands(self, event):
+    def activate_cl_commands(self, event, level):
         """Activate CL commands coming from events."""
         # Enter CL full screen mode
         if event.type == CMD_FULL_SCREEN:
@@ -269,3 +276,8 @@ class CL:
             self.minimize()
             self._full_screen = False
             self.input.focus = False
+
+        if event.type == VALLEY:
+            # self.map_state = "valley"
+            level.sprites_setup(level.valley_path)
+            level.create_map(level.valley_layouts, level.valley_graphics)

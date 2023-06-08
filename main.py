@@ -43,7 +43,7 @@ class Game:
                     sys.exit()
 
                 # Check for events interacting with the CL
-                self.cmd_line.activate_cl_commands(event)
+                self.cmd_line.activate_cl_commands(event, self.level)
                 self.cmd_line.check_focus(event)
 
                 # Pause game and toggle menu screen
