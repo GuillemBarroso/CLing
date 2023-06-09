@@ -39,20 +39,21 @@ class Level:
         self.magic_player = MagicPlayer(self.animation_player)
 
         # Set map paths
-        self.map_state = "entry_cave"
+        self.previous_map_state = self.map_state = "entry_cave"
         self.entry_cave_path = "src/images/map/entry_cave.png"
         self.valley_path = "src/images/map/map_ground.png"
 
         self.entry_cave_layouts = {
             "wall": import_csv_layout("src/images/map/entry_cave_FloorBlocks.csv"),
-            "door": import_csv_layout("src/images/map/entry_cave_Door.csv"),
+            "wall_hole": import_csv_layout("src/images/map/entry_cave_Door.csv"),
             "entities": import_csv_layout("src/images/map/entry_cave_Entities.csv"),
         }
 
         self.valley_layouts = {
             "ocean": import_csv_layout("src/images/map/map_FloorBlocks.csv"),
             "grass": import_csv_layout("src/images/map/map_Grass.csv"),
-            "object": import_csv_layout("src/images/map/map_Objects.csv"),
+            "trees": import_csv_layout("src/images/map/map_Trees.csv"),
+            "entry_cave": import_csv_layout("src/images/map/map_Entry_cave.csv"),
             "entities": import_csv_layout("src/images/map/map_Entities.csv"),
         }
 
@@ -61,13 +62,9 @@ class Level:
             "objects": import_folder("src/images/map/objects"),
         }
 
-        # Create map based on current map state
-        if self.cmd_line.map_state == "entry_cave":
-            self.sprites_setup(self.entry_cave_path)
-            self.create_map(self.entry_cave_layouts)
-        elif self.cmd_line.map_state == "valley":
-            self.sprites_setup(self.valley_path)
-            self.create_map(self.valley_layouts, self.valley_graphics)
+        # Create map of the entry cave where the place starts
+        self.sprites_setup(self.entry_cave_path)
+        self.create_map(self.entry_cave_layouts)
 
     def sprites_setup(self, map_path):
         """Setup all the sprite groups in the game."""
@@ -95,14 +92,12 @@ class Level:
                                 [self.obstacle_sprites, self.interactable_sprites],
                                 "wall",
                             )
-
                         if style == "ocean":
                             Tile(
                                 (x, y),
                                 [self.obstacle_sprites, self.interactable_sprites],
                                 "ocean",
                             )
-
                         if style == "grass":
                             random_grass_img = choice(graphics["grass"])
                             Tile(
@@ -115,8 +110,7 @@ class Level:
                                 "grass",
                                 random_grass_img,
                             )
-
-                        if style == "object":
+                        if style == "trees":
                             surf = graphics["objects"][int(col)]
                             Tile(
                                 (x, y),
@@ -128,17 +122,21 @@ class Level:
                                 "tree",
                                 surf,
                             )
-
-                        if style == "door":
+                        if style == "wall_hole":
                             Tile(
                                 (x, y),
                                 [self.visible_sprites, self.interactable_sprites],
                                 "wall_hole",
                                 pygame.image.load("src/images/map/doors/217.png"),
                             )
-
                         if style == "entities":
                             if col == "394":
+                                if (
+                                    self.previous_map_state == "entry_cave"
+                                    and self.map_state == "valley"
+                                ):
+                                    x = 43 * TILESIZE
+                                    y = 17 * TILESIZE
                                 self.player = Player(
                                     (x, y),
                                     [self.visible_sprites],

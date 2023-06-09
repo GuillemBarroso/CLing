@@ -226,7 +226,7 @@ class CL:
 
     def write_command_response(self, prompt="  "):
         """Write on CL the content of input.value and store it in CL history."""
-        if self.input.user_input:
+        if self.input.value:
             self.input.focus = False
             self.input.prompt = prompt
             self.reset_after_enter(self.input.value)
@@ -279,5 +279,6 @@ class CL:
             self.input.focus = False
 
         if event.type == VALLEY:
+            level.map_state = "valley"
             level.sprites_setup(level.valley_path)
             level.create_map(level.valley_layouts, level.valley_graphics)
