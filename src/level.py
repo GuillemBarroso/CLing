@@ -44,13 +44,13 @@ class Level:
         self.valley_path = "src/images/map/map_ground.png"
 
         self.entry_cave_layouts = {
-            "boundary": import_csv_layout("src/images/map/entry_cave_FloorBlocks.csv"),
+            "wall": import_csv_layout("src/images/map/entry_cave_FloorBlocks.csv"),
             "door": import_csv_layout("src/images/map/entry_cave_Door.csv"),
             "entities": import_csv_layout("src/images/map/entry_cave_Entities.csv"),
         }
 
         self.valley_layouts = {
-            "boundary": import_csv_layout("src/images/map/map_FloorBlocks.csv"),
+            "ocean": import_csv_layout("src/images/map/map_FloorBlocks.csv"),
             "grass": import_csv_layout("src/images/map/map_Grass.csv"),
             "object": import_csv_layout("src/images/map/map_Objects.csv"),
             "entities": import_csv_layout("src/images/map/map_Entities.csv"),
@@ -89,11 +89,18 @@ class Level:
                     if col != "-1":
                         x = i_col * TILESIZE
                         y = i_row * TILESIZE
-                        if style == "boundary":
+                        if style == "wall":
                             Tile(
                                 (x, y),
                                 [self.obstacle_sprites, self.interactable_sprites],
                                 "wall",
+                            )
+
+                        if style == "ocean":
+                            Tile(
+                                (x, y),
+                                [self.obstacle_sprites, self.interactable_sprites],
+                                "ocean",
                             )
 
                         if style == "grass":

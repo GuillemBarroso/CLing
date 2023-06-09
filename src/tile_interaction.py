@@ -2,7 +2,7 @@
 
 PLAYER_ACTION_RADIUS = 100
 
-TILE_PRIORITY = {"wall": 1, "wall_hole": 1.2}
+TILE_PRIORITY = {"ocean": 1, "tree": 1, "grass": 1, "wall": 1, "wall_hole": 1.2}
 
 LOOK_AT_MESSAGE = {
     "wall": "You see a rock solid wall.",
@@ -17,7 +17,10 @@ LOOK_AT_MESSAGE = {
 
 BREAK_IT_MESSAGE = {
     "wall": "You cannot break a rock solid wall!",
-    "wall_hole": "You manage to smash the wall and open a hole to pass through.",
+    "wall_hole": (
+        "You manage to smash the wall and open a hole to pass through. "
+        "You may be able to crawl into it."
+    ),
     "ocean": "Are you seriusly trying to break water?",
     "grass": "",
     "tree": "",

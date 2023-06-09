@@ -200,31 +200,43 @@ class Look_at(Command):
 
     def execute(self, cmd_line, arguments, player, sprites):
         """Execute command."""
-        args, message = self.parse_arguments(arguments)
-        if message:
-            cmd_line.input.value = f"{arguments[1:]} is not nearby."
-            cmd_line.write_command_response()
-        elif len(args) > 1:
-            cmd_line.input.value = "The 'look at' command only accepts one argument"
-            cmd_line.write_command_response()
-        else:
-            closest_sprites, distances = player.get_closest_sprites(sprites)
-            if closest_sprites:
-                min_dist_pos = distances.index(min(distances))
-                closest_sprite = closest_sprites[min_dist_pos]
+        closest_sprites, distances = player.get_closest_sprites(sprites)
+        if closest_sprites:
+            min_dist_pos = distances.index(min(distances))
+            closest_sprite = closest_sprites[min_dist_pos]
+            if arguments in closest_sprite.sprite_type:
                 cmd_line.input.value = closest_sprite.look_at()
-                cmd_line.write_command_response()
+            else:
+                cmd_line.input.value = f"You don't find a '{arguments}' nearby."
+        else:
+            cmd_line.input.value = "There is nothing to interact with"
+        cmd_line.write_command_response()
 
-            # if args[0] == "wall":
-            #     # accepted_types = [Wall, BreakableWall]
-            #     closest_object = get_closest_object_requested_by_user(
-            #         cmd_line, args, player, sprites
-            #     )
-            #     if closest_object:
-            #         cmd_line.input.value = closest_object.look_at()
-            #         cmd_line.write_command_response()
-            # else:
-            #     cmd_line.input.value = "Unknown argument for command 'look at'."
+        # args, message = self.parse_arguments(arguments)
+        # if message:
+        #     cmd_line.input.value = f"{arguments[1:]} is not nearby."
+        #     cmd_line.write_command_response()
+        # elif len(args) > 1:
+        #     cmd_line.input.value = "The 'look at' command only accepts one argument"
+        #     cmd_line.write_command_response()
+        # else:
+        #     closest_sprites, distances = player.get_closest_sprites(sprites)
+        #     if closest_sprites:
+        #         min_dist_pos = distances.index(min(distances))
+        #         closest_sprite = closest_sprites[min_dist_pos]
+        #         cmd_line.input.value = closest_sprite.look_at()
+        #         cmd_line.write_command_response()
+
+        # if args[0] == "wall":
+        #     # accepted_types = [Wall, BreakableWall]
+        #     closest_object = get_closest_object_requested_by_user(
+        #         cmd_line, args, player, sprites
+        #     )
+        #     if closest_object:
+        #         cmd_line.input.value = closest_object.look_at()
+        #         cmd_line.write_command_response()
+        # else:
+        #     cmd_line.input.value = "Unknown argument for command 'look at'."
 
 
 class Break(Command):
@@ -252,10 +264,11 @@ class Break(Command):
             closest_sprite = closest_sprites[min_dist_pos]
             if arguments in closest_sprite.sprite_type:
                 cmd_line.input.value = closest_sprite.break_it()
+                cmd_line.entry_cave_opened = True
                 closest_sprite.image = pygame.image.load("src/images/map/doors/315.png")
                 closest_sprite.update()
             else:
-                cmd_line.input.value = f"You don't find a {arguments} nearby."
+                cmd_line.input.value = f"You don't find a '{arguments}' nearby."
         else:
             cmd_line.input.value = "There is nothing to interact with"
         cmd_line.write_command_response()

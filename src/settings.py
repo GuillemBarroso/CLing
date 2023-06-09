@@ -11,6 +11,7 @@ HITBOX_OFFSET = {
     "player": -26,
     "tree": -40,
     "grass": -10,
+    "ocean": 0,
     "wall": 26,
     "wall_hole": 26,
 }
