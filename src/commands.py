@@ -212,32 +212,6 @@ class Look_at(Command):
             cmd_line.input.value = "There is nothing to interact with"
         cmd_line.write_command_response()
 
-        # args, message = self.parse_arguments(arguments)
-        # if message:
-        #     cmd_line.input.value = f"{arguments[1:]} is not nearby."
-        #     cmd_line.write_command_response()
-        # elif len(args) > 1:
-        #     cmd_line.input.value = "The 'look at' command only accepts one argument"
-        #     cmd_line.write_command_response()
-        # else:
-        #     closest_sprites, distances = player.get_closest_sprites(sprites)
-        #     if closest_sprites:
-        #         min_dist_pos = distances.index(min(distances))
-        #         closest_sprite = closest_sprites[min_dist_pos]
-        #         cmd_line.input.value = closest_sprite.look_at()
-        #         cmd_line.write_command_response()
-
-        # if args[0] == "wall":
-        #     # accepted_types = [Wall, BreakableWall]
-        #     closest_object = get_closest_object_requested_by_user(
-        #         cmd_line, args, player, sprites
-        #     )
-        #     if closest_object:
-        #         cmd_line.input.value = closest_object.look_at()
-        #         cmd_line.write_command_response()
-        # else:
-        #     cmd_line.input.value = "Unknown argument for command 'look at'."
-
 
 class Break(Command):
     """Break command."""
@@ -272,34 +246,6 @@ class Break(Command):
         else:
             cmd_line.input.value = "There is nothing to interact with"
         cmd_line.write_command_response()
-
-        # args, message = self.parse_arguments(arguments)
-        # if message:
-        #     cmd_line.input.value = message
-        #     cmd_line.write_command_response()
-        # elif len(args) > 1:
-        #     cmd_line.input.value = "The 'break' command only accepts one argument"
-        #     cmd_line.write_command_response()
-        # else:
-        #     closest_sprites, distances = player.get_closest_sprites(sprites)
-        #     if closest_sprites:
-        #         min_dist_pos = distances.index(min(distances))
-        #         closest_sprite = closest_sprites[min_dist_pos]
-        #         cmd_line.input.value = closest_sprite.break_it()
-        #         cmd_line.write_command_response()
-        #     else:
-        #         cmd_line.input.value = "Nothing around to break."
-
-        # if args[0] == "wall":
-        #     accepted_types = [type(BreakableWall)]
-        #     closest_object = get_closest_object_requested_by_user(
-        #         cmd_line, args, player, accepted_types
-        #     )
-        #     if closest_object:
-        #         cmd_line.input.value = closest_object.break_wall()
-        #         cmd_line.write_command_response(cmd_line)
-        # else:
-        #     cmd_line.input.value = "Unknown argument for command 'look at'."
 
 
 class Crawl_into(Command):
