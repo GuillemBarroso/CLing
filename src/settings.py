@@ -1,14 +1,20 @@
 """Module containing the settings parameters of the game."""
 
+# Screen
 WIDTH = 1280
 HEIGHT = 720
 FPS = 60
 TILESIZE = 64
+
+# Hitbox info for improved visualization
 HITBOX_OFFSET = {
     "player": -26,
-    "object": -40,
+    "tree": -40,
     "grass": -10,
-    "invisible": 0,
+    "ocean": -15,
+    "wall": 26,
+    "wall_hole": 26,
+    "entry_cave_entrance": 0,
 }
 
 # UI settings

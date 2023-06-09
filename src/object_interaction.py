@@ -1,17 +1,18 @@
 """Module with functions that determine the interaction of the player with the room objects."""
 
 
-def get_closest_object_requested_by_user(cmd_line, args, player, accepted_types):
+def get_closest_object_requested_by_user(cmd_line, args, player, sprites):
     """Return the closest user-requested object to the player."""
-    closest_objects, distances = player.get_closest_object_in_room()
+    closest_objects, distances = player.get_closest_object_in_room(sprites)
     if not closest_objects:
         cmd_line.input.value = "No nearby objects to interact with."
         cmd_line.write_command_response(cmd_line)
         closest_object = None
     else:
-        (closest_objects, distances,) = find_user_object_among_closest_objects(
-            closest_objects, distances, accepted_types
-        )
+        (
+            closest_objects,
+            distances,
+        ) = find_user_object_among_closest_objects(closest_objects, distances, sprites)
         if not closest_objects:
             cmd_line.input.value = f"You do not see a {args[0]} nearby."
             cmd_line.write_command_response(cmd_line)

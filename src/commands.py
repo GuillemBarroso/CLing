@@ -2,9 +2,10 @@
 
 import pygame
 
-from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE
-from src.object_interaction import get_closest_object_requested_by_user
-from src.objects import BreakableWall, Wall
+from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE, VALLEY
+
+# from src.object_interaction import get_closest_object_requested_by_user
+# from src.objects import BreakableWall, Wall
 
 
 class Command:
@@ -87,18 +88,18 @@ class Help(Command):
         }
         super().__init__(**parameters)
 
-    def execute(self, cmd_line, arguments, _):
+    def execute(self, cmd_line, arguments, _, __):
         """Execute command."""
         if arguments:
             args, message = self.parse_arguments(arguments)
             if message:
                 cmd_line.input.value = message
-                cmd_line.write_command_response(cmd_line)
+                cmd_line.write_command_response()
             elif len(args) > 1:
                 cmd_line.input.value = (
                     "When using 'help', only one command can be requested."
                 )
-                cmd_line.write_command_response(cmd_line)
+                cmd_line.write_command_response()
             else:
                 cmd = cmd_dict[args[0]]
                 self.get_cmd_help_string(cmd_line, cmd)
@@ -111,9 +112,9 @@ class Help(Command):
             f"'{cmd.name}' or '{cmd.short_name}': "
             f"{cmd.description} {cmd.extended_description}"
         )
-        cmd_line.write_command_response(cmd_line)
+        cmd_line.write_command_response()
         cmd_line.input.value = "Available arguments are:"
-        cmd_line.write_command_response(cmd_line)
+        cmd_line.write_command_response()
         for arg in cmd.arguments:
             out_string = f"  - "
             if type(arg) == list:
@@ -130,12 +131,12 @@ class Help(Command):
             elif type(arg) == str:
                 out_string += arg
             cmd_line.input.value = out_string
-            cmd_line.write_command_response(cmd_line)
+            cmd_line.write_command_response()
         cmd_line.input.value = "Usage:"
-        cmd_line.write_command_response(cmd_line)
+        cmd_line.write_command_response()
         for example in cmd.examples:
             cmd_line.input.value = f"  - {example}"
-            cmd_line.write_command_response(cmd_line)
+            cmd_line.write_command_response()
 
 
 class Cmd_line(Command):
@@ -157,12 +158,12 @@ class Cmd_line(Command):
         }
         super().__init__(**parameters)
 
-    def execute(self, cmd_line, arguments, _):
+    def execute(self, cmd_line, arguments, _, __):
         """Execute command."""
         args, message = self.parse_arguments(arguments)
         if message:
             cmd_line.input.value = message
-            cmd_line.write_command_response(cmd_line)
+            cmd_line.write_command_response()
         else:
             for i, arg in enumerate(args):
                 if arg == "full screen" or arg == "fc":
@@ -197,26 +198,19 @@ class Look_at(Command):
         }
         super().__init__(**parameters)
 
-    def execute(self, cmd_line, arguments, player):
+    def execute(self, cmd_line, arguments, player, sprites):
         """Execute command."""
-        args, message = self.parse_arguments(arguments)
-        if message:
-            cmd_line.input.value = message
-            cmd_line.write_command_response(cmd_line)
-        elif len(args) > 1:
-            cmd_line.input.value = "The 'look at' command only accepts one argument"
-            cmd_line.write_command_response(cmd_line)
-        else:
-            if args[0] == "wall":
-                accepted_types = [Wall, BreakableWall]
-                closest_object = get_closest_object_requested_by_user(
-                    cmd_line, args, player, accepted_types
-                )
-                if closest_object:
-                    cmd_line.input.value = closest_object.look_at()
-                    cmd_line.write_command_response(cmd_line)
+        closest_sprites, distances = player.get_closest_sprites(sprites)
+        if closest_sprites:
+            min_dist_pos = distances.index(min(distances))
+            closest_sprite = closest_sprites[min_dist_pos]
+            if arguments in closest_sprite.sprite_type:
+                cmd_line.input.value = closest_sprite.look_at()
             else:
-                cmd_line.input.value = "Unknown argument for command 'look at'."
+                cmd_line.input.value = f"You don't find a '{arguments}' nearby."
+        else:
+            cmd_line.input.value = "There is nothing to interact with"
+        cmd_line.write_command_response()
 
 
 class Break(Command):
@@ -236,32 +230,61 @@ class Break(Command):
         }
         super().__init__(**parameters)
 
-    def execute(self, cmd_line, arguments, player):
+    def execute(self, cmd_line, arguments, player, sprites):
         """Execute command."""
-        args, message = self.parse_arguments(arguments)
-        if message:
-            cmd_line.input.value = message
-            cmd_line.write_command_response(cmd_line)
-        elif len(args) > 1:
-            cmd_line.input.value = "The 'break' command only accepts one argument"
-            cmd_line.write_command_response(cmd_line)
-        else:
-            if args[0] == "wall":
-                accepted_types = [type(BreakableWall)]
-                closest_object = get_closest_object_requested_by_user(
-                    cmd_line, args, player, accepted_types
-                )
-                if closest_object:
-                    cmd_line.input.value = closest_object.break_wall()
-                    cmd_line.write_command_response(cmd_line)
+        closest_sprites, distances = player.get_closest_sprites(sprites)
+        if closest_sprites:
+            min_dist_pos = distances.index(min(distances))
+            closest_sprite = closest_sprites[min_dist_pos]
+            if arguments in closest_sprite.sprite_type:
+                cmd_line.input.value = closest_sprite.break_it()
+                cmd_line.entry_cave_opened = True
+                closest_sprite.image = pygame.image.load("src/images/map/doors/315.png")
+                closest_sprite.update()
             else:
-                cmd_line.input.value = "Unknown argument for command 'look at'."
+                cmd_line.input.value = f"You don't find a '{arguments}' nearby."
+        else:
+            cmd_line.input.value = "There is nothing to interact with"
+        cmd_line.write_command_response()
+
+
+class Crawl_into(Command):
+    """Crawl into command."""
+
+    def __init__(self):
+        """Initialize."""
+        parameters = {
+            "name": "crawl into",
+            "short_name": "",
+            "description": "Crawl into something.",
+            "extended_description": "You may be able to crawl into narrow caves or tight holes.",
+            "arguments": [
+                "",
+            ],
+            "examples": ["crawl into hole"],
+        }
+        super().__init__(**parameters)
+
+    def execute(self, cmd_line, arguments, player, sprites):
+        """Execute command."""
+        closest_sprites, distances = player.get_closest_sprites(sprites)
+        if closest_sprites:
+            min_dist_pos = distances.index(min(distances))
+            closest_sprite = closest_sprites[min_dist_pos]
+            if arguments in closest_sprite.sprite_type:
+                pygame.event.post(pygame.event.Event(VALLEY))
+            else:
+                cmd_line.input.value = f"You don't find a {arguments} nearby."
+        else:
+            cmd_line.input.value = "There is nothing to interact with"
+        cmd_line.write_command_response()
 
 
 help = Help()
 cl = Cmd_line()
 look_at = Look_at()
 break_ = Break()
+crawl_into = Crawl_into()
 
 cmd_dict = {
     "help": help,
@@ -270,4 +293,5 @@ cmd_dict = {
     "cl": cl,
     "look at": look_at,
     "break": break_,
+    "crawl into": crawl_into,
 }

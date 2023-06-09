@@ -11,7 +11,8 @@ from src.player import Player
 from src.settings import TILESIZE
 from src.tile import Tile
 from src.ui import UI
-from src.upgrade import Upgrade
+
+# from src.upgrade import Upgrade
 from src.utils import import_csv_layout, import_folder
 from src.weapon import Weapon
 
@@ -22,54 +23,82 @@ class Level:
     def __init__(self, screen, cmd_line):
         """Initialize Level object."""
         # Get displace surface
+        self.screen = screen
         self.display_surface = screen.surface
         self.game_paused = False
 
         # Get Command Line focus info
         self.cmd_line = cmd_line
 
+        # User interface
+        # self.upgrade = Upgrade(self.player)
+        self.ui = UI(self.screen)
+
+        # Particles
+        self.animation_player = AnimationPlayer()
+        self.magic_player = MagicPlayer(self.animation_player)
+
+        # Set map paths
+        self.previous_map_state = self.map_state = "entry_cave"
+        self.entry_cave_path = "src/images/map/entry_cave.png"
+        self.valley_path = "src/images/map/map_ground.png"
+
+        self.entry_cave_layouts = {
+            "wall": import_csv_layout("src/images/map/entry_cave_FloorBlocks.csv"),
+            "wall_hole": import_csv_layout("src/images/map/entry_cave_Door.csv"),
+            "entities": import_csv_layout("src/images/map/entry_cave_Entities.csv"),
+        }
+
+        self.valley_layouts = {
+            "ocean": import_csv_layout("src/images/map/map_FloorBlocks.csv"),
+            "grass": import_csv_layout("src/images/map/map_Grass.csv"),
+            "trees": import_csv_layout("src/images/map/map_Trees.csv"),
+            "entry_cave": import_csv_layout("src/images/map/map_Entry_cave.csv"),
+            "entities": import_csv_layout("src/images/map/map_Entities.csv"),
+        }
+
+        self.valley_graphics = {
+            "grass": import_folder("src/images/map/grass"),
+            "objects": import_folder("src/images/map/objects"),
+        }
+
+        # Create map of the entry cave where the place starts
+        self.sprites_setup(self.entry_cave_path)
+        self.create_map(self.entry_cave_layouts)
+
+    def sprites_setup(self, map_path):
+        """Setup all the sprite groups in the game."""
         # Sprite group setup
-        self.visible_sprites = YsortedCameraGroup(self.display_surface)
+        self.visible_sprites = YsortedCameraGroup(self.display_surface, map_path)
         self.obstacle_sprites = pygame.sprite.Group()
+        self.interactable_sprites = pygame.sprite.Group()
+        self.door_sprites = pygame.sprite.Group()
 
         # Attack sprites
         self.current_attack = None
         self.attack_sprites = pygame.sprite.Group()
         self.attackable_sprites = pygame.sprite.Group()
 
-        # Sprite setup
-        self.create_map()
-
-        # User interface
-        self.ui = UI(screen)
-        self.upgrade = Upgrade(self.player)
-
-        # Particles
-        self.animation_player = AnimationPlayer()
-        self.magic_player = MagicPlayer(self.animation_player)
-
-    def create_map(self):
-        """Create map from csv files."""
-        layouts = {
-            "boundary": import_csv_layout("src/images/map/map_FloorBlocks.csv"),
-            "grass": import_csv_layout("src/images/map/map_Grass.csv"),
-            "object": import_csv_layout("src/images/map/map_Objects.csv"),
-            "entities": import_csv_layout("src/images/map/map_Entities.csv"),
-        }
-        graphics = {
-            "grass": import_folder("src/images/map/grass"),
-            "objects": import_folder("src/images/map/objects"),
-        }
-
+    def create_map(self, layouts, graphics={}):
+        """Create open world map from csv files."""
         for style, layout in layouts.items():
             for i_row, row in enumerate(layout):
                 for i_col, col in enumerate(row):
                     if col != "-1":
                         x = i_col * TILESIZE
                         y = i_row * TILESIZE
-                        if style == "boundary":
-                            Tile((x, y), [self.obstacle_sprites], "invisible")
-
+                        if style == "wall":
+                            Tile(
+                                (x, y),
+                                [self.obstacle_sprites, self.interactable_sprites],
+                                "wall",
+                            )
+                        if style == "ocean":
+                            Tile(
+                                (x, y),
+                                [self.obstacle_sprites, self.interactable_sprites],
+                                "ocean",
+                            )
                         if style == "grass":
                             random_grass_img = choice(graphics["grass"])
                             Tile(
@@ -82,22 +111,60 @@ class Level:
                                 "grass",
                                 random_grass_img,
                             )
-
-                        if style == "object":
+                        if style == "trees":
                             surf = graphics["objects"][int(col)]
                             Tile(
                                 (x, y),
-                                [self.visible_sprites, self.obstacle_sprites],
-                                "object",
+                                [
+                                    self.visible_sprites,
+                                    self.obstacle_sprites,
+                                    self.interactable_sprites,
+                                ],
+                                "tree",
                                 surf,
                             )
+                        if style == "wall_hole":
+                            if self.cmd_line.entry_cave_opened:
+                                wall_image = pygame.image.load(
+                                    "src/images/map/doors/315.png"
+                                )
+                            else:
+                                wall_image = pygame.image.load(
+                                    "src/images/map/doors/217.png"
+                                )
+                            Tile(
+                                (x, y),
+                                [self.visible_sprites, self.interactable_sprites],
+                                "wall_hole",
+                                wall_image,
+                            )
+                        if style == "entry_cave":
+                            if col == "152":
+                                Tile(
+                                    (x, y),
+                                    [self.door_sprites],
+                                    "entry_cave_entrance",
+                                )
 
                         if style == "entities":
                             if col == "394":
+                                if (
+                                    self.previous_map_state == "entry_cave"
+                                    and self.map_state == "valley"
+                                ):
+                                    x = 43 * TILESIZE
+                                    y = 17 * TILESIZE
+                                elif (
+                                    self.previous_map_state == "valley"
+                                    and self.map_state == "entry_cave"
+                                ):
+                                    x = 4 * TILESIZE
+                                    y = 8 * TILESIZE
                                 self.player = Player(
                                     (x, y),
                                     [self.visible_sprites],
                                     self.obstacle_sprites,
+                                    self.door_sprites,
                                     self.create_attack,
                                     self.destroy_attack,
                                     self.create_magic,
@@ -190,7 +257,8 @@ class Level:
         self.game_paused = not self.game_paused
 
     def run(self, events):
-        """Run al Level interactions, draw and display UI, sprites and CL."""
+        """Run all Level interactions, draw and display UI, sprites and CL."""
+        # Display sprites and UI
         self.visible_sprites.custom_draw(self.player)
         self.ui.display(self.player)
 
@@ -207,13 +275,15 @@ class Level:
         # Command Line actions
         self.cmd_line.scrolling_full_screen()
         self.cmd_line.draw()
-        self.cmd_line.resolve_user_commands(events, self.player)
+        self.cmd_line.resolve_user_commands(
+            events, self.player, self.interactable_sprites
+        )
 
 
 class YsortedCameraGroup(pygame.sprite.Group):
     """Camera object sorting elements by its y coordinate."""
 
-    def __init__(self, display_surface):
+    def __init__(self, display_surface, ground_map_path):
         """Initialize object."""
         super().__init__()
         self.display_surface = display_surface
@@ -222,7 +292,7 @@ class YsortedCameraGroup(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
 
         # Create floor
-        self.floor_surf = pygame.image.load("src/images/map/map_ground.png").convert()
+        self.floor_surf = pygame.image.load(ground_map_path).convert()
         self.floor_rect = self.floor_surf.get_rect(topleft=(0, 0))
 
     def custom_draw(self, player):
