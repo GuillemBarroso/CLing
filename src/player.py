@@ -6,6 +6,7 @@ import pygame
 import pygame.locals as locals
 
 from src.entity import Entity
+from src.events_definition import ENTRY_CAVE
 from src.settings import HITBOX_OFFSET, magic_data, weapon_data
 from src.tile_interaction import PLAYER_ACTION_RADIUS, TILE_PRIORITY
 from src.utils import import_folder
@@ -19,7 +20,14 @@ class Player(Entity):
     """Player object that will control the player in the game."""
 
     def __init__(
-        self, pos, groups, obstacle_sprites, create_attack, destroy_attack, create_magic
+        self,
+        pos,
+        groups,
+        obstacle_sprites,
+        door_sprites,
+        create_attack,
+        destroy_attack,
+        create_magic,
     ):
         """Initialize player object."""
         super().__init__(groups)
@@ -37,6 +45,7 @@ class Player(Entity):
         self.attack_cooldown = 400
         self.attack_time = None
         self.obstacle_sprites = obstacle_sprites
+        self.door_sprites = door_sprites
 
         # Weapon
         self.create_attack = create_attack
@@ -262,6 +271,12 @@ class Player(Entity):
         else:
             self.energy = self.stats["energy"]
 
+    def check_doors(self):
+        """Check if the player collides with a door."""
+        for sprite in self.door_sprites:
+            if sprite.rect.colliderect(self.hitbox):
+                pygame.event.post(pygame.event.Event(ENTRY_CAVE))
+
     def update(self):
         """Update player but not its movement."""
         self.cooldowns()
@@ -273,6 +288,7 @@ class Player(Entity):
         self.get_status()
         self.animate()
         self.move(self.stats["speed"])
+        self.check_doors()
 
     def get_closest_sprites(self, sprites):
         """Find closest interactable sprites to the player."""

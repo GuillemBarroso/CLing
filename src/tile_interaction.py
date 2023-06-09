@@ -13,6 +13,7 @@ LOOK_AT_MESSAGE = {
     "ocean": "Water message",
     "grass": "Grass mesaage",
     "tree": "Tree msg",
+    "entry_cave_entrance": "",
 }
 
 BREAK_IT_MESSAGE = {
@@ -24,4 +25,5 @@ BREAK_IT_MESSAGE = {
     "ocean": "Are you seriusly trying to break water?",
     "grass": "",
     "tree": "",
+    "entry_cave_entrance": "",
 }

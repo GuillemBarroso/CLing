@@ -4,7 +4,7 @@ import pygame.locals as locals
 
 from src.colors import BLACK, WHITE
 from src.commands import cmd_dict
-from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE, VALLEY
+from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE, ENTRY_CAVE, VALLEY
 from src.eztext import Input
 
 
@@ -31,6 +31,7 @@ class CL:
         self._scroll_bar_width = 10
         self._MAX_CL_LENGTH = 160
         self.map_state = "entry_cave"
+        self.entry_cave_opened = False
 
     def _get_input(self, vertical_location):
         """Return text Input object."""
@@ -279,6 +280,13 @@ class CL:
             self.input.focus = False
 
         if event.type == VALLEY:
+            level.previous_map_state = level.map_state
             level.map_state = "valley"
             level.sprites_setup(level.valley_path)
             level.create_map(level.valley_layouts, level.valley_graphics)
+
+        if event.type == ENTRY_CAVE:
+            level.previous_map_state = level.map_state
+            level.map_state = "entry_cave"
+            level.sprites_setup(level.entry_cave_path)
+            level.create_map(level.entry_cave_layouts)

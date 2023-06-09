@@ -72,6 +72,7 @@ class Level:
         self.visible_sprites = YsortedCameraGroup(self.display_surface, map_path)
         self.obstacle_sprites = pygame.sprite.Group()
         self.interactable_sprites = pygame.sprite.Group()
+        self.door_sprites = pygame.sprite.Group()
 
         # Attack sprites
         self.current_attack = None
@@ -123,12 +124,28 @@ class Level:
                                 surf,
                             )
                         if style == "wall_hole":
+                            if self.cmd_line.entry_cave_opened:
+                                wall_image = pygame.image.load(
+                                    "src/images/map/doors/315.png"
+                                )
+                            else:
+                                wall_image = pygame.image.load(
+                                    "src/images/map/doors/217.png"
+                                )
                             Tile(
                                 (x, y),
                                 [self.visible_sprites, self.interactable_sprites],
                                 "wall_hole",
-                                pygame.image.load("src/images/map/doors/217.png"),
+                                wall_image,
                             )
+                        if style == "entry_cave":
+                            if col == "152":
+                                Tile(
+                                    (x, y),
+                                    [self.door_sprites],
+                                    "entry_cave_entrance",
+                                )
+
                         if style == "entities":
                             if col == "394":
                                 if (
@@ -137,10 +154,17 @@ class Level:
                                 ):
                                     x = 43 * TILESIZE
                                     y = 17 * TILESIZE
+                                elif (
+                                    self.previous_map_state == "valley"
+                                    and self.map_state == "entry_cave"
+                                ):
+                                    x = 4 * TILESIZE
+                                    y = 8 * TILESIZE
                                 self.player = Player(
                                     (x, y),
                                     [self.visible_sprites],
                                     self.obstacle_sprites,
+                                    self.door_sprites,
                                     self.create_attack,
                                     self.destroy_attack,
                                     self.create_magic,

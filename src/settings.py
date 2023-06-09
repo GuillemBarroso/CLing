@@ -11,9 +11,10 @@ HITBOX_OFFSET = {
     "player": -26,
     "tree": -40,
     "grass": -10,
-    "ocean": 0,
+    "ocean": -15,
     "wall": 26,
     "wall_hole": 26,
+    "entry_cave_entrance": 0,
 }
 
 # UI settings
