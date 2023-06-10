@@ -8,6 +8,7 @@ from src.enemy import Enemy
 from src.magic import MagicPlayer
 from src.particles import AnimationPlayer
 from src.player import Player
+from src.room_text import RoomText
 from src.settings import TILESIZE
 from src.tile import Tile
 from src.ui import UI
@@ -39,7 +40,7 @@ class Level:
         self.magic_player = MagicPlayer(self.animation_player)
 
         # Set map paths
-        self.previous_map_state = self.map_state = "entry_cave"
+        self.cmd_line.previous_map_state = self.cmd_line.map_state = "entry_cave"
         self.entry_cave_path = "src/images/map/entry_cave.png"
         self.valley_path = "src/images/map/map_ground.png"
 
@@ -65,6 +66,7 @@ class Level:
         # Create map of the entry cave where the place starts
         self.sprites_setup(self.entry_cave_path)
         self.create_map(self.entry_cave_layouts)
+        self.room_text = RoomText(cmd_line)
 
     def sprites_setup(self, map_path):
         """Setup all the sprite groups in the game."""
@@ -149,14 +151,14 @@ class Level:
                         if style == "entities":
                             if col == "394":
                                 if (
-                                    self.previous_map_state == "entry_cave"
-                                    and self.map_state == "valley"
+                                    self.cmd_line.previous_map_state == "entry_cave"
+                                    and self.cmd_line.map_state == "valley"
                                 ):
                                     x = 43 * TILESIZE
                                     y = 17 * TILESIZE
                                 elif (
-                                    self.previous_map_state == "valley"
-                                    and self.map_state == "entry_cave"
+                                    self.cmd_line.previous_map_state == "valley"
+                                    and self.cmd_line.map_state == "entry_cave"
                                 ):
                                     x = 4 * TILESIZE
                                     y = 8 * TILESIZE
@@ -278,6 +280,7 @@ class Level:
         self.cmd_line.resolve_user_commands(
             events, self.player, self.interactable_sprites
         )
+        self.room_text.update_room_first_entry()
 
 
 class YsortedCameraGroup(pygame.sprite.Group):

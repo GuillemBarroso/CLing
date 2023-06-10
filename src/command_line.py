@@ -280,13 +280,13 @@ class CL:
             self.input.focus = False
 
         if event.type == VALLEY:
-            level.previous_map_state = level.map_state
-            level.map_state = "valley"
+            self.previous_map_state = self.map_state
+            self.map_state = "valley"
             level.sprites_setup(level.valley_path)
             level.create_map(level.valley_layouts, level.valley_graphics)
 
         if event.type == ENTRY_CAVE:
-            level.previous_map_state = level.map_state
-            level.map_state = "entry_cave"
+            self.previous_map_state = self.map_state
+            self.map_state = "entry_cave"
             level.sprites_setup(level.entry_cave_path)
             level.create_map(level.entry_cave_layouts)
