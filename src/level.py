@@ -71,7 +71,7 @@ class Level:
     def sprites_setup(self, map_path):
         """Setup all the sprite groups in the game."""
         # Sprite group setup
-        self.visible_sprites = YsortedCameraGroup(self.display_surface, map_path)
+        self.visible_sprites = YsortedCameraGroup(self, self.display_surface, map_path)
         self.obstacle_sprites = pygame.sprite.Group()
         self.interactable_sprites = pygame.sprite.Group()
         self.door_sprites = pygame.sprite.Group()
@@ -278,7 +278,9 @@ class Level:
         self.cmd_line.scrolling_full_screen()
         self.cmd_line.draw()
         self.cmd_line.resolve_user_commands(
-            events, self.player, self.interactable_sprites
+            events,
+            self.player,
+            self.interactable_sprites,
         )
         self.room_text.update_room_first_entry()
 
@@ -286,9 +288,10 @@ class Level:
 class YsortedCameraGroup(pygame.sprite.Group):
     """Camera object sorting elements by its y coordinate."""
 
-    def __init__(self, display_surface, ground_map_path):
+    def __init__(self, level, display_surface, ground_map_path):
         """Initialize object."""
         super().__init__()
+        self.level = level
         self.display_surface = display_surface
         self.half_width = self.display_surface.get_size()[0] // 2
         self.half_height = self.display_surface.get_size()[1] // 2
@@ -331,5 +334,5 @@ class YsortedCameraGroup(pygame.sprite.Group):
             if hasattr(sprite, "sprite_type") and sprite.sprite_type == "player"
         ]
         for player in player_sprites:
-            if not cl_focus:
+            if not cl_focus and self.level.cmd_line.active_player:
                 player.player_movement()

@@ -32,6 +32,7 @@ class CL:
         self._MAX_CL_LENGTH = 160
         self.map_state = "entry_cave"
         self.entry_cave_opened = False
+        self.active_player = True
 
     def _get_input(self, vertical_location):
         """Return text Input object."""
@@ -140,7 +141,7 @@ class CL:
 
     def reset_after_enter(self, user_input):
         """Store user input and reset command line with an empty string."""
-        lines = self.split_long_user_input(user_input, self._MAX_CL_LENGTH)
+        lines = self.split_long_user_input(user_input)
 
         for line in lines:
             # Add input to the command line history
@@ -198,15 +199,19 @@ class CL:
 
         pygame.draw.rect(self._canvas, WHITE, scroll_bar)
 
-    @staticmethod
-    def split_long_user_input(user_input, MAX_CL_LENGTH):
+    def split_long_user_input(self, user_input):
         """Split user input if it is longer than MAX_CL_LENGTH."""
-        if len(user_input) > MAX_CL_LENGTH:
-            # TODO: split only in spaces. Do not split words by half.
-            lines = [
-                user_input[i : i + MAX_CL_LENGTH]
-                for i in range(0, len(user_input), MAX_CL_LENGTH)
-            ]
+        if len(user_input) > self._MAX_CL_LENGTH:
+            lines = []
+            line = ""
+            split_user_input = user_input.split(" ")
+            for i, word in enumerate(split_user_input):
+                if len(line) + len(word) > self._MAX_CL_LENGTH:
+                    lines.append(line[1:])
+                    line = ""
+                line += f" {word}"
+                if i == len(split_user_input) - 1:
+                    lines.append(line[1:])
         else:
             lines = [user_input]
         return lines
@@ -262,7 +267,7 @@ class CL:
     def resolve_user_commands(self, events, player, sprites):
         """Resolve commands introduced by the user via command line."""
         self._user_input = self._input.update(events)
-        if self._user_input:
+        if self._user_input and self.active_player:
             self.reset_after_enter(self._user_input)
             self.trigger_user_commands(player, sprites)
 
