@@ -65,6 +65,10 @@ class Input:
         self.blinking_cursor_bool = False
         self.blinking_cursor_past = 0
         self.blinking_start = 0
+        self.cursor_position = 0
+        self.prev_typing_len = 0
+        self.new_typing_len = 0
+        self.delta = 0
 
     def blinking_cursor_cooldown(self):
         """Implement cooldowns for the blinking cursor."""
@@ -82,18 +86,54 @@ class Input:
         """Set the font for the input."""
         self.font = font
 
+    def track_cursor_movement(self):
+        """Track the cursor on the CL."""
+        # Get changes done by typing
+        past_movement = 0
+        current_movement = len(self.value)
+        typing_delta = current_movement - past_movement
+
+        # Get changes done with the left and right arrows
+        if self.cursor_position > 0:
+            self.cursor_position = 0
+        if self.cursor_position < -len(self.value):
+            self.cursor_position = -len(self.value)
+
+        delta = typing_delta + self.cursor_position
+        if delta < 0:
+            delta = 0
+
+        past_movement = current_movement
+        return delta, typing_delta
+
     def draw(self, surface, focus):
         """Draw the text input to a surface."""
         # Check cooldowns and display user input
         self.blinking_cursor_cooldown()
-        text = self.font.render(self.prompt + self.value, 1, self.color)
-        surface.blit(text, (self.x, self.y))
+
+        # Track cursor movement
+        self.delta, self.new_typing_len = self.track_cursor_movement()
+        delta_typing = self.new_typing_len - self.prev_typing_len
+
+        # Reorder self.value if typing in the middle of the string
+        if self.cursor_position < 0 and delta_typing > 0:
+            self.value = (
+                self.value[: self.delta - 1]
+                + self.value[-1]
+                + self.value[self.delta - 1 : -1]
+            )
+
+        # Display first chunk
+        text_1 = self.font.render(self.prompt + self.value[: self.delta], 1, self.color)
+        surface.blit(text_1, (self.x, self.y))
 
         # Display blinking cursor
+        blinking_cursor = None
+        self.font.bold = True
+        blinking_cursor = self.font.render("|", 1, self.color)
+
         if focus and self.blinking_cursor_active:
-            self.font.bold = True
-            blinking_cursor = self.font.render("|", 1, self.color)
-            surface.blit(blinking_cursor, (self.x + text.get_width(), self.y))
+            surface.blit(blinking_cursor, (self.x + text_1.get_width(), self.y))
 
             # Check blinking cooldowns
             if self.blinking_cursor_bool:
@@ -109,6 +149,14 @@ class Input:
                 self.blinking_start = 0
         self.font.bold = False
 
+        # Display second chunk
+        text_2 = self.font.render(self.value[self.delta :], 1, self.color)
+        surface.blit(
+            text_2, (self.x + text_1.get_width() + blinking_cursor.get_width(), self.y)
+        )
+
+        self.prev_typing_len = self.new_typing_len
+
     def update(self, events):
         """Update the input based on passed events."""
         if self.focus != True:
@@ -119,7 +167,7 @@ class Input:
         )  # Add ability to hold down delete key and delete text
         if self.pause == 3 and pressed[locals.K_BACKSPACE]:
             self.pause = 0
-            self.value = self.value[:-1]
+            self.value = self.value[: self.delta - 1] + self.value[self.delta :]
         elif pressed[locals.K_BACKSPACE]:
             self.pause += 1
         else:
@@ -131,7 +179,7 @@ class Input:
                     self.shifted = False
             if event.type == locals.KEYDOWN:
                 if event.key == locals.K_BACKSPACE:
-                    self.value = self.value[:-1]
+                    self.value = self.value[: self.delta - 1] + self.value[self.delta :]
                     # Add small delay to slow a bit the backspace action
                     time.sleep(0.1)
                 elif event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
@@ -141,7 +189,11 @@ class Input:
                 elif event.key == locals.K_RETURN:
                     return self.value  # return value
                 if not self.shifted:
-                    if event.key == locals.K_a and "a" in self.restricted:
+                    if event.key == locals.K_LEFT:
+                        self.cursor_position -= 1
+                    elif event.key == locals.K_RIGHT:
+                        self.cursor_position += 1
+                    elif event.key == locals.K_a and "a" in self.restricted:
                         self.value += "a"
                     elif event.key == locals.K_b and "b" in self.restricted:
                         self.value += "b"
