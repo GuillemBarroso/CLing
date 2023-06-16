@@ -60,6 +60,21 @@ class Input:
         self.shifted = False
         self.pause = 0
         self.focus = self.options.focus
+        self.blinking_cursor_speed = 200
+        self.blinking_cursor_active = False
+        self.blinking_cursor_bool = False
+        self.blinking_cursor_past = 0
+        self.blinking_start = 0
+
+    def blinking_cursor_cooldown(self):
+        """Implement cooldowns for the blinking cursor."""
+        self.current_time = pygame.time.get_ticks()
+        if not self.blinking_cursor_active:
+            if (
+                self.current_time - self.blinking_cursor_past
+                >= self.blinking_cursor_speed
+            ):
+                self.blinking_cursor_active = True
 
     def set_pos(self, x, y):
         """Set the position to x, y."""
@@ -70,10 +85,30 @@ class Input:
         """Set the font for the input."""
         self.font = font
 
-    def draw(self, surface):
+    def draw(self, surface, focus):
         """Draw the text input to a surface."""
+        # Check cooldowns and display user input
+        self.blinking_cursor_cooldown()
         text = self.font.render(self.prompt + self.value, 1, self.color)
         surface.blit(text, (self.x, self.y))
+
+        # Display blinking cursor
+        if focus and self.blinking_cursor_active:
+            self.font.bold = True
+            blinking_cursor = self.font.render("|", 1, self.color)
+            surface.blit(blinking_cursor, (self.x + text.get_width(), self.y))
+
+            # Check blinking cooldowns
+            if self.blinking_cursor_bool:
+                self.blinking_start = pygame.time.get_ticks()
+                self.blinking_cursor_bool = False
+
+            if self.current_time - self.blinking_start >= self.blinking_cursor_speed:
+                self.blinking_cursor_past = pygame.time.get_ticks()
+                self.blinking_cursor_active = False
+                self.blinking_cursor_bool = True
+                self.blinking_start = 0
+        self.font.bold = False
 
     def update(self, events):
         """Update the input based on passed events."""

@@ -153,7 +153,7 @@ class CL:
         if not self.full_screen:
             self._input.focus = False
         self.check_prompt()
-        self._input.draw(self._surface)
+        self._input.draw(self._surface, self._input.focus)
 
     def maximize(self):
         """Maximize command line to fill the entire screen."""
@@ -261,7 +261,7 @@ class CL:
     def draw(self):
         """Draw on command line."""
         self.surface.fill(BLACK)
-        self.input.draw(self.surface)
+        self.input.draw(self.surface, self._input.focus)
         self.draw_history()
 
     def resolve_user_commands(self, events, player, sprites):
