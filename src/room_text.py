@@ -83,9 +83,9 @@ class RoomText:
                     self.line_counter = 0
                     self.room_first_entry[self.cmd_line.map_state] = False
                     self.keyboard_sound.stop()
+                    self.enter_sound.play()
                     self.cmd_line.input.value = ""
                     self.cmd_line.active_player = True
-                    self.enter_sound.play()
 
     def play_keyboard_sound(self):
         """Play the sound of a mechanical keyboard typing."""
