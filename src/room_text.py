@@ -95,4 +95,4 @@ class RoomText:
     def display_text_on_cl(self):
         """Display room's description."""
         # self.cmd_line.input.value = self.room_text
-        self.cmd_line._input.draw(self.cmd_line._surface)
+        self.cmd_line._input.draw(self.cmd_line.surface, self.cmd_line.input.focus)
