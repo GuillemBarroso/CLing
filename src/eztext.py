@@ -68,12 +68,9 @@ class Input:
 
     def blinking_cursor_cooldown(self):
         """Implement cooldowns for the blinking cursor."""
-        self.current_time = pygame.time.get_ticks()
+        current_time = pygame.time.get_ticks()
         if not self.blinking_cursor_active:
-            if (
-                self.current_time - self.blinking_cursor_past
-                >= self.blinking_cursor_speed
-            ):
+            if current_time - self.blinking_cursor_past >= self.blinking_cursor_speed:
                 self.blinking_cursor_active = True
 
     def set_pos(self, x, y):
@@ -103,7 +100,9 @@ class Input:
                 self.blinking_start = pygame.time.get_ticks()
                 self.blinking_cursor_bool = False
 
-            if self.current_time - self.blinking_start >= self.blinking_cursor_speed:
+            # Reset after cooldowns
+            current_time = pygame.time.get_ticks()
+            if current_time - self.blinking_start >= self.blinking_cursor_speed:
                 self.blinking_cursor_past = pygame.time.get_ticks()
                 self.blinking_cursor_active = False
                 self.blinking_cursor_bool = True
