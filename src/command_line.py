@@ -281,12 +281,13 @@ class CL:
 
     def recover_old_commands(self, events):
         """Use up and down keys to recover old commands stored in history."""
-        for event in events:
-            if event.type == locals.KEYDOWN:
-                if event.key == locals.K_UP:
-                    self.old_command_counter += 1
-                elif event.key == locals.K_DOWN:
-                    self.old_command_counter -= 1
+        if self._input.focus:
+            for event in events:
+                if event.type == locals.KEYDOWN:
+                    if event.key == locals.K_UP:
+                        self.old_command_counter += 1
+                    elif event.key == locals.K_DOWN:
+                        self.old_command_counter -= 1
 
         # Get only the commands from CL history
         self.get_command_history()
