@@ -42,9 +42,8 @@ class Game:
                     pygame.quit()
                     sys.exit()
 
-                # Check for events interacting with the CL
-                self.cmd_line.activate_cl_commands(event, self.level)
-                self.cmd_line.check_focus(event)
+                # Run CL methods interacting with events
+                self.cmd_line.run_event(event, self.level)
 
                 # # Pause game and toggle menu screen
                 # if event.type == pygame.KEYDOWN:
@@ -56,7 +55,7 @@ class Game:
 
             # Draw and update on screen and command line
             self.screen.surface.fill(WATER_COLOR)
-            self.level.run(events)
+            self.level.run()
 
             # Update
             pygame.display.update()

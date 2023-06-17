@@ -111,19 +111,18 @@ class CL:
 
     def check_focus(self, event):
         """Check whether CL is on focus mode or not."""
-        if not self.full_screen:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN and self._input.focus == False:
-                    self._input.focus = True
-                elif (
-                    event.key == pygame.K_RETURN
-                    and self._input.focus == True
-                    and self._input.value == ""
-                ):
-                    self._input.focus = False
-                if event.key == pygame.K_ESCAPE:
-                    self._input.focus = False
-                    self._input.value = ""
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN and self._input.focus == False:
+                self._input.focus = True
+            elif (
+                event.key == pygame.K_RETURN
+                and self._input.focus == True
+                and self._input.value == ""
+            ):
+                self._input.focus = False
+            if event.key == pygame.K_ESCAPE:
+                self._input.focus = False
+                self._input.value = ""
 
         self.check_prompt()
 
@@ -151,8 +150,7 @@ class CL:
 
         # Reset input and print
         self._input.value = ""
-        if not self.full_screen:
-            self._input.focus = False
+        self._input.focus = False
         self.check_prompt()
         self._input.draw(self._surface, self._input.focus)
 
@@ -188,17 +186,19 @@ class CL:
 
     def draw_scroll_bar(self):
         """Draw scroll bar indicating which part of the history is currently being displayed."""
-        bar_height = self._canvas_height * self._n_rows_shown / len(self._history)
-        y_pos = self._width - self._scroll_bar_width
-        x_pos = (
+        bar_height = self._height * self._n_rows_shown / len(self._history)
+        x_pos = self._width - self._scroll_bar_width
+        y_pos = (
             self._height
             - bar_height
             - (self._scroll_id / (self._n_rows_shown - len(self._history)))
             * (self._height - bar_height)
         )
-        scroll_bar = pygame.Rect((y_pos, x_pos, self._scroll_bar_width, bar_height))
+        if not self._full_screen:
+            y_pos += self._canvas_height - self._height
+        scroll_bar = pygame.Rect((x_pos, y_pos), (self._scroll_bar_width, bar_height))
 
-        pygame.draw.rect(self._canvas, WHITE, scroll_bar)
+        pygame.draw.rect(self._canvas, WHITE, scroll_bar, 0, 3)
 
     def split_long_user_input(self, user_input):
         """Split user input if it is longer than MAX_CL_LENGTH."""
@@ -252,12 +252,12 @@ class CL:
             command = cmd_dict[user_command]
             command.execute(self, arguments, player, sprites)
 
-    def scrolling_full_screen(self):
+    def scroll_history(self):
         """Enable scrolling when CL in full screen mode."""
-        if self.full_screen == True:
-            if len(self.history) > self.n_rows_shown:
+        if len(self.history) > self.n_rows_shown:
+            if not self._input.focus:
                 self.scrolling()
-                self.draw_scroll_bar()
+            self.draw_scroll_bar()
 
     def draw(self):
         """Draw on command line."""
@@ -265,9 +265,9 @@ class CL:
         self.input.draw(self.surface, self._input.focus)
         self.draw_history()
 
-    def resolve_user_commands(self, events, player, sprites):
+    def resolve_user_commands(self, event, player, sprites):
         """Resolve commands introduced by the user via command line."""
-        self._user_input = self._input.update(events)
+        self._user_input = self._input.update(event)
         if self._user_input and self.active_player:
             self.reset_after_enter(self._user_input)
             self.trigger_user_commands(player, sprites)
@@ -279,9 +279,9 @@ class CL:
             if line[0] == ">":
                 self._command_history.append(line[2:])
 
-    def recover_old_commands(self, events):
+    def recover_old_commands(self, event):
         """Use up and down keys to recover old commands stored in history."""
-        for event in events:
+        if self._input.focus:
             if event.type == locals.KEYDOWN:
                 if event.key == locals.K_UP:
                     self.old_command_counter += 1
@@ -293,6 +293,7 @@ class CL:
 
         # Check for incompatible indices
         if self.old_command_counter < 0:
+            self._input.value = ""
             self.old_command_counter = 0
         elif self.old_command_counter > len(self._command_history):
             self.old_command_counter = len(self._command_history)
@@ -325,3 +326,16 @@ class CL:
             self.map_state = "entry_cave"
             level.sprites_setup(level.entry_cave_path)
             level.create_map(level.entry_cave_layouts)
+
+    def run(self, room_text):
+        """Run CL methods."""
+        self.scroll_history()
+        self.draw()
+        room_text.update_room_first_entry()
+
+    def run_event(self, event, level):
+        """Run CL methods that interact with event."""
+        self.activate_cl_commands(event, level)
+        self.check_focus(event)
+        self.recover_old_commands(event)
+        self.resolve_user_commands(event, level.player, level.interactable_sprites)
