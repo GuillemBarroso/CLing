@@ -33,6 +33,7 @@ class CL:
         self.map_state = "entry_cave"
         self.entry_cave_opened = False
         self.active_player = True
+        self.old_command_counter = 0
 
     def _get_input(self, vertical_location):
         """Return text Input object."""
@@ -270,6 +271,35 @@ class CL:
         if self._user_input and self.active_player:
             self.reset_after_enter(self._user_input)
             self.trigger_user_commands(player, sprites)
+
+    def get_command_history(self):
+        """Get old commands from the entire CL history."""
+        self._command_history = []
+        for line in self._history:
+            if line[0] == ">":
+                self._command_history.append(line[2:])
+
+    def recover_old_commands(self, events):
+        """Use up and down keys to recover old commands stored in history."""
+        for event in events:
+            if event.type == locals.KEYDOWN:
+                if event.key == locals.K_UP:
+                    self.old_command_counter += 1
+                elif event.key == locals.K_DOWN:
+                    self.old_command_counter -= 1
+
+        # Get only the commands from CL history
+        self.get_command_history()
+
+        # Check for incompatible indices
+        if self.old_command_counter < 0:
+            self.old_command_counter = 0
+        elif self.old_command_counter > len(self._command_history):
+            self.old_command_counter = len(self._command_history)
+
+        # Apply index and display command
+        if not self.old_command_counter == 0:
+            self._input.value = self._command_history[-self.old_command_counter]
 
     def activate_cl_commands(self, event, level):
         """Activate CL commands coming from events."""
