@@ -333,12 +333,8 @@ class CL:
         room_text.update_room_first_entry()
 
     def run_event(self, event, level):
-        """Run CL methods that interact with events."""
+        """Run CL methods that interact with event."""
         self.activate_cl_commands(event, level)
         self.check_focus(event)
         self.recover_old_commands(event)
-        self.resolve_user_commands(
-            event,
-            level.player,
-            level.interactable_sprites,
-        )
+        self.resolve_user_commands(event, level.player, level.interactable_sprites)
