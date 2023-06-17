@@ -293,6 +293,7 @@ class CL:
 
         # Check for incompatible indices
         if self.old_command_counter < 0:
+            self._input.value = ""
             self.old_command_counter = 0
         elif self.old_command_counter > len(self._command_history):
             self.old_command_counter = len(self._command_history)

@@ -42,7 +42,7 @@ class Game:
                     pygame.quit()
                     sys.exit()
 
-                # Check for events interacting with the CL
+                # Run CL methods interacting with events
                 self.cmd_line.run_event(event, self.level)
 
                 # # Pause game and toggle menu screen
