@@ -38,7 +38,7 @@ class Player(Entity):
 
         # Player graphics setup
         self.import_player_assets()
-        self.status = "down"
+        self.status = "S"
 
         # Movement
         self.attacking = False
@@ -95,20 +95,32 @@ class Player(Entity):
 
     def import_player_assets(self):
         """Import player images to construct walking animations."""
-        character_path = "src/images/player_test"
+        character_path = "src/images/player"
         self.animations = {
-            "up": [],
-            "down": [],
-            "left": [],
-            "right": [],
-            "up_idle": [],
-            "down_idle": [],
-            "left_idle": [],
-            "right_idle": [],
-            "up_attack": [],
-            "down_attack": [],
-            "left_attack": [],
-            "right_attack": [],
+            "N": [],
+            "S": [],
+            "W": [],
+            "E": [],
+            "NW": [],
+            "NE": [],
+            "SW": [],
+            "SE": [],
+            "N_idle": [],
+            "S_idle": [],
+            "W_idle": [],
+            "E_idle": [],
+            "NW_idle": [],
+            "NE_idle": [],
+            "SW_idle": [],
+            "SE_idle": [],
+            "N_attack": [],
+            "S_attack": [],
+            "W_attack": [],
+            "E_attack": [],
+            "NW_attack": [],
+            "NE_attack": [],
+            "SW_attack": [],
+            "SE_attack": [],
         }
 
         for animation in self.animations.keys():
@@ -122,19 +134,19 @@ class Player(Entity):
             # Move input
             if keys_pressed[locals.K_w]:
                 self.direction.y = -1
-                self.status = "up"
+                self.status = "N"
             elif keys_pressed[locals.K_s]:
-                self.status = "down"
+                self.status = "S"
                 self.direction.y = 1
             else:
                 self.direction.y = 0
 
             if keys_pressed[locals.K_a]:
                 self.direction.x = -1
-                self.status = "left"
+                self.status = "W"
             elif keys_pressed[locals.K_d]:
                 self.direction.x = 1
-                self.status = "right"
+                self.status = "E"
             else:
                 self.direction.x = 0
 
