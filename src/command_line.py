@@ -265,9 +265,9 @@ class CL:
         self.input.draw(self.surface, self._input.focus)
         self.draw_history()
 
-    def resolve_user_commands(self, events, player, sprites):
+    def resolve_user_commands(self, event, player, sprites):
         """Resolve commands introduced by the user via command line."""
-        self._user_input = self._input.update(events)
+        self._user_input = self._input.update(event)
         if self._user_input and self.active_player:
             self.reset_after_enter(self._user_input)
             self.trigger_user_commands(player, sprites)
@@ -279,15 +279,14 @@ class CL:
             if line[0] == ">":
                 self._command_history.append(line[2:])
 
-    def recover_old_commands(self, events):
+    def recover_old_commands(self, event):
         """Use up and down keys to recover old commands stored in history."""
         if self._input.focus:
-            for event in events:
-                if event.type == locals.KEYDOWN:
-                    if event.key == locals.K_UP:
-                        self.old_command_counter += 1
-                    elif event.key == locals.K_DOWN:
-                        self.old_command_counter -= 1
+            if event.type == locals.KEYDOWN:
+                if event.key == locals.K_UP:
+                    self.old_command_counter += 1
+                elif event.key == locals.K_DOWN:
+                    self.old_command_counter -= 1
 
         # Get only the commands from CL history
         self.get_command_history()
@@ -326,3 +325,20 @@ class CL:
             self.map_state = "entry_cave"
             level.sprites_setup(level.entry_cave_path)
             level.create_map(level.entry_cave_layouts)
+
+    def run(self, room_text):
+        """Run CL methods."""
+        self.scrolling_full_screen()
+        self.draw()
+        room_text.update_room_first_entry()
+
+    def run_event(self, event, level):
+        """Run CL methods that interact with events."""
+        self.activate_cl_commands(event, level)
+        self.check_focus(event)
+        self.recover_old_commands(event)
+        self.resolve_user_commands(
+            event,
+            level.player,
+            level.interactable_sprites,
+        )
