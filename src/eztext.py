@@ -1,7 +1,5 @@
 """Module containing text classes."""
 
-import time
-
 import pygame
 import pygame.locals as locals
 
@@ -165,7 +163,7 @@ class Input:
         pressed = (
             pygame.key.get_pressed()
         )  # Add ability to hold down delete key and delete text
-        if self.pause == 3 and pressed[locals.K_BACKSPACE]:
+        if self.pause == 6 and pressed[locals.K_BACKSPACE]:
             self.pause = 0
             self.value = self.value[: self.delta - 1] + self.value[self.delta :]
         elif pressed[locals.K_BACKSPACE]:
@@ -180,8 +178,6 @@ class Input:
             if event.type == locals.KEYDOWN:
                 if event.key == locals.K_BACKSPACE:
                     self.value = self.value[: self.delta - 1] + self.value[self.delta :]
-                    # Add small delay to slow a bit the backspace action
-                    time.sleep(0.1)
                 elif event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                     self.shifted = True
                 elif event.key == locals.K_SPACE:

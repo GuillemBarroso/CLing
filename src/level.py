@@ -282,6 +282,7 @@ class Level:
             self.player,
             self.interactable_sprites,
         )
+        self.cmd_line.recover_old_commands(events)
         self.room_text.update_room_first_entry()
 
 
