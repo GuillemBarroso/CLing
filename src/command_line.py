@@ -2,10 +2,10 @@
 import pygame
 import pygame.locals as locals
 
+from src.cl_text_input import Input
 from src.colors import BLACK, WHITE
 from src.commands import cmd_dict
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE, ENTRY_CAVE, VALLEY
-from src.eztext import Input
 
 
 class CL:
