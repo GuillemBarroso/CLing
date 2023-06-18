@@ -3,6 +3,8 @@
 import pygame
 import pygame.locals as locals
 
+from src.colors import WHITE
+
 
 class ConfigError(KeyError):
     """Error class."""
@@ -58,6 +60,8 @@ class Input:
         self.shifted = False
         self.pause = 0
         self.focus = self.options.focus
+        self.font_height = self.options.font.get_height()
+        self.blinking_cursor_width = 2
         self.blinking_cursor_speed = 200
         self.blinking_cursor_active = False
         self.blinking_cursor_bool = False
@@ -122,16 +126,24 @@ class Input:
             )
 
         # Display first chunk
-        text_1 = self.font.render(self.prompt + self.value[: self.delta], 1, self.color)
-        surface.blit(text_1, (self.x, self.y))
+        text = self.font.render(self.prompt + self.value, 1, self.color)
+        surface.blit(text, (self.x, self.y))
 
-        # Display blinking cursor
-        blinking_cursor = None
-        self.font.bold = True
-        blinking_cursor = self.font.render("|", 1, self.color)
+        delta_text = self.font.render(
+            self.prompt + self.value[: self.delta], 1, self.color
+        )
 
+        # Create blinking rectangle
+        blinking_rect = pygame.Rect(
+            self.x + delta_text.get_width(),  # x (from left)
+            self.y,  # y (from top)
+            self.blinking_cursor_width,  # width
+            self.y - self.font_height,  # height
+        )
+
+        # Display rectangle is needed and update cooldowns
         if focus and self.blinking_cursor_active:
-            surface.blit(blinking_cursor, (self.x + text_1.get_width(), self.y))
+            pygame.draw.rect(surface, WHITE, blinking_rect)
 
             # Check blinking cooldowns
             if self.blinking_cursor_bool:
@@ -145,14 +157,8 @@ class Input:
                 self.blinking_cursor_active = False
                 self.blinking_cursor_bool = True
                 self.blinking_start = 0
-        self.font.bold = False
 
-        # Display second chunk
-        text_2 = self.font.render(self.value[self.delta :], 1, self.color)
-        surface.blit(
-            text_2, (self.x + text_1.get_width() + blinking_cursor.get_width(), self.y)
-        )
-
+        # Update typing length
         self.prev_typing_len = self.new_typing_len
 
     def update(self, event):
