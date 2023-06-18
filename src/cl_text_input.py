@@ -3,6 +3,8 @@
 import pygame
 import pygame.locals as locals
 
+from src.colors import WHITE
+
 
 class ConfigError(KeyError):
     """Error class."""
@@ -56,8 +58,13 @@ class Input:
         self.prompt = self.options.prompt
         self.value = ""
         self.shifted = False
-        self.pause = 0
+        self.ini_pause = 0
+        self.fast_pause = 0
+        self.cursor_ini_pause = 0
+        self.cursor_fast_pause = 0
         self.focus = self.options.focus
+        self.font_height = self.options.font.get_height()
+        self.blinking_cursor_width = 2
         self.blinking_cursor_speed = 200
         self.blinking_cursor_active = False
         self.blinking_cursor_bool = False
@@ -67,6 +74,9 @@ class Input:
         self.prev_typing_len = 0
         self.new_typing_len = 0
         self.delta = 0
+        self.INI_PAUSE = 20
+        self.FAST_PAUSE = 1
+        self.remove_letters_bool = True
 
     def blinking_cursor_cooldown(self):
         """Implement cooldowns for the blinking cursor."""
@@ -122,16 +132,24 @@ class Input:
             )
 
         # Display first chunk
-        text_1 = self.font.render(self.prompt + self.value[: self.delta], 1, self.color)
-        surface.blit(text_1, (self.x, self.y))
+        text = self.font.render(self.prompt + self.value, 1, self.color)
+        surface.blit(text, (self.x, self.y))
 
-        # Display blinking cursor
-        blinking_cursor = None
-        self.font.bold = True
-        blinking_cursor = self.font.render("|", 1, self.color)
+        delta_text = self.font.render(
+            self.prompt + self.value[: self.delta], 1, self.color
+        )
 
+        # Create blinking rectangle
+        blinking_rect = pygame.Rect(
+            self.x + delta_text.get_width(),  # x (from left)
+            self.y,  # y (from top)
+            self.blinking_cursor_width,  # width
+            self.y - self.font_height,  # height
+        )
+
+        # Display rectangle is needed and update cooldowns
         if focus and self.blinking_cursor_active:
-            surface.blit(blinking_cursor, (self.x + text_1.get_width(), self.y))
+            pygame.draw.rect(surface, WHITE, blinking_rect)
 
             # Check blinking cooldowns
             if self.blinking_cursor_bool:
@@ -145,50 +163,86 @@ class Input:
                 self.blinking_cursor_active = False
                 self.blinking_cursor_bool = True
                 self.blinking_start = 0
-        self.font.bold = False
 
-        # Display second chunk
-        text_2 = self.font.render(self.value[self.delta :], 1, self.color)
-        surface.blit(
-            text_2, (self.x + text_1.get_width() + blinking_cursor.get_width(), self.y)
-        )
-
+        # Update typing length
         self.prev_typing_len = self.new_typing_len
+
+    def remove_letters(self):
+        """Set conditions in order to remove letters from a string."""
+        if self.remove_letters_bool:
+            if len(self.value[: self.delta - 1]) == 0:
+                self.value = self.value[self.delta :]
+                self.remove_letters_bool = False
+            else:
+                self.value = self.value[: self.delta - 1] + self.value[self.delta :]
+
+    def get_pressed_keys(self):
+        """Some keys (arrows, cntrl, backspace, return) have to be runed outside the event loop."""
+        pressed = pygame.key.get_pressed()
+
+        # Add ability to hold down delete key and delete text
+        if self.ini_pause == self.INI_PAUSE and pressed[locals.K_BACKSPACE]:
+            self.ini_pause = self.INI_PAUSE
+            self.fast_pause = 0
+            self.remove_letters()
+        elif self.fast_pause == self.FAST_PAUSE and pressed[locals.K_BACKSPACE]:
+            self.fast_pause = 0
+            self.remove_letters()
+        elif pressed[locals.K_BACKSPACE]:
+            self.ini_pause += 1
+        elif self.ini_pause == self.INI_PAUSE and pressed[locals.K_BACKSPACE]:
+            self.fast_pause += 1
+        else:
+            self.ini_pause = 0
+            self.fast_pause = 0
+            self.remove_letters_bool = True
+
+        # Enable pressing left and right keys to go through the user's input
+        if self.cursor_ini_pause == self.INI_PAUSE and pressed[locals.K_LEFT]:
+            self.cursor_ini_pause = self.INI_PAUSE
+            self.cursor_position -= 1
+        elif self.cursor_ini_pause == self.INI_PAUSE and pressed[locals.K_RIGHT]:
+            self.cursor_ini_pause = self.INI_PAUSE
+            self.cursor_position += 1
+        elif self.cursor_fast_pause == self.FAST_PAUSE and pressed[locals.K_LEFT]:
+            self.cursor_fast_pause = 0
+            self.cursor_position -= 1
+        elif self.cursor_fast_pause == self.INI_PAUSE and pressed[locals.K_RIGHT]:
+            self.cursor_fast_pause = 0
+            self.cursor_position += 1
+        elif pressed[locals.K_LEFT] or pressed[locals.K_RIGHT]:
+            self.cursor_ini_pause += 1
+        elif self.cursor_ini_pause == self.INI_PAUSE and pressed[locals.K_LEFT]:
+            self.cursor_fast_pause += 1
+        elif self.cursor_ini_pause == self.INI_PAUSE and pressed[locals.K_RIGHT]:
+            self.cursor_fast_pause += 1
+        else:
+            self.cursor_ini_pause = 0
+            self.cursor_fast_pause = 0
 
     def update(self, event):
         """Update the input based on passed events."""
         if self.focus != True:
             return
 
-        pressed = (
-            pygame.key.get_pressed()
-        )  # Add ability to hold down delete key and delete text
-        if self.pause == 6 and pressed[locals.K_BACKSPACE]:
-            self.pause = 0
-            self.value = self.value[: self.delta - 1] + self.value[self.delta :]
-        elif pressed[locals.K_BACKSPACE]:
-            self.pause += 1
-        else:
-            self.pause = 0
-
         if event.type == locals.KEYUP:
             if event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                 self.shifted = False
         if event.type == locals.KEYDOWN:
             if event.key == locals.K_BACKSPACE:
-                self.value = self.value[: self.delta - 1] + self.value[self.delta :]
+                self.remove_letters()
             elif event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                 self.shifted = True
             elif event.key == locals.K_SPACE:
                 self.value += " "
             elif event.key == locals.K_RETURN:
                 return self.value  # return value
+            elif event.key == locals.K_LEFT:
+                self.cursor_position -= 1
+            elif event.key == locals.K_RIGHT:
+                self.cursor_position += 1
             if not self.shifted:
-                if event.key == locals.K_LEFT:
-                    self.cursor_position -= 1
-                elif event.key == locals.K_RIGHT:
-                    self.cursor_position += 1
-                elif event.key == locals.K_a and "a" in self.restricted:
+                if event.key == locals.K_a and "a" in self.restricted:
                     self.value += "a"
                 elif event.key == locals.K_b and "b" in self.restricted:
                     self.value += "b"
