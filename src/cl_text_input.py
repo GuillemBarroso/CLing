@@ -59,6 +59,7 @@ class Input:
         self.value = ""
         self.shifted = False
         self.pause = 0
+        self.cursor_pause = 0
         self.focus = self.options.focus
         self.font_height = self.options.font.get_height()
         self.blinking_cursor_width = 2
@@ -71,6 +72,7 @@ class Input:
         self.prev_typing_len = 0
         self.new_typing_len = 0
         self.delta = 0
+        self.titi = 0
 
     def blinking_cursor_cooldown(self):
         """Implement cooldowns for the blinking cursor."""
@@ -100,6 +102,8 @@ class Input:
             self.cursor_position = 0
         if self.cursor_position < -len(self.value):
             self.cursor_position = -len(self.value)
+
+        print(self.cursor_position)
 
         delta = typing_delta + self.cursor_position
         if delta < 0:
@@ -166,16 +170,30 @@ class Input:
         if self.focus != True:
             return
 
-        pressed = (
-            pygame.key.get_pressed()
-        )  # Add ability to hold down delete key and delete text
+        # Add ability to hold down delete key and delete text
+        pressed = pygame.key.get_pressed()
+        # if self.pause == 6 and pressed[locals.K_BACKSPACE]:
+        #     self.pause = 0
+        #     self.value = self.value[: self.delta - 1] + self.value[self.delta :]
+        # elif pressed[locals.K_BACKSPACE]:
+        #     self.pause += 1
+        # else:
+        #     self.pause = 0
         if self.pause == 6 and pressed[locals.K_BACKSPACE]:
             self.pause = 0
-            self.value = self.value[: self.delta - 1] + self.value[self.delta :]
+            self.value = self.value[-1]
         elif pressed[locals.K_BACKSPACE]:
             self.pause += 1
         else:
             self.pause = 0
+
+        if self.cursor_pause == 6 and pressed[locals.K_LEFT]:
+            self.cursor_pause = 0
+            self.cursor_position -= 1
+        elif pressed[locals.K_LEFT]:
+            self.cursor_pause += 1
+        else:
+            self.cursor_pause = 0
 
         if event.type == locals.KEYUP:
             if event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
@@ -189,12 +207,12 @@ class Input:
                 self.value += " "
             elif event.key == locals.K_RETURN:
                 return self.value  # return value
+            elif event.key == locals.K_LEFT:
+                self.cursor_position -= 1
+            elif event.key == locals.K_RIGHT:
+                self.cursor_position += 1
             if not self.shifted:
-                if event.key == locals.K_LEFT:
-                    self.cursor_position -= 1
-                elif event.key == locals.K_RIGHT:
-                    self.cursor_position += 1
-                elif event.key == locals.K_a and "a" in self.restricted:
+                if event.key == locals.K_a and "a" in self.restricted:
                     self.value += "a"
                 elif event.key == locals.K_b and "b" in self.restricted:
                     self.value += "b"
