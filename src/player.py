@@ -32,7 +32,7 @@ class Player(Entity):
         """Initialize player object."""
         super().__init__(groups)
         self.sprite_type = "player"
-        self.image = pygame.image.load("src/images/test/player.png").convert_alpha()
+        self.image = pygame.image.load("src/images/player/S/S_0.png").convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(-6, HITBOX_OFFSET["player"])
 
