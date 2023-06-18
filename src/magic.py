@@ -35,11 +35,11 @@ class MagicPlayer:
             player.energy -= cost
             self.sounds["flame"].play()
 
-            if player.status.split("_")[0] == "right":
+            if player.status.split("_")[0] == "E":
                 direction = pygame.math.Vector2(1, 0)
-            elif player.status.split("_")[0] == "left":
+            elif player.status.split("_")[0] == "W":
                 direction = pygame.math.Vector2(-1, 0)
-            elif player.status.split("_")[0] == "up":
+            elif player.status.split("_")[0] == "N":
                 direction = pygame.math.Vector2(0, -1)
             else:
                 direction = pygame.math.Vector2(0, 1)

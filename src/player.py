@@ -11,10 +11,6 @@ from src.settings import HITBOX_OFFSET, magic_data, weapon_data
 from src.tile_interaction import PLAYER_ACTION_RADIUS, TILE_PRIORITY
 from src.utils import import_folder
 
-# from src.connections import CONNECTIONS
-# from src.maps import rooms_dict
-# from src.room import Room
-
 
 class Player(Entity):
     """Player object that will control the player in the game."""
@@ -32,13 +28,13 @@ class Player(Entity):
         """Initialize player object."""
         super().__init__(groups)
         self.sprite_type = "player"
-        self.image = pygame.image.load("src/images/test/player.png").convert_alpha()
+        self.image = pygame.image.load("src/images/player/S/S_0.png").convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(-6, HITBOX_OFFSET["player"])
 
         # Player graphics setup
         self.import_player_assets()
-        self.status = "down"
+        self.status = "S"
 
         # Movement
         self.attacking = False
@@ -95,20 +91,32 @@ class Player(Entity):
 
     def import_player_assets(self):
         """Import player images to construct walking animations."""
-        character_path = "src/images/player_test"
+        character_path = "src/images/player"
         self.animations = {
-            "up": [],
-            "down": [],
-            "left": [],
-            "right": [],
-            "up_idle": [],
-            "down_idle": [],
-            "left_idle": [],
-            "right_idle": [],
-            "up_attack": [],
-            "down_attack": [],
-            "left_attack": [],
-            "right_attack": [],
+            "N": [],
+            "S": [],
+            "W": [],
+            "E": [],
+            "NW": [],
+            "NE": [],
+            "SW": [],
+            "SE": [],
+            "N_idle": [],
+            "S_idle": [],
+            "W_idle": [],
+            "E_idle": [],
+            "NW_idle": [],
+            "NE_idle": [],
+            "SW_idle": [],
+            "SE_idle": [],
+            "N_attack": [],
+            "S_attack": [],
+            "W_attack": [],
+            "E_attack": [],
+            "NW_attack": [],
+            "NE_attack": [],
+            "SW_attack": [],
+            "SE_attack": [],
         }
 
         for animation in self.animations.keys():
@@ -120,21 +128,45 @@ class Player(Entity):
         if not self.attacking:
             keys_pressed = pygame.key.get_pressed()
             # Move input
-            if keys_pressed[locals.K_w]:
+            if keys_pressed[locals.K_w] and keys_pressed[locals.K_a]:
                 self.direction.y = -1
-                self.status = "up"
-            elif keys_pressed[locals.K_s]:
-                self.status = "down"
+                self.status = "NW"
+            elif keys_pressed[locals.K_w] and keys_pressed[locals.K_d]:
+                self.status = "NE"
+                self.direction.y = -1
+            elif keys_pressed[locals.K_s] and keys_pressed[locals.K_a]:
                 self.direction.y = 1
+                self.status = "SW"
+            elif keys_pressed[locals.K_s] and keys_pressed[locals.K_d]:
+                self.status = "SE"
+                self.direction.y = 1
+            elif keys_pressed[locals.K_w]:
+                self.direction.y = -1
+                self.status = "N"
+            elif keys_pressed[locals.K_s]:
+                self.direction.y = 1
+                self.status = "S"
             else:
                 self.direction.y = 0
 
-            if keys_pressed[locals.K_a]:
+            if keys_pressed[locals.K_w] and keys_pressed[locals.K_a]:
                 self.direction.x = -1
-                self.status = "left"
+                self.status = "NW"
+            elif keys_pressed[locals.K_w] and keys_pressed[locals.K_d]:
+                self.direction.x = 1
+                self.status = "NE"
+            elif keys_pressed[locals.K_s] and keys_pressed[locals.K_a]:
+                self.direction.x = -1
+                self.status = "SW"
+            elif keys_pressed[locals.K_s] and keys_pressed[locals.K_d]:
+                self.direction.x = 1
+                self.status = "SE"
+            elif keys_pressed[locals.K_a]:
+                self.direction.x = -1
+                self.status = "W"
             elif keys_pressed[locals.K_d]:
                 self.direction.x = 1
-                self.status = "right"
+                self.status = "E"
             else:
                 self.direction.x = 0
 
