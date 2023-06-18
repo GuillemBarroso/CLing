@@ -331,6 +331,7 @@ class CL:
         """Run CL methods."""
         self.scroll_history()
         self.draw()
+        self._input.get_pressed_keys()
         # room_text.update_room_first_entry()
 
     def run_event(self, event, level):

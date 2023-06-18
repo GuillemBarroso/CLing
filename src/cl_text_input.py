@@ -58,8 +58,10 @@ class Input:
         self.prompt = self.options.prompt
         self.value = ""
         self.shifted = False
-        self.pause = 0
-        self.cursor_pause = 0
+        self.ini_pause = 0
+        self.fast_pause = 0
+        self.cursor_ini_pause = 0
+        self.cursor_fast_pause = 0
         self.focus = self.options.focus
         self.font_height = self.options.font.get_height()
         self.blinking_cursor_width = 2
@@ -72,7 +74,9 @@ class Input:
         self.prev_typing_len = 0
         self.new_typing_len = 0
         self.delta = 0
-        self.titi = 0
+        self.INI_PAUSE = 20
+        self.FAST_PAUSE = 1
+        self.remove_letters_bool = True
 
     def blinking_cursor_cooldown(self):
         """Implement cooldowns for the blinking cursor."""
@@ -102,8 +106,6 @@ class Input:
             self.cursor_position = 0
         if self.cursor_position < -len(self.value):
             self.cursor_position = -len(self.value)
-
-        print(self.cursor_position)
 
         delta = typing_delta + self.cursor_position
         if delta < 0:
@@ -165,42 +167,70 @@ class Input:
         # Update typing length
         self.prev_typing_len = self.new_typing_len
 
+    def remove_letters(self):
+        """Set conditions in order to remove letters from a string."""
+        if self.remove_letters_bool:
+            if len(self.value[: self.delta - 1]) == 0:
+                self.value = self.value[self.delta :]
+                self.remove_letters_bool = False
+            else:
+                self.value = self.value[: self.delta - 1] + self.value[self.delta :]
+
+    def get_pressed_keys(self):
+        """Some keys (arrows, cntrl, backspace, return) have to be runed outside the event loop."""
+        pressed = pygame.key.get_pressed()
+
+        # Add ability to hold down delete key and delete text
+        if self.ini_pause == self.INI_PAUSE and pressed[locals.K_BACKSPACE]:
+            self.ini_pause = self.INI_PAUSE
+            self.fast_pause = 0
+            self.remove_letters()
+        elif self.fast_pause == self.FAST_PAUSE and pressed[locals.K_BACKSPACE]:
+            self.fast_pause = 0
+            self.remove_letters()
+        elif pressed[locals.K_BACKSPACE]:
+            self.ini_pause += 1
+        elif self.ini_pause == self.INI_PAUSE and pressed[locals.K_BACKSPACE]:
+            self.fast_pause += 1
+        else:
+            self.ini_pause = 0
+            self.fast_pause = 0
+            self.remove_letters_bool = True
+
+        # Enable pressing left and right keys to go through the user's input
+        if self.cursor_ini_pause == self.INI_PAUSE and pressed[locals.K_LEFT]:
+            self.cursor_ini_pause = self.INI_PAUSE
+            self.cursor_position -= 1
+        elif self.cursor_ini_pause == self.INI_PAUSE and pressed[locals.K_RIGHT]:
+            self.cursor_ini_pause = self.INI_PAUSE
+            self.cursor_position += 1
+        elif self.cursor_fast_pause == self.FAST_PAUSE and pressed[locals.K_LEFT]:
+            self.cursor_fast_pause = 0
+            self.cursor_position -= 1
+        elif self.cursor_fast_pause == self.INI_PAUSE and pressed[locals.K_RIGHT]:
+            self.cursor_fast_pause = 0
+            self.cursor_position += 1
+        elif pressed[locals.K_LEFT] or pressed[locals.K_RIGHT]:
+            self.cursor_ini_pause += 1
+        elif self.cursor_ini_pause == self.INI_PAUSE and pressed[locals.K_LEFT]:
+            self.cursor_fast_pause += 1
+        elif self.cursor_ini_pause == self.INI_PAUSE and pressed[locals.K_RIGHT]:
+            self.cursor_fast_pause += 1
+        else:
+            self.cursor_ini_pause = 0
+            self.cursor_fast_pause = 0
+
     def update(self, event):
         """Update the input based on passed events."""
         if self.focus != True:
             return
-
-        # Add ability to hold down delete key and delete text
-        pressed = pygame.key.get_pressed()
-        # if self.pause == 6 and pressed[locals.K_BACKSPACE]:
-        #     self.pause = 0
-        #     self.value = self.value[: self.delta - 1] + self.value[self.delta :]
-        # elif pressed[locals.K_BACKSPACE]:
-        #     self.pause += 1
-        # else:
-        #     self.pause = 0
-        if self.pause == 6 and pressed[locals.K_BACKSPACE]:
-            self.pause = 0
-            self.value = self.value[-1]
-        elif pressed[locals.K_BACKSPACE]:
-            self.pause += 1
-        else:
-            self.pause = 0
-
-        if self.cursor_pause == 6 and pressed[locals.K_LEFT]:
-            self.cursor_pause = 0
-            self.cursor_position -= 1
-        elif pressed[locals.K_LEFT]:
-            self.cursor_pause += 1
-        else:
-            self.cursor_pause = 0
 
         if event.type == locals.KEYUP:
             if event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                 self.shifted = False
         if event.type == locals.KEYDOWN:
             if event.key == locals.K_BACKSPACE:
-                self.value = self.value[: self.delta - 1] + self.value[self.delta :]
+                self.remove_letters()
             elif event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                 self.shifted = True
             elif event.key == locals.K_SPACE:
