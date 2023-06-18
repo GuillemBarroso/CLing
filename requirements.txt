@@ -1,5 +1,5 @@
 # Install
-pygame==2.1.2
+pygame==2.4.0
 
 # Others
 pre-commit==2.21.0
