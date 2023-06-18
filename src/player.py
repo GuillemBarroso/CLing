@@ -11,10 +11,6 @@ from src.settings import HITBOX_OFFSET, magic_data, weapon_data
 from src.tile_interaction import PLAYER_ACTION_RADIUS, TILE_PRIORITY
 from src.utils import import_folder
 
-# from src.connections import CONNECTIONS
-# from src.maps import rooms_dict
-# from src.room import Room
-
 
 class Player(Entity):
     """Player object that will control the player in the game."""
@@ -132,16 +128,40 @@ class Player(Entity):
         if not self.attacking:
             keys_pressed = pygame.key.get_pressed()
             # Move input
-            if keys_pressed[locals.K_w]:
+            if keys_pressed[locals.K_w] and keys_pressed[locals.K_a]:
+                self.direction.y = -1
+                self.status = "NW"
+            elif keys_pressed[locals.K_w] and keys_pressed[locals.K_d]:
+                self.status = "NE"
+                self.direction.y = -1
+            elif keys_pressed[locals.K_s] and keys_pressed[locals.K_a]:
+                self.direction.y = 1
+                self.status = "SW"
+            elif keys_pressed[locals.K_s] and keys_pressed[locals.K_d]:
+                self.status = "SE"
+                self.direction.y = 1
+            elif keys_pressed[locals.K_w]:
                 self.direction.y = -1
                 self.status = "N"
             elif keys_pressed[locals.K_s]:
-                self.status = "S"
                 self.direction.y = 1
+                self.status = "S"
             else:
                 self.direction.y = 0
 
-            if keys_pressed[locals.K_a]:
+            if keys_pressed[locals.K_w] and keys_pressed[locals.K_a]:
+                self.direction.x = -1
+                self.status = "NW"
+            elif keys_pressed[locals.K_w] and keys_pressed[locals.K_d]:
+                self.direction.x = 1
+                self.status = "NE"
+            elif keys_pressed[locals.K_s] and keys_pressed[locals.K_a]:
+                self.direction.x = -1
+                self.status = "SW"
+            elif keys_pressed[locals.K_s] and keys_pressed[locals.K_d]:
+                self.direction.x = 1
+                self.status = "SE"
+            elif keys_pressed[locals.K_a]:
                 self.direction.x = -1
                 self.status = "W"
             elif keys_pressed[locals.K_d]:

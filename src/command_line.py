@@ -331,7 +331,7 @@ class CL:
         """Run CL methods."""
         self.scroll_history()
         self.draw()
-        room_text.update_room_first_entry()
+        # room_text.update_room_first_entry()
 
     def run_event(self, event, level):
         """Run CL methods that interact with event."""
