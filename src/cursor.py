@@ -27,17 +27,34 @@ class Cursor:
         self.real_position = 0
         self.prev_typing_len = 0
         self.new_typing_len = 0
-        self.select = False
-        self.select_start = 0
-        self.select_end = 0
-        self.delta_typing = 0
-        self.select_inverted = False
 
         # Set constants
         self.BLINKING_WIDTH = 2
         self.BLINKING_SPEED = 200
         self.INI_PAUSE = 20
         self.FAST_PAUSE = 1
+
+        self.init_selection_variables()
+
+    def init_selection_variables(self):
+        """Initialize selection variables. Used so next focus time is not polluted."""
+        self.select = False
+        self.select_start = 0
+        self.select_end = 0
+        self.delta_typing = 0
+        self.select_inverted = False
+        self.selection = ""
+        self.select_ongoing = False
+        self.past_ongoing = False
+        self.select_maintain = False
+        self.ini = 0
+        self.end = 0
+        self.old_ini = 0
+        self.old_end = 0
+        self.new_ini = 0
+        self.new_end = 0
+        self.state_ini = 0
+        self.state_end = 0
 
     def blinking_cursor_cooldown(self):
         """Implement cooldowns for the blinking cursor."""
@@ -53,12 +70,9 @@ class Cursor:
             self.blinking_start = pygame.time.get_ticks()
             self.blinking_bool = False
 
-        if self.select:
-            self.blinking_bool = True
-
         # Reset after cooldowns
         current_time = pygame.time.get_ticks()
-        if not self.input.select:
+        if not self.select:
             if current_time - self.blinking_start >= self.BLINKING_SPEED:
                 self.blinking_past = pygame.time.get_ticks()
                 self.blinking_active = False
@@ -116,12 +130,12 @@ class Cursor:
         """Set conditions in order to remove letters from a string."""
         if self.remove_letters_bool:
             if len(self.input.value[: self.real_position - 1]) == 0:
-                self.value = self.value[self.real_position :]
+                self.input.value = self.input.value[self.real_position :]
                 self.remove_letters_bool = False
             else:
-                self.value = (
-                    self.value[: self.real_position - 1]
-                    + self.value[self.real_position :]
+                self.input.value = (
+                    self.input.value[: self.real_position - 1]
+                    + self.input.value[self.real_position :]
                 )
 
     def track_cursor_movement(self):
@@ -167,20 +181,56 @@ class Cursor:
             end = self.select_end
         return ini, end
 
+    def running_selection(self, pressed):
+        """Get pressed keys at each frame."""
+        if self.select_maintain:
+            # Trick to avoid overwriting the variables when selecting
+            # characters in inverse mode (from left to right).
+            # This is only done when select_maintain is activated.
+            self.select_start = self.old_select_start
+            self.select_end = self.old_select_end
+        else:
+            # Normal behaviour to obtain the selection positions
+            if pressed[locals.K_LSHIFT]:
+                self.select_start = self.position
+            else:
+                self.select_end = self.position
+
+        self.old_select_start = self.select_start
+        self.old_select_end = self.select_end
+
+    def run_event(self, event):
+        """Update based on an event."""
+        if event.type == locals.KEYDOWN:
+            if event.key == locals.K_LSHIFT:
+                self.select = True
+                self.select_ongoing = True
+            elif self.select_maintain and (
+                event.key == locals.K_LEFT or event.key == locals.K_RIGHT
+            ):
+                self.select = False
+                self.select_ongoing = False
+                self.select_maintain = False
+            else:
+                # Substitute selected region!
+                pass
+
+        if event.type == locals.KEYUP:
+            if event.key == locals.K_LSHIFT and self.old_ini == self.old_end:
+                self.select = False
+                self.select_ongoing = False
+                self.select_maintain = False
+            elif event.key == locals.K_LSHIFT:
+                self.select_maintain = True
+                self.select_ongoing = False
+
     def run(self):
         """Execute all cursor methods."""
         # Some keys (arrows, cntrl, backspace, return) have to be runed outside the event loop
         pressed = pygame.key.get_pressed()
         self.fast_delete(pressed)
         self.fast_move(pressed)
-
-        # Select
-        if pressed[locals.K_LSHIFT]:
-            self.select = True
-            self.select_start = self.position
-        else:
-            self.select = False
-            self.select_end = self.position
+        self.running_selection(pressed)
 
     def create_rectangle(self, select_text):
         """Create white rectangle with thin width or with the select_text width if select."""
@@ -224,36 +274,62 @@ class Cursor:
         # Track cursor movement
         self.real_position, self.new_typing_len = self.track_cursor_movement()
         self.delta_typing = self.new_typing_len - self.prev_typing_len
+        print("ongoing", self.select_ongoing)
+        print("select", self.select)
+        print("maintain", self.select_maintain)
+        print("Pos", self.real_position)
 
         # Reorder self.value if typing in the middle of the string
         self.input.reorder_value_if_modified(self)
 
-        # Get indices to get selection
-        select_text = ""
-        if self.select:
-            ini, end = self.get_select_indices()
+        # Check past vs current ongoing states
+        if self.past_ongoing == True and self.select_ongoing == False:
+            if not self.ini == self.end:
+                self.state_ini = self.ini
+                self.state_end = self.end
 
-            selection = self.input.value[ini:end]
-            select_text = self.input.font.render(selection, 1, WHITE)
+        if self.select:
+            # print("state ini:", self.state_ini)
+            # print("state end", self.state_end)
+            if self.select_ongoing:
+                self.selection = self.input.value[self.ini : self.end]
+            elif self.select_maintain:
+                self.selection = self.input.value[self.state_ini : self.state_end]
+
+            print("Sel str", self.selection)
+
+            # Get indices to get selection
+            self.ini, self.end = self.get_select_indices()
+            # self.new_ini = self.state_ini + self.ini
+            # self.new_end = self.state_end + self.end
+
+            # print("Ini:", ini)
+            # print("End", end)
+
+        select_text = self.input.font.render(self.selection, 1, WHITE)
 
         # Create blinking rectangle
         blinking_rect = self.create_rectangle(select_text)
 
         # Display rectangle if needed and update cooldowns
-        if self.input.focus and self.blinking_active:
+        if self.blinking_active:
             pygame.draw.rect(surface, WHITE, blinking_rect)
             self.update_cooldowns()
 
         # Display input value
         if self.select:
             text_1 = self.input.font.render(
-                self.input.prompt + self.input.value[:ini], 1, WHITE
+                self.input.prompt + self.input.value[: self.old_ini], 1, WHITE
             )
             surface.blit(text_1, (self.input.x, self.input.y))
-            text_2 = self.input.font.render(self.input.value[ini:end], 1, BLACK)
+            text_2 = self.input.font.render(
+                self.input.value[self.old_ini : self.old_end], 1, BLACK
+            )
             surface.blit(text_2, (self.input.x + text_1.get_width(), self.input.y))
-            if not end == None:
-                text_3 = self.input.font.render(self.input.value[end:], 1, WHITE)
+            if not self.old_end == None:
+                text_3 = self.input.font.render(
+                    self.input.value[self.old_end :], 1, WHITE
+                )
                 surface.blit(
                     text_3,
                     (
@@ -267,5 +343,9 @@ class Cursor:
             )
             surface.blit(text, (self.input.x, self.input.y))
 
-        # Update typing length
+        # Update variables
         self.prev_typing_len = self.new_typing_len
+        self.past_ongoing = self.select_ongoing
+        if not self.select_maintain:
+            self.old_ini = self.ini
+            self.old_end = self.end

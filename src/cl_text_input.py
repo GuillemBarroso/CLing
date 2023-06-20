@@ -81,12 +81,17 @@ class Input:
         if self.focus != True:
             return
 
-        if event.type == locals.KEYDOWN:
-            if event.key == locals.K_LSHIFT:
-                self.select = True
-                self.select_start = cursor.position
-            if not event.key == locals.K_LSHIFT:
-                self.select = False
+        # Selection
+        # if event.type == locals.KEYDOWN:
+        #     if not event.key == locals.K_LSHIFT:
+        #         self.cursor.select = False
+        #         self.select = True
+        #         self.select_start = cursor.position
+        # if event.type == locals.KEYUP:
+        #     if event.key == locals.K_LSHIFT:
+        #         self.select = False
+        #         self.select_end = cursor.position
+
         if event.type == locals.KEYUP:
             if event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                 self.shifted = False

@@ -261,12 +261,10 @@ class CL:
                 self.scrolling()
             self.draw_scroll_bar()
 
-    def resolve_user_commands(self, event, player, sprites, cursor):
+    def resolve_user_commands(self, player, sprites):
         """Resolve commands introduced by the user via command line."""
-        self._user_input = self._input.update(event, cursor)
-        if self._user_input and self.active_player:
-            self.reset_after_enter(self._user_input)
-            self.trigger_user_commands(player, sprites)
+        self.reset_after_enter(self._user_input)
+        self.trigger_user_commands(player, sprites)
 
     def get_command_history(self):
         """Get old commands from the entire CL history."""
@@ -327,19 +325,25 @@ class CL:
         """Run CL methods."""
         # Run methods that control the CL behaviour
         self.scroll_history()
-        self.cursor.run()
+        # room_text.update_room_first_entry()
 
         # Run methods that draw in the CL
         self.surface.fill(BLACK)
-        self.cursor.draw(self.surface)
         self.draw_history()
-        # room_text.update_room_first_entry()
+
+        # Run CL specific methods when in focus mode
+        if self.input.focus:
+            self.cursor.run()
+            self.cursor.draw(self.surface)
 
     def run_event(self, event, level):
         """Run CL methods that interact with event."""
+        if self.input.focus:
+            self.cursor.run_event(event)
         self.activate_cl_commands(event, level)
         self.check_focus(event)
         self.recover_old_commands(event)
-        self.resolve_user_commands(
-            event, level.player, level.interactable_sprites, self.cursor
-        )
+        self._user_input = self._input.update(event, self.cursor)
+        if self._user_input and self.active_player:
+            self.cursor.init_selection_variables()
+            self.resolve_user_commands(level.player, level.interactable_sprites)
