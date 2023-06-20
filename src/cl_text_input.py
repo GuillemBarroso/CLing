@@ -1,9 +1,6 @@
 """Module containing text classes."""
 
-import pygame
 import pygame.locals as locals
-
-from src.colors import WHITE
 
 
 class ConfigError(KeyError):
@@ -58,32 +55,8 @@ class Input:
         self.prompt = self.options.prompt
         self.value = ""
         self.shifted = False
-        self.ini_pause = 0
-        self.fast_pause = 0
-        self.cursor_ini_pause = 0
-        self.cursor_fast_pause = 0
         self.focus = self.options.focus
         self.font_height = self.options.font.get_height()
-        self.blinking_cursor_width = 2
-        self.blinking_cursor_speed = 200
-        self.blinking_cursor_active = False
-        self.blinking_cursor_bool = False
-        self.blinking_cursor_past = 0
-        self.blinking_start = 0
-        self.cursor_position = 0
-        self.prev_typing_len = 0
-        self.new_typing_len = 0
-        self.delta = 0
-        self.INI_PAUSE = 20
-        self.FAST_PAUSE = 1
-        self.remove_letters_bool = True
-
-    def blinking_cursor_cooldown(self):
-        """Implement cooldowns for the blinking cursor."""
-        current_time = pygame.time.get_ticks()
-        if not self.blinking_cursor_active:
-            if current_time - self.blinking_cursor_past >= self.blinking_cursor_speed:
-                self.blinking_cursor_active = True
 
     def set_pos(self, x, y):
         """Set the position to x, y."""
@@ -94,143 +67,32 @@ class Input:
         """Set the font for the input."""
         self.font = font
 
-    def track_cursor_movement(self):
-        """Track the cursor on the CL."""
-        # Get changes done by typing
-        past_movement = 0
-        current_movement = len(self.value)
-        typing_delta = current_movement - past_movement
-
-        # Get changes done with the left and right arrows
-        if self.cursor_position > 0:
-            self.cursor_position = 0
-        if self.cursor_position < -len(self.value):
-            self.cursor_position = -len(self.value)
-
-        delta = typing_delta + self.cursor_position
-        if delta < 0:
-            delta = 0
-
-        past_movement = current_movement
-        return delta, typing_delta
-
-    def draw(self, surface, focus):
-        """Draw the text input to a surface."""
-        # Check cooldowns and display user input
-        self.blinking_cursor_cooldown()
-
-        # Track cursor movement
-        self.delta, self.new_typing_len = self.track_cursor_movement()
-        delta_typing = self.new_typing_len - self.prev_typing_len
-
-        # Reorder self.value if typing in the middle of the string
-        if self.cursor_position < 0 and delta_typing > 0:
+    def reorder_value_if_modified(self, cursor):
+        """Reorder self.value if typing in the middle of the string."""
+        if cursor.position < 0 and cursor.delta_typing > 0:
             self.value = (
-                self.value[: self.delta - 1]
+                self.value[: cursor.real_position - 1]
                 + self.value[-1]
-                + self.value[self.delta - 1 : -1]
+                + self.value[cursor.real_position - 1 : -1]
             )
 
-        # Display first chunk
-        text = self.font.render(self.prompt + self.value, 1, self.color)
-        surface.blit(text, (self.x, self.y))
-
-        delta_text = self.font.render(
-            self.prompt + self.value[: self.delta], 1, self.color
-        )
-
-        # Create blinking rectangle
-        blinking_rect = pygame.Rect(
-            self.x + delta_text.get_width(),  # x (from left)
-            self.y,  # y (from top)
-            self.blinking_cursor_width,  # width
-            self.y - self.font_height,  # height
-        )
-
-        # Display rectangle is needed and update cooldowns
-        if focus and self.blinking_cursor_active:
-            pygame.draw.rect(surface, WHITE, blinking_rect)
-
-            # Check blinking cooldowns
-            if self.blinking_cursor_bool:
-                self.blinking_start = pygame.time.get_ticks()
-                self.blinking_cursor_bool = False
-
-            # Reset after cooldowns
-            current_time = pygame.time.get_ticks()
-            if current_time - self.blinking_start >= self.blinking_cursor_speed:
-                self.blinking_cursor_past = pygame.time.get_ticks()
-                self.blinking_cursor_active = False
-                self.blinking_cursor_bool = True
-                self.blinking_start = 0
-
-        # Update typing length
-        self.prev_typing_len = self.new_typing_len
-
-    def remove_letters(self):
-        """Set conditions in order to remove letters from a string."""
-        if self.remove_letters_bool:
-            if len(self.value[: self.delta - 1]) == 0:
-                self.value = self.value[self.delta :]
-                self.remove_letters_bool = False
-            else:
-                self.value = self.value[: self.delta - 1] + self.value[self.delta :]
-
-    def get_pressed_keys(self):
-        """Some keys (arrows, cntrl, backspace, return) have to be runed outside the event loop."""
-        pressed = pygame.key.get_pressed()
-
-        # Add ability to hold down delete key and delete text
-        if self.ini_pause == self.INI_PAUSE and pressed[locals.K_BACKSPACE]:
-            self.ini_pause = self.INI_PAUSE
-            self.fast_pause = 0
-            self.remove_letters()
-        elif self.fast_pause == self.FAST_PAUSE and pressed[locals.K_BACKSPACE]:
-            self.fast_pause = 0
-            self.remove_letters()
-        elif pressed[locals.K_BACKSPACE]:
-            self.ini_pause += 1
-        elif self.ini_pause == self.INI_PAUSE and pressed[locals.K_BACKSPACE]:
-            self.fast_pause += 1
-        else:
-            self.ini_pause = 0
-            self.fast_pause = 0
-            self.remove_letters_bool = True
-
-        # Enable pressing left and right keys to go through the user's input
-        if self.cursor_ini_pause == self.INI_PAUSE and pressed[locals.K_LEFT]:
-            self.cursor_ini_pause = self.INI_PAUSE
-            self.cursor_position -= 1
-        elif self.cursor_ini_pause == self.INI_PAUSE and pressed[locals.K_RIGHT]:
-            self.cursor_ini_pause = self.INI_PAUSE
-            self.cursor_position += 1
-        elif self.cursor_fast_pause == self.FAST_PAUSE and pressed[locals.K_LEFT]:
-            self.cursor_fast_pause = 0
-            self.cursor_position -= 1
-        elif self.cursor_fast_pause == self.INI_PAUSE and pressed[locals.K_RIGHT]:
-            self.cursor_fast_pause = 0
-            self.cursor_position += 1
-        elif pressed[locals.K_LEFT] or pressed[locals.K_RIGHT]:
-            self.cursor_ini_pause += 1
-        elif self.cursor_ini_pause == self.INI_PAUSE and pressed[locals.K_LEFT]:
-            self.cursor_fast_pause += 1
-        elif self.cursor_ini_pause == self.INI_PAUSE and pressed[locals.K_RIGHT]:
-            self.cursor_fast_pause += 1
-        else:
-            self.cursor_ini_pause = 0
-            self.cursor_fast_pause = 0
-
-    def update(self, event):
+    def update(self, event, cursor):
         """Update the input based on passed events."""
         if self.focus != True:
             return
 
+        if event.type == locals.KEYDOWN:
+            if event.key == locals.K_LSHIFT:
+                self.select = True
+                self.select_start = cursor.position
+            if not event.key == locals.K_LSHIFT:
+                self.select = False
         if event.type == locals.KEYUP:
             if event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                 self.shifted = False
         if event.type == locals.KEYDOWN:
             if event.key == locals.K_BACKSPACE:
-                self.remove_letters()
+                cursor.remove_letters()
             elif event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                 self.shifted = True
             elif event.key == locals.K_SPACE:
@@ -238,9 +100,9 @@ class Input:
             elif event.key == locals.K_RETURN:
                 return self.value  # return value
             elif event.key == locals.K_LEFT:
-                self.cursor_position -= 1
+                cursor.position -= 1
             elif event.key == locals.K_RIGHT:
-                self.cursor_position += 1
+                cursor.position += 1
             if not self.shifted:
                 if event.key == locals.K_a and "a" in self.restricted:
                     self.value += "a"
