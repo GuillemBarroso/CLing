@@ -49,9 +49,12 @@ class Cursor:
     def update_cooldowns(self):
         """Update blinking cursor cooldowns."""
         # Check blinking cooldowns
-        if self.blinking_bool or self.select:
+        if self.blinking_bool:
             self.blinking_start = pygame.time.get_ticks()
             self.blinking_bool = False
+
+        if self.select:
+            self.blinking_bool = True
 
         # Reset after cooldowns
         current_time = pygame.time.get_ticks()
@@ -222,8 +225,6 @@ class Cursor:
         self.real_position, self.new_typing_len = self.track_cursor_movement()
         self.delta_typing = self.new_typing_len - self.prev_typing_len
 
-        print("Pos:", self.real_position)
-
         # Reorder self.value if typing in the middle of the string
         self.input.reorder_value_if_modified(self)
 
@@ -241,7 +242,6 @@ class Cursor:
         # Display rectangle if needed and update cooldowns
         if self.input.focus and self.blinking_active:
             pygame.draw.rect(surface, WHITE, blinking_rect)
-
             self.update_cooldowns()
 
         # Display input value

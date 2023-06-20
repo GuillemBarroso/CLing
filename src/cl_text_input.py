@@ -1,5 +1,5 @@
 """Module containing text classes."""
-
+import pygame  # noqa
 import pygame.locals as locals
 
 
