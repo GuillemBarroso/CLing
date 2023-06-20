@@ -76,21 +76,21 @@ class Input:
                 + self.value[cursor.real_position - 1 : -1]
             )
 
+    def substitue_selection(self, cursor):
+        """Substitute the selected characters by the next letter inputted by the user."""
+        self.value = (
+            self.value[: cursor.old_ini - 1]
+            + self.value[-1]
+            + self.value[cursor.old_end :]
+        )
+        cursor.select_substitute = False
+        cursor.old_ini = cursor.position
+        cursor.old_end = cursor.position
+
     def update(self, event, cursor):
         """Update the input based on passed events."""
         if self.focus != True:
             return
-
-        # Selection
-        # if event.type == locals.KEYDOWN:
-        #     if not event.key == locals.K_LSHIFT:
-        #         self.cursor.select = False
-        #         self.select = True
-        #         self.select_start = cursor.position
-        # if event.type == locals.KEYUP:
-        #     if event.key == locals.K_LSHIFT:
-        #         self.select = False
-        #         self.select_end = cursor.position
 
         if event.type == locals.KEYUP:
             if event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:

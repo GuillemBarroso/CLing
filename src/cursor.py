@@ -37,7 +37,7 @@ class Cursor:
         self.init_selection_variables()
 
     def init_selection_variables(self):
-        """Initialize selection variables. Used so next focus time is not polluted."""
+        """Initialize selection variables so they are not polluted."""
         self.select = False
         self.select_start = 0
         self.select_end = 0
@@ -47,6 +47,7 @@ class Cursor:
         self.select_ongoing = False
         self.past_ongoing = False
         self.select_maintain = False
+        self.select_substitue = False
         self.ini = 0
         self.end = 0
         self.old_ini = 0
@@ -202,7 +203,10 @@ class Cursor:
     def run_event(self, event):
         """Update based on an event."""
         if event.type == locals.KEYDOWN:
-            if event.key == locals.K_LSHIFT:
+            if self.select_maintain and event.key == locals.K_LSHIFT:
+                self.select_ongoing = True
+                self.select_maintain = False
+            elif event.key == locals.K_LSHIFT:
                 self.select = True
                 self.select_ongoing = True
             elif self.select_maintain and (
@@ -211,9 +215,11 @@ class Cursor:
                 self.select = False
                 self.select_ongoing = False
                 self.select_maintain = False
-            else:
-                # Substitute selected region!
-                pass
+            elif self.select_maintain:
+                self.select_substitue = True
+                self.select = False
+                self.select_maintain = False
+                self.select_ongoing = False
 
         if event.type == locals.KEYUP:
             if event.key == locals.K_LSHIFT and self.old_ini == self.old_end:
@@ -305,6 +311,10 @@ class Cursor:
 
             # print("Ini:", ini)
             # print("End", end)
+
+        # Substitute the selected region for the next letter introduced by the user
+        if self.select_substitue:
+            self.input.substitue_selection(self)
 
         select_text = self.input.font.render(self.selection, 1, WHITE)
 
