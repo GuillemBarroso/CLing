@@ -195,7 +195,7 @@ class Cursor:
             self.select_end = self.old_select_end
         else:
             # Normal behaviour to obtain the selection positions
-            if pressed[locals.K_LSHIFT]:
+            if pressed[locals.K_LSHIFT] or pressed[locals.K_RSHIFT]:
                 self.select_start = self.position
             else:
                 self.select_end = self.position
@@ -206,10 +206,12 @@ class Cursor:
     def run_event(self, event):
         """Update based on an event."""
         if event.type == locals.KEYDOWN:
-            if self.select_maintain and event.key == locals.K_LSHIFT:
+            if self.select_maintain and (
+                event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT
+            ):
                 self.select_ongoing = True
                 self.select_maintain = False
-            elif event.key == locals.K_LSHIFT:
+            elif event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                 self.select = True
                 self.select_ongoing = True
             elif self.select_maintain and (
@@ -225,11 +227,13 @@ class Cursor:
                 self.select_ongoing = False
 
         if event.type == locals.KEYUP:
-            if event.key == locals.K_LSHIFT and self.old_ini == self.old_end:
+            if (
+                event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT
+            ) and self.old_ini == self.old_end:
                 self.select = False
                 self.select_ongoing = False
                 self.select_maintain = False
-            elif event.key == locals.K_LSHIFT:
+            elif event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                 self.select_maintain = True
                 self.select_ongoing = False
             elif not event.key == locals.K_LEFT and not event.key == locals.K_RIGHT:
