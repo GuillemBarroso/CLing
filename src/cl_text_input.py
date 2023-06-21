@@ -76,16 +76,14 @@ class Input:
                 + self.value[cursor.real_position - 1 : -1]
             )
 
-    def substitue_selection(self, cursor):
+    def substitute_selection(self, cursor):
         """Substitute the selected characters by the next letter inputted by the user."""
-        self.value = (
-            self.value[: cursor.old_ini - 1]
-            + self.value[-1]
-            + self.value[cursor.old_end :]
-        )
-        cursor.select_substitute = False
-        cursor.old_ini = cursor.position
-        cursor.old_end = cursor.position
+        substitute_letter = self.value[-1]
+        original_value = self.value[:-1]
+        text = original_value[: cursor.old_ini] + substitute_letter
+        if cursor.old_end:
+            text += original_value[cursor.old_end :]
+        return text
 
     def update(self, event, cursor):
         """Update the input based on passed events."""
