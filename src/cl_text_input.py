@@ -67,6 +67,11 @@ class Input:
         """Set the font for the input."""
         self.font = font
 
+    def draw(self, surface):
+        """Draw the text input to a surface."""
+        text = self.font.render(self.prompt + self.value, 1, self.color)
+        surface.blit(text, (self.x, self.y))
+
     def reorder_value_if_modified(self, cursor):
         """Reorder self.value if typing in the middle of the string."""
         if cursor.position < 0 and cursor.delta_typing > 0:

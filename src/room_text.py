@@ -36,11 +36,13 @@ class RoomText:
             "valley": VALLEY_TEXT,
         }
         self.room_first_entry = dict.fromkeys(self.room_text_dict.keys(), True)
-        self.update_text = False
+        self.update_text = True
         self.past_updated_text = 0
         self.update_text_speed = 20
         self.letter_counter = 0
         self.line_counter = 0
+        self.prev_value = ""
+
         self.keyboard_sound = pygame.mixer.Sound("src/audio/mech_keyboard.wav")
         self.enter_sound = pygame.mixer.Sound("src/audio/mech_keyboard_enter.wav")
         self.enter_sound.set_volume(0.1)
@@ -65,21 +67,21 @@ class RoomText:
             self.display_animated_text()
 
     def display_animated_text(self):
-        """Set text in a for loop."""
+        """Display text letter by letter directly into the CL history."""
         if self.update_text == True:
             self.play_keyboard_sound()
             self.letter_counter += 1
-            self.cmd_line.input.value = self.room_text[self.line_counter][
-                : self.letter_counter
-            ]
-            self.display_text_on_cl()
+            text = self.room_text[self.line_counter][: self.letter_counter]
+            try:
+                self.cmd_line._history[self.line_counter] = text
+            except IndexError:
+                self.cmd_line._history.append(text)
             self.past_updated_text = pygame.time.get_ticks()
-            self.update_text = False
             if self.letter_counter == len(self.room_text[self.line_counter]) + 2:
-                self.cmd_line._history.append(self.room_text[self.line_counter])
                 self.line_counter += 1
                 self.letter_counter = 0
                 if self.line_counter == len(self.room_text):
+                    self.update_text = False
                     self.line_counter = 0
                     self.room_first_entry[self.cmd_line.map_state] = False
                     self.keyboard_sound.stop()
@@ -92,6 +94,8 @@ class RoomText:
         if self.letter_counter == 0:
             self.keyboard_sound.play(loops=-1)
 
-    def display_text_on_cl(self):
+    def display_letter_on_cl(self, prev_value, new_letter):
         """Display room's description."""
-        self.cmd_line._input.draw(self.cmd_line.surface, self.cmd_line.input.focus)
+        self.cmd_line._input.draw_letter_after_value(
+            self.cmd_line.surface, prev_value, new_letter
+        )
