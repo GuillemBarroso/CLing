@@ -71,9 +71,9 @@ class Input:
         """Reorder self.value if typing in the middle of the string."""
         if cursor.position < 0 and cursor.delta_typing > 0:
             self.value = (
-                self.value[: cursor.real_position - 1]
+                self.value[: cursor.left_position - 1]
                 + self.value[-1]
-                + self.value[cursor.real_position - 1 : -1]
+                + self.value[cursor.left_position - 1 : -1]
             )
 
     def substitute_selection(self, cursor):

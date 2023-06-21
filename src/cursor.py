@@ -146,7 +146,8 @@ class Cursor:
 
         # Correct self.position if removing a chunk of string (substitute)
         if self.select_substitute:
-            self.position += len(self.substituted_text)
+            if not self.select_inverted:
+                self.position += len(self.substituted_text)
 
         # Get changes done with the left and right arrows
         if self.position > 0:
