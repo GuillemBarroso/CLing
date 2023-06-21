@@ -325,7 +325,7 @@ class CL:
         """Run CL methods."""
         # Run methods that control the CL behaviour
         self.scroll_history()
-        # room_text.update_room_first_entry()
+        room_text.update_room_first_entry()
 
         # Run methods that draw in the CL
         self.surface.fill(BLACK)
