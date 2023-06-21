@@ -274,8 +274,8 @@ class Level:
             self.visible_sprites.enemy_update(self.player)
             self.player_attack_logic()
 
-        # Command Line actions
-        self.cmd_line.run(self.room_text)
+            # Command Line actions
+            self.cmd_line.run(self.room_text)
 
 
 class YsortedCameraGroup(pygame.sprite.Group):

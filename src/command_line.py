@@ -5,6 +5,7 @@ import pygame.locals as locals
 from src.cl_text_input import Input
 from src.colors import BLACK, WHITE
 from src.commands import cmd_dict
+from src.cursor import Cursor
 from src.events_definition import CMD_FULL_SCREEN, CMD_REGULAR_SIZE, ENTRY_CAVE, VALLEY
 
 
@@ -34,6 +35,7 @@ class CL:
         self.entry_cave_opened = False
         self.active_player = True
         self.old_command_counter = 0
+        self.cursor = Cursor(self._input)
 
     def _get_input(self, vertical_location):
         """Return text Input object."""
@@ -152,7 +154,7 @@ class CL:
         self._input.value = ""
         self._input.focus = False
         self.check_prompt()
-        self._input.draw(self._surface, self._input.focus)
+        self.cursor.draw(self._surface)
 
     def maximize(self):
         """Maximize command line to fill the entire screen."""
@@ -259,18 +261,10 @@ class CL:
                 self.scrolling()
             self.draw_scroll_bar()
 
-    def draw(self):
-        """Draw on command line."""
-        self.surface.fill(BLACK)
-        self.input.draw(self.surface, self._input.focus)
-        self.draw_history()
-
-    def resolve_user_commands(self, event, player, sprites):
+    def resolve_user_commands(self, player, sprites):
         """Resolve commands introduced by the user via command line."""
-        self._user_input = self._input.update(event)
-        if self._user_input and self.active_player:
-            self.reset_after_enter(self._user_input)
-            self.trigger_user_commands(player, sprites)
+        self.reset_after_enter(self._user_input)
+        self.trigger_user_commands(player, sprites)
 
     def get_command_history(self):
         """Get old commands from the entire CL history."""
@@ -329,14 +323,27 @@ class CL:
 
     def run(self, room_text):
         """Run CL methods."""
+        # Run methods that control the CL behaviour
         self.scroll_history()
-        self.draw()
-        self._input.get_pressed_keys()
         # room_text.update_room_first_entry()
+
+        # Run methods that draw in the CL
+        self.surface.fill(BLACK)
+        self.draw_history()
+
+        # Run CL specific methods when in focus mode
+        if self.input.focus:
+            self.cursor.run()
+            self.cursor.draw(self.surface)
 
     def run_event(self, event, level):
         """Run CL methods that interact with event."""
+        if self.input.focus:
+            self.cursor.run_event(event)
         self.activate_cl_commands(event, level)
         self.check_focus(event)
         self.recover_old_commands(event)
-        self.resolve_user_commands(event, level.player, level.interactable_sprites)
+        self._user_input = self._input.update(event, self.cursor)
+        if self._user_input and self.active_player:
+            self.cursor.init_selection_variables()
+            self.resolve_user_commands(level.player, level.interactable_sprites)
