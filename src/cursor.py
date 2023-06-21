@@ -146,20 +146,14 @@ class Cursor:
 
         # Correct self.position if removing a chunk of string (substitute)
         if self.select_substitute:
-            self.position += len(self.substituted_text)
+            if not self.select_inverted:
+                self.position += len(self.substituted_text)
 
         # Get changes done with the left and right arrows
         if self.position > 0:
             self.position = 0
         if self.position < -len(self.input.value):
             self.position = -len(self.input.value)
-
-        # Correct self.position if removing a chunk of string (substitute)
-        # if self.select_substitute:
-        #     if not self.select_inverted:
-        #         self.position += len(self.substituted_text)
-        #         if not self.left_position == 0:
-        #             self.position -= 1
 
         left_position = input_length + self.position
         if left_position < 0:
@@ -304,19 +298,12 @@ class Cursor:
         self.ini, self.end = self.get_select_indices()
 
         if self.select:
-            # print("state ini:", self.state_ini)
-            # print("state end", self.state_end)
             if self.select_ongoing:
+                # Changinf selection based on indices
                 self.selection = self.input.value[self.ini : self.end]
             elif self.select_maintain:
+                # Use state variables to maintain the selection
                 self.selection = self.input.value[self.state_ini : self.state_end]
-            # elif self.select_substitute:
-            #     if self.select_inverted:
-            #         self.old_ini = self.old_end
-            #         self.old_end = self.old_end
-            #     else:
-            #         self.old_end = self.old_ini + len(self.selection) -1
-            #         self.old_ini = self.old_ini + len(self.selection) -1
             elif self.select_substitute:
                 # Substitute the selected region for the next letter introduced by the user
                 original_input = self.input.value[:-1]
@@ -324,20 +311,16 @@ class Cursor:
                 self.selection = ""
                 self.input.value = self.input.substitute_selection(self)
 
-            # print("Sel str", self.selection)
-
         # Track cursor movement
         self.left_position, self.new_typing_len = self.track_cursor_movement()
         self.delta_typing = self.new_typing_len - self.prev_typing_len
-        print("ongoing", self.select_ongoing)
-        print("select", self.select)
-        print("maintain", self.select_maintain)
-        print("substitute", self.select_substitute)
-        print("Pos", self.left_position)
+
+        # Update variables once substitution is done
         if self.select_substitute:
             self.select = False
             self.select_substitute = False
 
+        # Render selection text, whether is a empty string or not
         select_text = self.input.font.render(self.selection, 1, WHITE)
 
         # Create blinking rectangle
@@ -350,6 +333,7 @@ class Cursor:
 
         # Display input value
         if self.select:
+            # Display the total string in 3 chunks to display black letters in selection
             text_1 = self.input.font.render(
                 self.input.prompt + self.input.value[: self.old_ini], 1, WHITE
             )
@@ -358,6 +342,8 @@ class Cursor:
                 self.input.value[self.old_ini : self.old_end], 1, BLACK
             )
             surface.blit(text_2, (self.input.x + text_1.get_width(), self.input.y))
+
+            # Display 3rd chunk only if it exists
             if not self.old_end == None:
                 text_3 = self.input.font.render(
                     self.input.value[self.old_end :], 1, WHITE
@@ -370,6 +356,7 @@ class Cursor:
                     ),
                 )
         else:
+            # Render and display the entire string
             text = self.input.font.render(
                 self.input.prompt + self.input.value, 1, WHITE
             )
