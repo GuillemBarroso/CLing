@@ -3,3 +3,6 @@ pygame==2.4.0
 
 # Others
 pre-commit==2.21.0
+
+# Test
+pytest==7.3.2
