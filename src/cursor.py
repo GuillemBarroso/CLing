@@ -4,6 +4,7 @@ import pygame
 import pygame.locals as locals
 
 from src.colors import BLACK, WHITE
+from src.text_selection import Selection
 
 
 class Cursor:
@@ -23,7 +24,7 @@ class Cursor:
         self.blinking_bool = False
         self.blinking_past = 0
         self.blinking_start = 0
-        self.remove_letters_bool = True
+        # self.remove_letters_bool = True
         self.left_position = 0
         self.prev_typing_len = 0
         self.new_typing_len = 0
@@ -48,6 +49,8 @@ class Cursor:
         self.past_ongoing = False
         self.select_maintain = False
         self.select_substitute = False
+        self.select_delete = False
+        self.select_mode = ""
         self.ini = 0
         self.end = 0
         self.old_ini = 0
@@ -107,15 +110,20 @@ class Cursor:
     def fast_delete(self, keys_pressed):
         """Add ability to hold down delete key and delete text."""
         if self.delete_ini_pause == self.INI_PAUSE and keys_pressed[locals.K_BACKSPACE]:
+            self.remove_letters()
             self.delete_ini_pause = self.INI_PAUSE
             self.delete_fast_pause = 0
-            self.remove_letters()
         elif (
             self.delete_fast_pause == self.FAST_PAUSE
             and keys_pressed[locals.K_BACKSPACE]
         ):
-            self.delete_fast_pause = 0
             self.remove_letters()
+            self.delete_fast_pause = 0
+        # TODO: FIX THIS 5 BELOW: THE PROBLEM IS THAT AFTER THE EVENT select.delete is over
+        # THE BACKSPACE KEY IS STILL BEING TRIGGERED. NOT SURE HOW TO FIX IT.
+        elif keys_pressed[locals.K_BACKSPACE] and self.delete_ini_pause == 5:
+            self.remove_letters()
+            self.delete_ini_pause += 1
         elif keys_pressed[locals.K_BACKSPACE]:
             self.delete_ini_pause += 1
         elif (
@@ -125,29 +133,54 @@ class Cursor:
         else:
             self.delete_ini_pause = 0
             self.delete_fast_pause = 0
-            self.remove_letters_bool = True
 
     def remove_letters(self):
         """Set conditions in order to remove letters from a string."""
-        if self.remove_letters_bool:
-            if len(self.input.value[: self.left_position - 1]) == 0:
-                self.input.value = self.input.value[self.left_position :]
-                self.remove_letters_bool = False
+        if self.select:
+            # If selection, apply correct indices
+            if self.select_start == self.select_end == 0:
+                substituted_text = ""
+                self.input.value = self.input.value[:-1]
+            elif self.select_end == 0:
+                substituted_text = self.input.value[self.select_start :]
+                self.input.value = self.input.value[: self.select_start]
+            elif self.select_start == self.select_end:
+                substituted_text = ""
+                self.input.value = (
+                    self.input.value[: self.select_start - 1]
+                    + self.input.value[self.select_end :]
+                )
+            elif not self.select_start == self.select_end:
+                substituted_text = self.input.value[self.select_start : self.select_end]
+                self.input.value = (
+                    self.input.value[: self.select_start]
+                    + self.input.value[self.select_start :]
+                )
+            # Update selection variables
+            # Correct self.position if removing a chunk of string (substitute)
+            if self.select_substitute:
+                if not self.select_inverted:
+                    substituted_text = self.input.value[
+                        self.select_start : self.select_end
+                    ]
+                    self.position += len(substituted_text)
+            self.select = False
+            self.select_substitute = False
+
+        else:
+            # If no selection, remove one letter from the value string
+            if self.position == 0:
+                self.input.value = self.input.value[:-1]
             else:
                 self.input.value = (
-                    self.input.value[: self.left_position - 1]
-                    + self.input.value[self.left_position :]
+                    self.input.value[: self.position - 1]
+                    + self.input.value[self.position :]
                 )
 
     def track_cursor_movement(self):
         """Track the cursor on the CL."""
         # Get changes done by typing
         input_length = len(self.input.value)
-
-        # Correct self.position if removing a chunk of string (substitute)
-        if self.select_substitute:
-            if not self.select_inverted:
-                self.position += len(self.substituted_text)
 
         # Get changes done with the left and right arrows
         if self.position > 0:
@@ -186,7 +219,7 @@ class Cursor:
 
     def running_selection(self, pressed):
         """Get pressed keys at each frame."""
-        if self.select_maintain or self.select_substitute:
+        if self.select_maintain or self.select_substitute or self.select_delete:
             # Trick to avoid overwriting the variables when selecting
             # characters in inverse mode (from left to right).
             # This happens due to the fact that "run_event" are executed
@@ -220,8 +253,15 @@ class Cursor:
                 self.select = False
                 self.select_ongoing = False
                 self.select_maintain = False
+            elif self.select_maintain and event.key == locals.K_BACKSPACE:
+                self.select_delete = True
+                self.select_substitute = False
+                self.select = True
+                self.select_maintain = False
+                self.select_ongoing = False
             elif self.select_maintain:
                 self.select_substitute = True
+                self.select_delete = False
                 self.select = True
                 self.select_maintain = False
                 self.select_ongoing = False
@@ -241,14 +281,32 @@ class Cursor:
                 self.select_ongoing = False
                 self.select_maintain = False
                 self.select_substitute = False
+                self.select_delete = False
 
     def run(self):
         """Execute all cursor methods."""
         # Some keys (arrows, cntrl, backspace, return) have to be runed outside the event loop
         pressed = pygame.key.get_pressed()
-        self.fast_delete(pressed)
         self.fast_move(pressed)
         self.running_selection(pressed)
+        if not self.select_delete:
+            self.fast_delete(pressed)
+
+        # Run methods to obtain the correct string for displaying
+        if self.select_substitute:
+            self.select_mode = "substitute"
+        elif self.select_delete:
+            self.select_mode = "delete"
+
+        if self.select_mode:
+            selection = Selection(
+                self.input.value, self.select_start, self.select_end, self.select_mode
+            )
+            self.input.value, self.position = selection.resolve()
+            self.selection = (
+                ""  # for dipslaying purposes the selection has been deleted
+            )
+            self.select_mode = ""
 
     def create_rectangle(self, select_text):
         """Create white rectangle with thin width or with the select_text width if select."""
@@ -289,9 +347,6 @@ class Cursor:
         # Check cooldowns and display user input
         self.blinking_cursor_cooldown()
 
-        # Reorder self.value if typing in the middle of the string
-        self.input.reorder_value_if_modified(self)
-
         # Check past vs current ongoing states
         if self.past_ongoing == True and self.select_ongoing == False:
             if not self.ini == self.end:
@@ -308,21 +363,16 @@ class Cursor:
             elif self.select_maintain:
                 # Use state variables to maintain the selection
                 self.selection = self.input.value[self.state_ini : self.state_end]
-            elif self.select_substitute:
-                # Substitute the selected region for the next letter introduced by the user
-                original_input = self.input.value[:-1]
-                self.substituted_text = original_input[self.old_ini : self.old_end]
-                self.selection = ""
-                self.input.value = self.input.substitute_selection(self)
 
         # Track cursor movement
         self.left_position, self.new_typing_len = self.track_cursor_movement()
         self.delta_typing = self.new_typing_len - self.prev_typing_len
 
         # Update variables once substitution is done
-        if self.select_substitute:
+        if self.select_substitute or self.select_delete:
             self.select = False
             self.select_substitute = False
+            self.select_delete = False
 
         # Render selection text, whether is a empty string or not
         select_text = self.input.font.render(self.selection, 1, WHITE)

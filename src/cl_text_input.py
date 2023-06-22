@@ -99,9 +99,7 @@ class Input:
             if event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                 self.shifted = False
         if event.type == locals.KEYDOWN:
-            if event.key == locals.K_BACKSPACE:
-                cursor.remove_letters()
-            elif event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
+            if event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                 self.shifted = True
             elif event.key == locals.K_SPACE:
                 self.value += " "
