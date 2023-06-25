@@ -4,7 +4,7 @@ import pygame
 import pygame.locals as locals
 
 from src.colors import BLACK, WHITE
-from src.text_selection import Selection
+from src.text import Text
 
 
 class Cursor:
@@ -39,26 +39,37 @@ class Cursor:
 
     def init_selection_variables(self):
         """Initialize selection variables so they are not polluted."""
-        self.select = False
         self.select_start = 0
         self.select_end = 0
         self.delta_typing = 0
-        self.select_inverted = False
         self.selection = ""
-        self.select_ongoing = False
+        self.select_inverted = False
         self.past_ongoing = False
-        self.select_maintain = False
-        self.select_substitute = False
-        self.select_delete = False
         self.select_mode = ""
-        self.ini = 0
+        self.start = 0
         self.end = 0
-        self.old_ini = 0
-        self.old_end = 0
-        self.new_ini = 0
-        self.new_end = 0
-        self.state_ini = 0
+        self.disp_start = 0
+        self.disp_end = 0
+        self.state_start = 0
         self.state_end = 0
+        self.text_modes_list = [
+            "shifted",
+            "moving_arrows",
+            "select_ongoing",
+            "select_maintain",
+            "select_substitute",
+            "select_delete",
+        ]
+        self.text_modes = dict.fromkeys(self.text_modes_list, False)
+
+    def set_cl_modes(self, boolean, *args):
+        """Set CL modes to True or False."""
+        for arg in args:
+            if arg == "all":
+                for mode in self.text_modes_list:
+                    self.text_modes[mode] = boolean
+            else:
+                self.text_modes[arg] = boolean
 
     def blinking_cursor_cooldown(self):
         """Implement cooldowns for the blinking cursor."""
@@ -76,7 +87,9 @@ class Cursor:
 
         # Reset after cooldowns
         current_time = pygame.time.get_ticks()
-        if not self.select:
+        if not (
+            self.text_modes["select_maintain"] or self.text_modes["select_ongoing"]
+        ):
             if current_time - self.blinking_start >= self.BLINKING_SPEED:
                 self.blinking_past = pygame.time.get_ticks()
                 self.blinking_active = False
@@ -110,19 +123,19 @@ class Cursor:
     def fast_delete(self, keys_pressed):
         """Add ability to hold down delete key and delete text."""
         if self.delete_ini_pause == self.INI_PAUSE and keys_pressed[locals.K_BACKSPACE]:
-            self.remove_letters()
+            self.input.value, self.position = self.text.delete()
             self.delete_ini_pause = self.INI_PAUSE
             self.delete_fast_pause = 0
         elif (
             self.delete_fast_pause == self.FAST_PAUSE
             and keys_pressed[locals.K_BACKSPACE]
         ):
-            self.remove_letters()
+            self.input.value, self.position = self.text.delete()
             self.delete_fast_pause = 0
         # TODO: FIX THIS 5 BELOW: THE PROBLEM IS THAT AFTER THE EVENT select.delete is over
         # THE BACKSPACE KEY IS STILL BEING TRIGGERED. NOT SURE HOW TO FIX IT.
         elif keys_pressed[locals.K_BACKSPACE] and self.delete_ini_pause == 5:
-            self.remove_letters()
+            self.input.value, self.position = self.text.delete()
             self.delete_ini_pause += 1
         elif keys_pressed[locals.K_BACKSPACE]:
             self.delete_ini_pause += 1
@@ -133,49 +146,6 @@ class Cursor:
         else:
             self.delete_ini_pause = 0
             self.delete_fast_pause = 0
-
-    def remove_letters(self):
-        """Set conditions in order to remove letters from a string."""
-        if self.select:
-            # If selection, apply correct indices
-            if self.select_start == self.select_end == 0:
-                substituted_text = ""
-                self.input.value = self.input.value[:-1]
-            elif self.select_end == 0:
-                substituted_text = self.input.value[self.select_start :]
-                self.input.value = self.input.value[: self.select_start]
-            elif self.select_start == self.select_end:
-                substituted_text = ""
-                self.input.value = (
-                    self.input.value[: self.select_start - 1]
-                    + self.input.value[self.select_end :]
-                )
-            elif not self.select_start == self.select_end:
-                substituted_text = self.input.value[self.select_start : self.select_end]
-                self.input.value = (
-                    self.input.value[: self.select_start]
-                    + self.input.value[self.select_start :]
-                )
-            # Update selection variables
-            # Correct self.position if removing a chunk of string (substitute)
-            if self.select_substitute:
-                if not self.select_inverted:
-                    substituted_text = self.input.value[
-                        self.select_start : self.select_end
-                    ]
-                    self.position += len(substituted_text)
-            self.select = False
-            self.select_substitute = False
-
-        else:
-            # If no selection, remove one letter from the value string
-            if self.position == 0:
-                self.input.value = self.input.value[:-1]
-            else:
-                self.input.value = (
-                    self.input.value[: self.position - 1]
-                    + self.input.value[self.position :]
-                )
 
     def track_cursor_movement(self):
         """Track the cursor on the CL."""
@@ -194,32 +164,13 @@ class Cursor:
 
         return left_position, input_length
 
-    def get_select_indices(self):
-        """Get the correct selection indices to slice the user's input."""
-        if not self.select_start == self.select_end:
-            if self.select_start > self.select_end:
-                self.select_inverted = True
-                ini = self.select_end
-                end = self.select_start
-            elif self.select_start < self.select_end:
-                self.select_inverted = False
-                ini = self.select_start
-                end = self.select_end
-            else:
-                self.select_inverted = False
-                ini = self.select_start
-                end = self.select_end
-            if end == 0:
-                end = None
-        else:
-            self.select_inverted = False
-            ini = self.select_start
-            end = self.select_end
-        return ini, end
-
     def running_selection(self, pressed):
         """Get pressed keys at each frame."""
-        if self.select_maintain or self.select_substitute or self.select_delete:
+        if (
+            self.text_modes["select_maintain"]
+            or self.text_modes["select_substitute"]
+            or self.text_modes["select_delete"]
+        ):
             # Trick to avoid overwriting the variables when selecting
             # characters in inverse mode (from left to right).
             # This happens due to the fact that "run_event" are executed
@@ -239,74 +190,88 @@ class Cursor:
     def run_event(self, event):
         """Update based on an event."""
         if event.type == locals.KEYDOWN:
-            if self.select_maintain and (
-                event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT
+            if event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
+                # Enter shited mode
+                self.set_cl_modes(True, "shifted")
+
+            if event.key == locals.K_LEFT or event.key == locals.K_RIGHT:
+                # Moving with left or right arrows
+                self.set_cl_modes(True, "moving_arrows")
+
+            if self.text_modes["shifted"] and self.text_modes["moving_arrows"]:
+                # Start a selection by pressing shift and arrows
+                self.set_cl_modes(True, "select_ongoing")
+                self.set_cl_modes(False, "select_maintain")
+
+            elif self.text_modes["select_maintain"] and self.text_modes["shifted"]:
+                # Modify an maintained selection pressing shift
+                self.set_cl_modes(True, "select_ongoing")
+                self.set_cl_modes(False, "select_maintain")
+
+            elif (
+                self.text_modes["select_maintain"]
+                and self.text_modes["moving_arrows"]
+                and not self.text_modes["shifted"]
             ):
-                self.select_ongoing = True
-                self.select_maintain = False
-            elif event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
-                self.select = True
-                self.select_ongoing = True
-            elif self.select_maintain and (
-                event.key == locals.K_LEFT or event.key == locals.K_RIGHT
+                # Remove maintained selection by moving arrows without shift
+                self.set_cl_modes(False, "all")
+
+            elif self.text_modes["select_maintain"] and event.key == locals.K_BACKSPACE:
+                # Delete maintained selection with backspace
+                self.set_cl_modes(True, "select_delete")
+                self.set_cl_modes(
+                    False, "select_substitute", "select_maintain", "select_substitute"
+                )
+
+            elif self.text_modes["select_maintain"] and self.text_modes["shifted"]:
+                # Substitute maintained selection by an uppercase letter
+                self.set_cl_modes(True, "select_substitute")
+                self.set_cl_modes(
+                    False, "select_delete", "select_maintain", "select_ongoing"
+                )
+
+            elif self.text_modes["select_maintain"]:
+                # Substitute maintained selection by a lowercase letter
+                self.set_cl_modes(True, "select_substitute")
+                self.set_cl_modes(
+                    False, "select_delete", "select_maintain", "select_ongoing"
+                )
+
+            elif (
+                self.text_modes["select_maintain"]
+                and self.text_modes["shifted"]
+                and self.text_modes["moving_arrows"]
             ):
-                self.select = False
-                self.select_ongoing = False
-                self.select_maintain = False
-            elif self.select_maintain and event.key == locals.K_BACKSPACE:
-                self.select_delete = True
-                self.select_substitute = False
-                self.select = True
-                self.select_maintain = False
-                self.select_ongoing = False
-            elif self.select_maintain:
-                self.select_substitute = True
-                self.select_delete = False
-                self.select = True
-                self.select_maintain = False
-                self.select_ongoing = False
+                # Start modifying a selection with shift and moving arrows
+                self.set_cl_modes(True, "select_ongoing")
+                self.set_cl_modes(
+                    False, "select_delete", "select_maintain", "select_ongoing"
+                )
+
+            elif (
+                self.text_modes["select_ongoing"] or self.text_modes["select_maintain"]
+            ) and self.text.start == self.text.end == 0:
+                # Turn off ongoing mode if there is no selection
+                self.set_cl_modes(False, "select_ongoing")
 
         if event.type == locals.KEYUP:
+            if event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
+                # Release shift button
+                self.set_cl_modes(False, "shifted")
+
+            if event.key == locals.K_LEFT or event.key == locals.K_RIGHT:
+                # Release arrows button
+                self.set_cl_modes(False, "moving_arrows")
+
             if (
-                event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT
-            ) and self.old_ini == self.old_end:
-                self.select = False
-                self.select_ongoing = False
-                self.select_maintain = False
-            elif event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
-                self.select_maintain = True
-                self.select_ongoing = False
-            elif not event.key == locals.K_LEFT and not event.key == locals.K_RIGHT:
-                self.select = False
-                self.select_ongoing = False
-                self.select_maintain = False
-                self.select_substitute = False
-                self.select_delete = False
-
-    def run(self):
-        """Execute all cursor methods."""
-        # Some keys (arrows, cntrl, backspace, return) have to be runed outside the event loop
-        pressed = pygame.key.get_pressed()
-        self.fast_move(pressed)
-        self.running_selection(pressed)
-        if not self.select_delete:
-            self.fast_delete(pressed)
-
-        # Run methods to obtain the correct string for displaying
-        if self.select_substitute:
-            self.select_mode = "substitute"
-        elif self.select_delete:
-            self.select_mode = "delete"
-
-        if self.select_mode:
-            selection = Selection(
-                self.input.value, self.select_start, self.select_end, self.select_mode
-            )
-            self.input.value, self.position = selection.resolve()
-            self.selection = (
-                ""  # for dipslaying purposes the selection has been deleted
-            )
-            self.select_mode = ""
+                self.text_modes["select_ongoing"]
+                and not self.text_modes["shifted"]
+                and not self.text.start == self.text.end == 0
+            ):
+                self.set_cl_modes(True, "select_maintain")
+                self.set_cl_modes(
+                    False, "select_ongoing", "select_substitute", "select_delete"
+                )
 
     def create_rectangle(self, select_text):
         """Create white rectangle with thin width or with the select_text width if select."""
@@ -316,7 +281,7 @@ class Cursor:
         )
 
         # Create rectangle
-        if self.select:
+        if self.text_modes["select_maintain"] or self.text_modes["select_ongoing"]:
             if self.select_inverted:
                 blinking_rect_x = (
                     self.input.x + delta_text.get_width() - select_text.get_width()
@@ -328,7 +293,7 @@ class Cursor:
 
         blinking_rect_y = self.input.y
 
-        if self.select:
+        if self.text_modes["select_maintain"] or self.text_modes["select_ongoing"]:
             blinking_rect_width = select_text.get_width()
         else:
             blinking_rect_width = self.BLINKING_WIDTH
@@ -342,37 +307,91 @@ class Cursor:
             blinking_rect_height,
         )
 
+    def insert_letter_in_position(self):
+        """Insert letter if typing in the middle of the string."""
+        if self.position < 0 and self.delta_typing > 0:
+            self.input.value = (
+                self.input.value[: self.left_position - 1]
+                + self.input.value[-1]
+                + self.input.value[self.left_position - 1 : -1]
+            )
+
+    def run(self):
+        """Execute all cursor methods."""
+        # Some keys (arrows, cntrl, backspace, return) have to be runed outside the event loop
+        pressed = pygame.key.get_pressed()
+        self.fast_move(pressed)
+        self.running_selection(pressed)
+        if not self.text_modes["select_delete"]:
+            self.fast_delete(pressed)
+
+        self.text = Text(
+            text=self.input.value,
+            start=self.select_start,
+            end=self.select_end,
+            modes=self.text_modes,
+        )
+
+        # Debug
+        self.text_modes_list = [
+            "shifted",
+            "moving_arrows",
+            "select_ongoing",
+            "select_maintain",
+            "select_substitute",
+            "select_delete",
+        ]
+        print("")
+        print("")
+        print("")
+        print("")
+        print("")
+        print("")
+        print("")
+        print("-------------------------------------------------")
+        print("shifted", self.text_modes["shifted"])
+        print("moving_arrows", self.text_modes["moving_arrows"])
+        print("select_ongoing", self.text_modes["select_ongoing"])
+        print("select_maintain", self.text_modes["select_maintain"])
+        print("select_substitute", self.text_modes["select_substitute"])
+        print("select_delete", self.text_modes["select_delete"])
+        print("Start", self.text.start)
+        print("End", self.text.end)
+
+        # Check if letter has to be typed in the middle of the string
+        self.insert_letter_in_position()
+
+        if self.text_modes["select_substitute"]:
+            self.input.value, self.position = self.text.substitute()
+        elif self.text_modes["select_delete"]:
+            self.input.value, self.position = self.text.delete()
+        self.selection = self.text.get_selected_text()
+
     def draw(self, surface):
         """Run all cursor methods that draw in the CL."""
         # Check cooldowns and display user input
         self.blinking_cursor_cooldown()
 
         # Check past vs current ongoing states
-        if self.past_ongoing == True and self.select_ongoing == False:
-            if not self.ini == self.end:
-                self.state_ini = self.ini
-                self.state_end = self.end
+        if self.past_ongoing == True and self.text_modes["select_ongoing"] == False:
+            if not self.disp_start == self.disp_end:
+                self.state_start = self.disp_start
+                self.state_end = self.disp_end
 
-        # Get indices to get selection
-        self.ini, self.end = self.get_select_indices()
-
-        if self.select:
-            if self.select_ongoing:
-                # Changinf selection based on indices
-                self.selection = self.input.value[self.ini : self.end]
-            elif self.select_maintain:
-                # Use state variables to maintain the selection
-                self.selection = self.input.value[self.state_ini : self.state_end]
+        if self.text_modes["select_maintain"]:
+            # Use state variables to maintain the selection
+            if self.state_end == 0:
+                self.state_end = None
+            self.selection = self.input.value[self.state_start : self.state_end]
 
         # Track cursor movement
         self.left_position, self.new_typing_len = self.track_cursor_movement()
         self.delta_typing = self.new_typing_len - self.prev_typing_len
 
         # Update variables once substitution is done
-        if self.select_substitute or self.select_delete:
-            self.select = False
-            self.select_substitute = False
-            self.select_delete = False
+        if self.text_modes["select_substitute"] or self.text_modes["select_delete"]:
+            self.text_modes["select_substitute"] = False
+            self.text_modes["select_delete"] = False
 
         # Render selection text, whether is a empty string or not
         select_text = self.input.font.render(self.selection, 1, WHITE)
@@ -386,21 +405,45 @@ class Cursor:
             self.update_cooldowns()
 
         # Display input value
-        if self.select:
+        if self.text_modes["select_maintain"] or self.text_modes["select_ongoing"]:
+            # Correct Nones if start or end == 0
+            if self.text.is_inverted:
+                if self.text.end == 0:
+                    self.disp_end = None
+                else:
+                    self.disp_end = self.text.start
+                if self.text.start == 0:
+                    self.disp_start = None
+                else:
+                    self.disp_start = self.text.end
+            else:
+                if self.text.end == 0:
+                    self.disp_end = None
+                else:
+                    self.disp_end = self.text.end
+                if self.text.start == 0:
+                    self.disp_start = None
+                else:
+                    self.disp_start = self.text.start
+
             # Display the total string in 3 chunks to display black letters in selection
+            # First
             text_1 = self.input.font.render(
-                self.input.prompt + self.input.value[: self.old_ini], 1, WHITE
+                self.input.prompt + self.input.value[: self.disp_start], 1, WHITE
             )
             surface.blit(text_1, (self.input.x, self.input.y))
-            text_2 = self.input.font.render(
-                self.input.value[self.old_ini : self.old_end], 1, BLACK
-            )
-            surface.blit(text_2, (self.input.x + text_1.get_width(), self.input.y))
 
-            # Display 3rd chunk only if it exists
-            if not self.old_end == None:
+            # Second chunk if it exists
+            if not self.disp_start == None:
+                text_2 = self.input.font.render(
+                    self.input.value[self.disp_start : self.disp_end], 1, BLACK
+                )
+                surface.blit(text_2, (self.input.x + text_1.get_width(), self.input.y))
+
+            # Display 3rd chunk if it exists
+            if not self.disp_end == None:
                 text_3 = self.input.font.render(
-                    self.input.value[self.old_end :], 1, WHITE
+                    self.input.value[self.disp_end :], 1, WHITE
                 )
                 surface.blit(
                     text_3,
@@ -418,7 +461,7 @@ class Cursor:
 
         # Update variables
         self.prev_typing_len = self.new_typing_len
-        self.past_ongoing = self.select_ongoing
-        if not self.select_maintain:
-            self.old_ini = self.ini
-            self.old_end = self.end
+        self.past_ongoing = self.text_modes["select_ongoing"]
+        # if not self.text_modes["select_maintain"]:
+        #     self.old_start = self.text.start
+        #     self.old_end = self.text.end

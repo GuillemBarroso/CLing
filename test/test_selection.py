@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.text_selection import Selection
+from src.text import Selection
 
 DELETE_STRING = "Jane_Joe"
 

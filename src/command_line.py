@@ -329,7 +329,7 @@ class CL:
         # Run methods that draw in the CL
         self._surface.fill(BLACK)
         self.draw_history()
-        room_text.update_room_first_entry()
+        # room_text.update_room_first_entry()
 
         # Run CL specific methods when in focus mode
         if self.input.focus:
