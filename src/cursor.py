@@ -1,5 +1,7 @@
 """Module containing the Cursor class, controlling the CL cursor."""
 
+import re
+
 import pygame
 import pygame.locals as locals
 
@@ -24,16 +26,16 @@ class Cursor:
         self.blinking_bool = False
         self.blinking_past = 0
         self.blinking_start = 0
-        # self.remove_letters_bool = True
         self.left_position = 0
         self.prev_typing_len = 0
         self.new_typing_len = 0
+        self.splitting_characters = r"\s|\."
 
         # Set constants
         self.BLINKING_WIDTH = 2
         self.BLINKING_SPEED = 200
         self.INI_PAUSE = 20
-        self.FAST_PAUSE = 1
+        self.FAST_PAUSE = 10
 
         self.init_selection_variables()
 
@@ -53,6 +55,7 @@ class Cursor:
         self.state_end = 0
         self.text_modes_list = [
             "shifted",
+            "control",
             "moving_arrows",
             "select_ongoing",
             "select_maintain",
@@ -95,20 +98,53 @@ class Cursor:
                 self.blinking_bool = True
                 self.blinking_start = 0
 
-    def fast_move(self, keys_pressed):
+    def move_position(self, step):
+        """Move cursor position in +1 step or word increments."""
+        if self.text_modes["control"]:
+            # Increase/decrease one word at a time
+            if self.position == 0:
+                pos = None
+            else:
+                pos = self.position
+
+            direction = step
+            if step < 0:
+                string = self.input.value[:pos]
+            else:
+                string = self.input.value[pos:]
+                step -= 1
+
+            next_step = step + direction
+            split_string = re.split(self.splitting_characters, string)
+
+            if not split_string[step] and not self.position == -len(self.input.value):
+                self.position += (len(split_string[next_step]) + 1) * direction
+            elif split_string[step]:
+                self.position += len(split_string[step]) * direction
+        else:
+            # Increase/decrease one at a time
+            self.position += step
+
+    def move_cursor(self, keys_pressed):
         """Enable pressing left and right keys to go through the user's input."""
         if self.move_ini_pause == self.INI_PAUSE and keys_pressed[locals.K_LEFT]:
             self.move_ini_pause = self.INI_PAUSE
-            self.position -= 1
+            self.move_position(-1)
         elif self.move_ini_pause == self.INI_PAUSE and keys_pressed[locals.K_RIGHT]:
             self.move_ini_pause = self.INI_PAUSE
-            self.position += 1
+            self.move_position(1)
         elif self.move_fast_pause == self.FAST_PAUSE and keys_pressed[locals.K_LEFT]:
             self.move_fast_pause = 0
-            self.position -= 1
+            self.move_position(-1)
         elif self.move_fast_pause == self.INI_PAUSE and keys_pressed[locals.K_RIGHT]:
             self.move_fast_pause = 0
-            self.position += 1
+            self.move_position(1)
+        elif self.move_ini_pause == 0 and keys_pressed[locals.K_LEFT]:
+            self.move_position(-1)
+            self.move_ini_pause += 1
+        elif self.move_ini_pause == 0 and keys_pressed[locals.K_RIGHT]:
+            self.move_position(1)
+            self.move_ini_pause += 1
         elif keys_pressed[locals.K_LEFT] or keys_pressed[locals.K_RIGHT]:
             self.move_ini_pause += 1
         elif self.move_ini_pause == self.INI_PAUSE and keys_pressed[locals.K_LEFT]:
@@ -119,7 +155,7 @@ class Cursor:
             self.move_ini_pause = 0
             self.move_fast_pause = 0
 
-    def fast_delete(self, keys_pressed):
+    def delete(self, keys_pressed):
         """Add ability to hold down delete key and delete text."""
         if self.delete_ini_pause == self.INI_PAUSE and keys_pressed[locals.K_BACKSPACE]:
             self.input.value, self.position = self.text.delete()
@@ -197,6 +233,10 @@ class Cursor:
                 # Moving with left or right arrows
                 self.set_cl_modes(True, "moving_arrows")
 
+            if event.key == locals.K_LCTRL or event.key == locals.K_RCTRL:
+                # Control button pressed. Used to move word by word
+                self.set_cl_modes(True, "control")
+
             if self.text_modes["shifted"] and self.text_modes["moving_arrows"]:
                 # Start a selection by pressing shift and arrows
                 self.set_cl_modes(True, "select_ongoing")
@@ -229,7 +269,7 @@ class Cursor:
                     False, "select_delete", "select_maintain", "select_ongoing"
                 )
 
-            elif self.text_modes["select_maintain"]:
+            elif self.text_modes["select_maintain"] and not self.text_modes["control"]:
                 # Substitute maintained selection by a lowercase letter
                 self.set_cl_modes(True, "select_substitute")
                 self.set_cl_modes(
@@ -255,6 +295,10 @@ class Cursor:
             if event.key == locals.K_LEFT or event.key == locals.K_RIGHT:
                 # Release arrows button
                 self.set_cl_modes(False, "moving_arrows")
+
+            if event.key == locals.K_LCTRL or event.key == locals.K_RCTRL:
+                # Control button pressed. Used to move word by word
+                self.set_cl_modes(False, "control")
 
             if (
                 self.text_modes["select_ongoing"]
@@ -322,10 +366,10 @@ class Cursor:
         """Execute all cursor methods."""
         # Some keys (arrows, cntrl, backspace, return) have to be runed outside the event loop
         pressed = pygame.key.get_pressed()
-        self.fast_move(pressed)
+        self.move_cursor(pressed)
         self.running_selection(pressed)
         if not self.text_modes["select_delete"]:
-            self.fast_delete(pressed)
+            self.delete(pressed)
 
         self.text = Text(
             text=self.input.value,
