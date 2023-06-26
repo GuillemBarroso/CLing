@@ -96,10 +96,6 @@ class Input:
                 self.value += " "
             elif event.key == locals.K_RETURN:
                 return self.value  # return value
-            elif event.key == locals.K_LEFT:
-                cursor.position -= 1
-            elif event.key == locals.K_RIGHT:
-                cursor.position += 1
             if not self.shifted:
                 if event.key == locals.K_a and "a" in self.restricted:
                     self.value += "a"
