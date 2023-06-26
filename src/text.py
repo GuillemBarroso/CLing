@@ -100,7 +100,7 @@ class Text:
         """Delete the selection. Return remaining string and new position."""
         if self.has_selection:
             if self.start == self.end == 0:
-                text = self.text[:-1]
+                text = self.text
                 idx = 0
             elif self.end == 0:
                 text = self.text[: self.start]
