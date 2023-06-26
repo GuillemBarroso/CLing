@@ -334,32 +334,6 @@ class Cursor:
             modes=self.text_modes,
         )
 
-        # Debug
-        self.text_modes_list = [
-            "shifted",
-            "moving_arrows",
-            "select_ongoing",
-            "select_maintain",
-            "select_substitute",
-            "select_delete",
-        ]
-        print("")
-        print("")
-        print("")
-        print("")
-        print("")
-        print("")
-        print("")
-        print("-------------------------------------------------")
-        print("shifted", self.text_modes["shifted"])
-        print("moving_arrows", self.text_modes["moving_arrows"])
-        print("select_ongoing", self.text_modes["select_ongoing"])
-        print("select_maintain", self.text_modes["select_maintain"])
-        print("select_substitute", self.text_modes["select_substitute"])
-        print("select_delete", self.text_modes["select_delete"])
-        print("Start", self.text.start)
-        print("End", self.text.end)
-
         # Check if letter has to be typed in the middle of the string
         self.insert_letter_in_position()
 
@@ -392,12 +366,6 @@ class Cursor:
         # Track cursor movement
         self.left_position, self.new_typing_len = self.track_cursor_movement()
         self.delta_typing = self.new_typing_len - self.prev_typing_len
-
-        # TODO:: NEEDED????
-        # Update variables once substitution is done
-        if self.text_modes["select_substitute"] or self.text_modes["select_delete"]:
-            self.text_modes["select_substitute"] = False
-            self.text_modes["select_delete"] = False
 
         # Correct text indices for displaying purposes
         if self.text.has_selection:
@@ -449,11 +417,6 @@ class Cursor:
         # Update variables
         self.prev_typing_len = self.new_typing_len
         self.past_ongoing = self.text_modes["select_ongoing"]
-        # self.select_start = self.text.start
-        # self.select_end = self.text.end
-        # if self.text.position:
-        #     self.position = self.text.position
-
-        # if not self.text_modes["select_maintain"]:
-        #     self.old_start = self.text.start
-        #     self.old_end = self.text.end
+        if self.text_modes["select_substitute"] or self.text_modes["select_delete"]:
+            self.text_modes["select_substitute"] = False
+            self.text_modes["select_delete"] = False
