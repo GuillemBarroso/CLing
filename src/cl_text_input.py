@@ -72,15 +72,6 @@ class Input:
         text = self.font.render(self.prompt + self.value, 1, self.color)
         surface.blit(text, (self.x, self.y))
 
-    def reorder_value_if_modified(self, cursor):
-        """Reorder self.value if typing in the middle of the string."""
-        if cursor.position < 0 and cursor.delta_typing > 0:
-            self.value = (
-                self.value[: cursor.left_position - 1]
-                + self.value[-1]
-                + self.value[cursor.left_position - 1 : -1]
-            )
-
     def substitute_selection(self, cursor):
         """Substitute the selected characters by the next letter inputted by the user."""
         substitute_letter = self.value[-1]
