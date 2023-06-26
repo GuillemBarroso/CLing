@@ -12,6 +12,7 @@ class Text:
         self.start = start
         self.end = end
         self.modes = modes
+        self.position = None
         self._correct_inputs()
         self._input_check()
 
@@ -102,10 +103,12 @@ class Text:
                 text = self.text[:-1]
                 idx = 0
             elif self.end == 0:
-                self.text = self.text[: self.start]
+                text = self.text[: self.start]
+                self.start = self.end
                 idx = 0
             elif self.start == 0:
-                self.text = self.text[: self.end]
+                text = self.text[: self.end]
+                self.end = self.start
                 idx = 0
             elif self.start == self.end:
                 text = self.text
@@ -113,10 +116,12 @@ class Text:
             elif not self.start == self.end:
                 if self.is_inverted:
                     text = self.text[: self.end] + self.text[self.start :]
+                    self.end = self.start
                     idx = self.start
                 else:
                     text = self.text[: self.start] + self.text[self.end :]
-                    idx = self.selection_length + self.start
+                    self.start = self.end = self.selection_length + self.start
+                    idx = self.start
         else:
             if self.position == 0:
                 text = self.text[:-1]
@@ -124,6 +129,7 @@ class Text:
             else:
                 text = self.text[: self.position - 1] + self.text[self.position :]
                 idx = self.position
+        self.has_selection = False
         return text, idx
 
     def substitute(self):
@@ -136,3 +142,25 @@ class Text:
         else:
             text = text[:idx] + self.subsitute_letter + text[idx:]
         return text, idx
+
+    def correct_idxs_for_display(self):
+        """Correct idxs by setting them to None if they are 0. Just for displaying purposes."""
+        if self.is_inverted:
+            if self.start == 0:
+                disp_end = None
+            else:
+                disp_end = self.start
+            if self.end == 0:
+                disp_start = None
+            else:
+                disp_start = self.end
+        else:
+            if self.end == 0:
+                disp_end = None
+            else:
+                disp_end = self.end
+            if self.start == 0:
+                disp_start = None
+            else:
+                disp_start = self.start
+        return disp_start, disp_end

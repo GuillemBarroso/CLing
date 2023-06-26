@@ -43,7 +43,6 @@ class Cursor:
         self.select_end = 0
         self.delta_typing = 0
         self.selection = ""
-        self.select_inverted = False
         self.past_ongoing = False
         self.select_mode = ""
         self.start = 0
@@ -248,12 +247,6 @@ class Cursor:
                     False, "select_delete", "select_maintain", "select_ongoing"
                 )
 
-            elif (
-                self.text_modes["select_ongoing"] or self.text_modes["select_maintain"]
-            ) and self.text.start == self.text.end == 0:
-                # Turn off ongoing mode if there is no selection
-                self.set_cl_modes(False, "select_ongoing")
-
         if event.type == locals.KEYUP:
             if event.key == locals.K_LSHIFT or event.key == locals.K_RSHIFT:
                 # Release shift button
@@ -268,21 +261,30 @@ class Cursor:
                 and not self.text_modes["shifted"]
                 and not self.text.start == self.text.end == 0
             ):
+                # Maintain selection when releasing shift
                 self.set_cl_modes(True, "select_maintain")
                 self.set_cl_modes(
                     False, "select_ongoing", "select_substitute", "select_delete"
                 )
+            elif (
+                self.text_modes["select_ongoing"] or self.text_modes["select_maintain"]
+            ) and self.text.start == self.text.end:
+                # Turn off ongoing mode if there is no selection
+                self.set_cl_modes(False, "select_ongoing")
 
-    def create_rectangle(self, select_text):
+    def create_rectangle(self):
         """Create white rectangle with thin width or with the select_text width if select."""
         # Get text based on cursor position
         delta_text = self.input.font.render(
             self.input.prompt + self.input.value[: self.left_position], 1, WHITE
         )
 
+        # Render selection text, whether is a empty string or not
+        select_text = self.input.font.render(self.selection, 1, WHITE)
+
         # Create rectangle
         if self.text_modes["select_maintain"] or self.text_modes["select_ongoing"]:
-            if self.select_inverted:
+            if self.text.is_inverted:
                 blinking_rect_x = (
                     self.input.x + delta_text.get_width() - select_text.get_width()
                 )
@@ -365,7 +367,10 @@ class Cursor:
             self.input.value, self.position = self.text.substitute()
         elif self.text_modes["select_delete"]:
             self.input.value, self.position = self.text.delete()
-        self.selection = self.text.get_selected_text()
+        if self.text.has_selection:
+            self.selection = self.text.get_selected_text()
+        else:
+            self.selection = ""
 
     def draw(self, surface):
         """Run all cursor methods that draw in the CL."""
@@ -388,16 +393,18 @@ class Cursor:
         self.left_position, self.new_typing_len = self.track_cursor_movement()
         self.delta_typing = self.new_typing_len - self.prev_typing_len
 
+        # TODO:: NEEDED????
         # Update variables once substitution is done
         if self.text_modes["select_substitute"] or self.text_modes["select_delete"]:
             self.text_modes["select_substitute"] = False
             self.text_modes["select_delete"] = False
 
-        # Render selection text, whether is a empty string or not
-        select_text = self.input.font.render(self.selection, 1, WHITE)
+        # Correct text indices for displaying purposes
+        if self.text.has_selection:
+            self.disp_start, self.disp_end = self.text.correct_idxs_for_display()
 
         # Create blinking rectangle
-        blinking_rect = self.create_rectangle(select_text)
+        blinking_rect = self.create_rectangle()
 
         # Display rectangle if needed and update cooldowns
         if self.blinking_active:
@@ -406,28 +413,8 @@ class Cursor:
 
         # Display input value
         if self.text_modes["select_maintain"] or self.text_modes["select_ongoing"]:
-            # Correct Nones if start or end == 0
-            if self.text.is_inverted:
-                if self.text.end == 0:
-                    self.disp_end = None
-                else:
-                    self.disp_end = self.text.start
-                if self.text.start == 0:
-                    self.disp_start = None
-                else:
-                    self.disp_start = self.text.end
-            else:
-                if self.text.end == 0:
-                    self.disp_end = None
-                else:
-                    self.disp_end = self.text.end
-                if self.text.start == 0:
-                    self.disp_start = None
-                else:
-                    self.disp_start = self.text.start
-
             # Display the total string in 3 chunks to display black letters in selection
-            # First
+            # First chunk
             text_1 = self.input.font.render(
                 self.input.prompt + self.input.value[: self.disp_start], 1, WHITE
             )
@@ -462,6 +449,11 @@ class Cursor:
         # Update variables
         self.prev_typing_len = self.new_typing_len
         self.past_ongoing = self.text_modes["select_ongoing"]
+        # self.select_start = self.text.start
+        # self.select_end = self.text.end
+        # if self.text.position:
+        #     self.position = self.text.position
+
         # if not self.text_modes["select_maintain"]:
         #     self.old_start = self.text.start
         #     self.old_end = self.text.end
