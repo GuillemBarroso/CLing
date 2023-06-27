@@ -78,6 +78,9 @@ class Text:
         """Return original string and letter which wants to be substituted."""
         # String contains a letter at the end which has to substitute the selection
         new_letter = self.text[-1]
+        if self.modes["select_substitute_caps"]:
+            new_letter = new_letter.capitalize()
+            self.modes["select_substitute_caps"] = False
         text = self.text[:-1]
         return text, new_letter
 

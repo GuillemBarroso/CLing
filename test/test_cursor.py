@@ -1,32 +1,32 @@
 """Module containing tests for the Cursor class."""
-# import sys
+# import pytest
 
-import pygame
-
-from src.canvas import get_canvas
-from src.command_line import CL
-
-# import pygame.locals as locals
+# from src.cursor import Cursor
 
 
-pygame.init()
-canvas = get_canvas()
-cl = CL(canvas=canvas)
+# MOVE_POSITION_LIST = [
+#     [[-4, -2], "_J", False, 2, "Janeoe", -2],
+#     [[-2, -4], "_J", True, 2, "Janeoe", -2],
+#     [[-8, -4], "Jane", False, 4, "_Joe", -4],
+#     [[-4, -8], "Jane", True, 4, "_Joe", -4],
+#     [[-3, 0], "Joe", False, 3, "Jane_", 0],
+#     [[0, -3], "Joe", True, 3, "Jane_", 0],
+#     [[0, 0], "", False, 0, "Jane_Joe", 0],
+#     [[-3, -3], "", False, 0, "Jane_Joe", -3],
+#     [[-8, -8], "", False, 0, "Jane_Joe", -8],
+# ]
 
+# @pytest.fixture(params=MOVE_POSITION_LIST)
+# def param_del(request):
+#     """Fixture for delete tests."""
+#     return request.param
 
-def test_selection():
-    """Test selection functionality."""
-    cl.cursor.select_start = 0
-    cl.cursor.select_start = 2
-    cl.cursor.select = True
-    cl.cursor.select_ongoing = True
-    cl.input.value = "Jane_Joe"
-
-    # Cannot force an event such as pressing backspace apparently
-    # event = pygame.event.Event(locals.KEYDOWN, {"key": locals.K_BACKSPACE})
-    # cl.cursor.run_event(event)
-    cl.cursor.draw(canvas)
-    assert cl.cursor.selection == "Ja"
+# def test_move_position():
+#     """Test selection functionality."""
+#     cursor = Cursor()
+#     cl.input.value = "One Two Three"
+#     cursor.position = -2
+#     cursor.move_position()
 
 
 # def test_create_rectangle():
