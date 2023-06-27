@@ -61,6 +61,7 @@ class Cursor:
             "select_maintain",
             "select_substitute",
             "select_delete",
+            "select_substitute_caps",
         ]
         self.text_modes = dict.fromkeys(self.text_modes_list, False)
 
@@ -242,7 +243,11 @@ class Cursor:
                 self.set_cl_modes(True, "select_ongoing")
                 self.set_cl_modes(False, "select_maintain")
 
-            elif self.text_modes["select_maintain"] and self.text_modes["shifted"]:
+            elif (
+                self.text_modes["select_maintain"]
+                and self.text_modes["shifted"]
+                and self.text_modes["moving_arrows"]
+            ):
                 # Modify an maintained selection pressing shift
                 self.set_cl_modes(True, "select_ongoing")
                 self.set_cl_modes(False, "select_maintain")
@@ -262,15 +267,30 @@ class Cursor:
                     False, "select_substitute", "select_maintain", "select_substitute"
                 )
 
-            elif self.text_modes["select_maintain"] and self.text_modes["shifted"]:
-                # Substitute maintained selection by an uppercase letter
+            elif (
+                (
+                    self.text_modes["select_maintain"]
+                    or self.text_modes["select_ongoing"]
+                )
+                and self.text_modes["shifted"]
+                and not self.text_modes["control"]
+                and not self.text_modes["select_substitute_caps"]
+            ):
+                # Activate capital letter flag
+                self.set_cl_modes(True, "select_substitute_caps")
+
+            elif (
+                self.text_modes["select_substitute_caps"]
+                and not self.text_modes["control"]
+            ):
+                # Substitute maintained selection (with caps on) with an uppercase letter
                 self.set_cl_modes(True, "select_substitute")
                 self.set_cl_modes(
                     False, "select_delete", "select_maintain", "select_ongoing"
                 )
 
             elif self.text_modes["select_maintain"] and not self.text_modes["control"]:
-                # Substitute maintained selection by a lowercase letter
+                # Substitute maintained selection with a lowercase letter
                 self.set_cl_modes(True, "select_substitute")
                 self.set_cl_modes(
                     False, "select_delete", "select_maintain", "select_ongoing"
@@ -299,6 +319,14 @@ class Cursor:
             if event.key == locals.K_LCTRL or event.key == locals.K_RCTRL:
                 # Control button pressed. Used to move word by word
                 self.set_cl_modes(False, "control")
+
+            if (
+                self.text_modes["select_maintain"]
+                and not self.text_modes["shifted"]
+                and not self.text_modes["control"]
+            ):
+                # Turn off capital letters
+                self.set_cl_modes(False, "select_substitute_caps")
 
             if (
                 self.text_modes["select_ongoing"]
@@ -381,6 +409,7 @@ class Cursor:
         # Check if letter has to be typed in the middle of the string
         self.insert_letter_in_position()
 
+        # Act on text object according to mode state
         if self.text_modes["select_substitute"]:
             self.input.value, self.position = self.text.substitute()
         elif self.text_modes["select_delete"]:
