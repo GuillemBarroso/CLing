@@ -42,6 +42,7 @@ class Player(Entity):
         self.attack_time = None
         self.obstacle_sprites = obstacle_sprites
         self.door_sprites = door_sprites
+        self.ROTATION_SPEED = 2  # units: degrees [º]
 
         # Weapon
         self.create_attack = create_attack
@@ -129,46 +130,55 @@ class Player(Entity):
             keys_pressed = pygame.key.get_pressed()
             # Move input
             if keys_pressed[locals.K_w] and keys_pressed[locals.K_a]:
-                self.direction.y = -1
+                self.move_direction.y = -1
                 self.status = "NW"
             elif keys_pressed[locals.K_w] and keys_pressed[locals.K_d]:
                 self.status = "NE"
-                self.direction.y = -1
+                self.move_direction.y = -1
             elif keys_pressed[locals.K_s] and keys_pressed[locals.K_a]:
-                self.direction.y = 1
+                self.move_direction.y = 1
                 self.status = "SW"
             elif keys_pressed[locals.K_s] and keys_pressed[locals.K_d]:
                 self.status = "SE"
-                self.direction.y = 1
+                self.move_direction.y = 1
             elif keys_pressed[locals.K_w]:
-                self.direction.y = -1
+                self.move_direction.y = -1
                 self.status = "N"
             elif keys_pressed[locals.K_s]:
-                self.direction.y = 1
+                self.move_direction.y = 1
                 self.status = "S"
             else:
-                self.direction.y = 0
+                self.move_direction.y = 0
 
             if keys_pressed[locals.K_w] and keys_pressed[locals.K_a]:
-                self.direction.x = -1
+                self.move_direction.x = -1
                 self.status = "NW"
             elif keys_pressed[locals.K_w] and keys_pressed[locals.K_d]:
-                self.direction.x = 1
+                self.move_direction.x = 1
                 self.status = "NE"
             elif keys_pressed[locals.K_s] and keys_pressed[locals.K_a]:
-                self.direction.x = -1
+                self.move_direction.x = -1
                 self.status = "SW"
             elif keys_pressed[locals.K_s] and keys_pressed[locals.K_d]:
-                self.direction.x = 1
+                self.move_direction.x = 1
                 self.status = "SE"
             elif keys_pressed[locals.K_a]:
-                self.direction.x = -1
+                self.move_direction.x = -1
                 self.status = "W"
             elif keys_pressed[locals.K_d]:
-                self.direction.x = 1
+                self.move_direction.x = 1
                 self.status = "E"
             else:
-                self.direction.x = 0
+                self.move_direction.x = 0
+
+            # Aim input
+            if keys_pressed[locals.K_RIGHT]:
+                self.aim_angle += self.ROTATION_SPEED % 360
+            elif keys_pressed[locals.K_LEFT]:
+                self.aim_angle -= self.ROTATION_SPEED % 360
+
+            self.aim_direction.x += math.cos(self.aim_angle)
+            self.aim_direction.y += math.sin(self.aim_angle)
 
             # Attack input
             if keys_pressed[pygame.K_SPACE]:
@@ -212,17 +222,17 @@ class Player(Entity):
                 self.magic = list(magic_data.keys())[self.magic_index]
 
     def get_status(self):
-        """Get player status based on direction."""
+        """Get player status based on move_direction."""
         # idle
-        if self.direction.x == 0 and self.direction.y == 0:
+        if self.move_direction.x == 0 and self.move_direction.y == 0:
             if not "idle" in self.status and not "attack" in self.status:
                 self.status = self.status + "_idle"
 
         # attack
         if self.attacking:
             # TODO: do we want this?? not able to move while attacking?
-            self.direction.x = 0
-            self.direction.y = 0
+            self.move_direction.x = 0
+            self.move_direction.y = 0
             if not "attack" in self.status:
                 if "idle" in self.status:
                     self.status = self.status.replace("_idle", "_attack")
@@ -308,6 +318,27 @@ class Player(Entity):
         for sprite in self.door_sprites:
             if sprite.rect.colliderect(self.hitbox):
                 pygame.event.post(pygame.event.Event(ENTRY_CAVE))
+
+    def draw_aim(self, surf, offset):
+        """Draw aiming arrow pointing to the aiming direction of the player."""
+        aim_surface = pygame.Surface((10, 20), pygame.SRCALPHA)
+        pivot = self.rect.center - offset
+        pygame.draw.polygon(
+            aim_surface, (255, 0, 0), ((5, 0), (0, 20), (5, 15), (10, 20))
+        )
+        # pos = pivot + pygame.math.Vector2(0,-30)
+        offset = pygame.math.Vector2(0, -30)
+        # offset_center_to_pivot = pos - pivot
+        # rotated_offset = offset_center_to_pivot.rotate(self.aim_angle)
+        # rotated_image_center = (pivot[0] - rotated_offset.x, pivot[1] - rotated_offset.y)
+        # rotated_image = pygame.transform.rotate(aim_surface, self.aim_angle)
+        # rotated_image_rect = rotated_image.get_rect(center = rotated_image_center)
+        # rotated_image_rect.update((rotated_image_rect.left, rotated_image_rect.top), (10,20))
+        rotated_image = pygame.transform.rotozoom(aim_surface, -self.aim_angle, 1)
+        rotated_offset = offset.rotate(self.aim_angle)
+        rect = rotated_image.get_rect(center=pivot + rotated_offset)
+        # surf.blit(rotated_image, rotated_image_rect)
+        surf.blit(rotated_image, rect)
 
     def update(self):
         """Update player but not its movement."""

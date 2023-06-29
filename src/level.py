@@ -329,3 +329,4 @@ class YsortedCameraGroup(pygame.sprite.Group):
         for player in player_sprites:
             if not cl_focus and self.level.cmd_line.active_player:
                 player.player_movement()
+                player.draw_aim(self.display_surface, self.offset)
