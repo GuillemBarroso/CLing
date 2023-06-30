@@ -91,8 +91,13 @@ class CL:
 
     @property
     def history(self):
-        """Return the historty of the command line."""
+        """Return the history of the command line."""
         return self._history
+
+    @property
+    def len_history(self):
+        """Return the length of the CL history."""
+        return len(self._history)
 
     @property
     def full_screen(self):
