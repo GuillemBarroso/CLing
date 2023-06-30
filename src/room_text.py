@@ -42,6 +42,7 @@ class RoomText:
         self.letter_counter = 0
         self.line_counter = 0
         self.prev_value = ""
+        self.is_first = True
 
         self.keyboard_sound = pygame.mixer.Sound("src/audio/mech_keyboard.wav")
         self.enter_sound = pygame.mixer.Sound("src/audio/mech_keyboard_enter.wav")
@@ -68,12 +69,20 @@ class RoomText:
 
     def display_animated_text(self):
         """Display text letter by letter directly into the CL history."""
+        # Get the current length of the CL history as starting point
+        if self.is_first:
+            self.prev_line_counter = self.cmd_line.len_history
+            self.is_first = False
+
+        # Write room description as it was typed in a mechanical keyboard
         if self.update_text == True:
             self.play_keyboard_sound()
             self.letter_counter += 1
             text = self.room_text[self.line_counter][: self.letter_counter]
             try:
-                self.cmd_line._history[self.line_counter] = text
+                self.cmd_line._history[
+                    self.prev_line_counter + self.line_counter
+                ] = text
             except IndexError:
                 self.cmd_line._history.append(text)
             self.past_updated_text = pygame.time.get_ticks()
@@ -82,6 +91,7 @@ class RoomText:
                 self.letter_counter = 0
                 if self.line_counter == len(self.room_text):
                     self.update_text = False
+                    self.is_first = True
                     self.line_counter = 0
                     self.room_first_entry[self.cmd_line.map_state] = False
                     self.keyboard_sound.stop()

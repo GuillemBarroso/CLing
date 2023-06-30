@@ -35,6 +35,7 @@ class Player(Entity):
         # Player graphics setup
         self.import_player_assets()
         self.status = "S"
+        self.aim_angle = 180
 
         # Movement
         self.attacking = False
@@ -42,7 +43,8 @@ class Player(Entity):
         self.attack_time = None
         self.obstacle_sprites = obstacle_sprites
         self.door_sprites = door_sprites
-        self.ROTATION_SPEED = 2  # units: degrees [º]
+        self.rotating = False
+        self.ROTATION_SPEED = 4  # units: degrees [º]
 
         # Weapon
         self.create_attack = create_attack
@@ -128,46 +130,76 @@ class Player(Entity):
         """Get user's input from keyboard."""
         if not self.attacking:
             keys_pressed = pygame.key.get_pressed()
+
+            if keys_pressed[locals.K_RIGHT] or keys_pressed[locals.K_LEFT]:
+                self.rotating = True
+            else:
+                self.rotating = False
+
             # Move input
             if keys_pressed[locals.K_w] and keys_pressed[locals.K_a]:
                 self.move_direction.y = -1
                 self.status = "NW"
+                if not self.rotating:
+                    self.aim_angle = -45
             elif keys_pressed[locals.K_w] and keys_pressed[locals.K_d]:
-                self.status = "NE"
                 self.move_direction.y = -1
+                self.status = "NE"
+                if not self.rotating:
+                    self.aim_angle = 45
             elif keys_pressed[locals.K_s] and keys_pressed[locals.K_a]:
                 self.move_direction.y = 1
                 self.status = "SW"
+                if not self.rotating:
+                    self.aim_angle = -135
             elif keys_pressed[locals.K_s] and keys_pressed[locals.K_d]:
-                self.status = "SE"
                 self.move_direction.y = 1
+                self.status = "SE"
+                if not self.rotating:
+                    self.aim_angle = 135
             elif keys_pressed[locals.K_w]:
                 self.move_direction.y = -1
                 self.status = "N"
+                if not self.rotating:
+                    self.aim_angle = 0
             elif keys_pressed[locals.K_s]:
                 self.move_direction.y = 1
                 self.status = "S"
+                if not self.rotating:
+                    self.aim_angle = 180
             else:
                 self.move_direction.y = 0
 
             if keys_pressed[locals.K_w] and keys_pressed[locals.K_a]:
                 self.move_direction.x = -1
                 self.status = "NW"
+                if not self.rotating:
+                    self.aim_angle = -45
             elif keys_pressed[locals.K_w] and keys_pressed[locals.K_d]:
                 self.move_direction.x = 1
                 self.status = "NE"
+                if not self.rotating:
+                    self.aim_angle = 45
             elif keys_pressed[locals.K_s] and keys_pressed[locals.K_a]:
                 self.move_direction.x = -1
                 self.status = "SW"
+                if not self.rotating:
+                    self.aim_angle = -135
             elif keys_pressed[locals.K_s] and keys_pressed[locals.K_d]:
                 self.move_direction.x = 1
                 self.status = "SE"
+                if not self.rotating:
+                    self.aim_angle = 135
             elif keys_pressed[locals.K_a]:
                 self.move_direction.x = -1
                 self.status = "W"
+                if not self.rotating:
+                    self.aim_angle = -90
             elif keys_pressed[locals.K_d]:
                 self.move_direction.x = 1
                 self.status = "E"
+                if not self.rotating:
+                    self.aim_angle = 90
             else:
                 self.move_direction.x = 0
 
@@ -326,18 +358,10 @@ class Player(Entity):
         pygame.draw.polygon(
             aim_surface, (255, 0, 0), ((5, 0), (0, 20), (5, 15), (10, 20))
         )
-        # pos = pivot + pygame.math.Vector2(0,-30)
         offset = pygame.math.Vector2(0, -30)
-        # offset_center_to_pivot = pos - pivot
-        # rotated_offset = offset_center_to_pivot.rotate(self.aim_angle)
-        # rotated_image_center = (pivot[0] - rotated_offset.x, pivot[1] - rotated_offset.y)
-        # rotated_image = pygame.transform.rotate(aim_surface, self.aim_angle)
-        # rotated_image_rect = rotated_image.get_rect(center = rotated_image_center)
-        # rotated_image_rect.update((rotated_image_rect.left, rotated_image_rect.top), (10,20))
         rotated_image = pygame.transform.rotozoom(aim_surface, -self.aim_angle, 1)
         rotated_offset = offset.rotate(self.aim_angle)
         rect = rotated_image.get_rect(center=pivot + rotated_offset)
-        # surf.blit(rotated_image, rotated_image_rect)
         surf.blit(rotated_image, rect)
 
     def update(self):
