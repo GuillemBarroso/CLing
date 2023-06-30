@@ -358,18 +358,10 @@ class Player(Entity):
         pygame.draw.polygon(
             aim_surface, (255, 0, 0), ((5, 0), (0, 20), (5, 15), (10, 20))
         )
-        # pos = pivot + pygame.math.Vector2(0,-30)
         offset = pygame.math.Vector2(0, -30)
-        # offset_center_to_pivot = pos - pivot
-        # rotated_offset = offset_center_to_pivot.rotate(self.aim_angle)
-        # rotated_image_center = (pivot[0] - rotated_offset.x, pivot[1] - rotated_offset.y)
-        # rotated_image = pygame.transform.rotate(aim_surface, self.aim_angle)
-        # rotated_image_rect = rotated_image.get_rect(center = rotated_image_center)
-        # rotated_image_rect.update((rotated_image_rect.left, rotated_image_rect.top), (10,20))
         rotated_image = pygame.transform.rotozoom(aim_surface, -self.aim_angle, 1)
         rotated_offset = offset.rotate(self.aim_angle)
         rect = rotated_image.get_rect(center=pivot + rotated_offset)
-        # surf.blit(rotated_image, rotated_image_rect)
         surf.blit(rotated_image, rect)
 
     def update(self):
