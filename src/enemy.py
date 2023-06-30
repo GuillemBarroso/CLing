@@ -106,9 +106,9 @@ class Enemy(Entity):
             self.damage_player(self.attack_damage, self.attack_type)
             self.attack_sound.play()
         elif self.status == "move":
-            self.direction = self.get_player_distance_direction(player)[1]
+            self.move_direction = self.get_player_distance_direction(player)[1]
         else:
-            self.direction = pygame.math.Vector2()
+            self.move_direction = pygame.math.Vector2()
 
     def animate(self):
         """Animate enemies."""
@@ -144,7 +144,7 @@ class Enemy(Entity):
         """Get player damage to enemies."""
         if self.vulnerable:
             self.hit_sound.play()
-            self.direction = self.get_player_distance_direction(player)[1]
+            self.move_direction = self.get_player_distance_direction(player)[1]
             if attack_type == "weapon":
                 self.health -= player.get_full_weapon_damage()
             else:
@@ -163,7 +163,7 @@ class Enemy(Entity):
     def hit_reaction(self):
         """Backwards reaction of enemies upon being hit."""
         if not self.vulnerable:
-            self.direction *= -self.resistance
+            self.move_direction *= -self.resistance
 
     def update(self):
         """Update enemies actions."""
