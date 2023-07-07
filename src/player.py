@@ -209,8 +209,8 @@ class Player(Entity):
             elif keys_pressed[locals.K_LEFT]:
                 self.aim_angle -= self.ROTATION_SPEED % 360
 
-            self.aim_direction.x += math.cos(self.aim_angle)
-            self.aim_direction.y += math.sin(self.aim_angle)
+            self.aim_direction.x += math.cos(self.aim_angle * math.pi / 180)
+            self.aim_direction.y += math.sin(self.aim_angle * math.pi / 180)
 
             # Attack input
             if keys_pressed[pygame.K_SPACE]:
