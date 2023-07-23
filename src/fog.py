@@ -16,11 +16,11 @@ class Fog:
 
         # Vision camp parameters
         self.AWARENESS_RADIUS = 100
-        self.VISION_ANGLE = 22.5
-        self.VISION_LENGTH = 300
+        self.VISION_ANGLE = 75
+        self.VISION_LENGTH = 500
 
-        self.FOG_OPACITY = 150
-        self.SCALE_FACTOR = 0.995
+        self.FOG_OPACITY = 200
+        self.SCALE_FACTOR = 0.99
         self.NUM_POLYGONS = 100
 
     @staticmethod
@@ -65,26 +65,31 @@ class Fog:
             polygon = scaled_polygon
         return scaled_polygons
 
+    def get_circle_vertices(self, player_pos, player_angle):
+        """Return list of vertices in the circle behind the player."""
+        vertices = []
+        angle_ini = player_angle - self.VISION_ANGLE + 90
+        angle_end = player_angle + 180 + self.VISION_ANGLE - 90
+        for angle in range(angle_ini, angle_end, 5):
+            circle_offset_x = math.sin(math.radians(angle)) * self.AWARENESS_RADIUS
+            circle_offset_y = math.cos(math.radians(angle)) * self.AWARENESS_RADIUS
+
+            vertices.append(
+                (player_pos[0] - circle_offset_x, player_pos[1] + circle_offset_y)
+            )
+        return vertices
+
     def draw(self, surface, player, offset):
         """Draw fog object to visualize the player's vision camp."""
         # Fill surface with black color and alpha = fog_opacity
         self.fog.fill((0, 0, 0, self.FOG_OPACITY))
 
+        # Get current player's parameters
         player_pos = player.rect.center - offset
         player_angle = player.aim_angle
 
-        circle_offset_x = math.sin(math.radians(player_angle)) * self.AWARENESS_RADIUS
-        circle_offset_y = math.cos(math.radians(player_angle)) * self.AWARENESS_RADIUS
-
+        circle_vertices = self.get_circle_vertices(player_pos, player_angle)
         vision_vertices = [
-            (
-                player_pos[0]
-                + math.cos(math.radians(player_angle + self.VISION_ANGLE / 2))
-                * self.VISION_LENGTH,
-                player_pos[1]
-                + math.sin(math.radians(player_angle + self.VISION_ANGLE / 2))
-                * self.VISION_LENGTH,
-            ),
             (
                 player_pos[0]
                 + math.cos(math.radians(player_angle - self.VISION_ANGLE / 2))
@@ -93,9 +98,16 @@ class Fog:
                 + math.sin(math.radians(player_angle - self.VISION_ANGLE / 2))
                 * self.VISION_LENGTH,
             ),
-            (player_pos[0] + circle_offset_x, player_pos[1] - circle_offset_y),
-            (player_pos[0] - circle_offset_x, player_pos[1] + circle_offset_y),
+            (
+                player_pos[0]
+                + math.cos(math.radians(player_angle + self.VISION_ANGLE / 2))
+                * self.VISION_LENGTH,
+                player_pos[1]
+                + math.sin(math.radians(player_angle + self.VISION_ANGLE / 2))
+                * self.VISION_LENGTH,
+            ),
         ]
+        vision_vertices = vision_vertices + circle_vertices
 
         polygons = self.get_scaled_polygons(
             vision_vertices, self.SCALE_FACTOR, self.NUM_POLYGONS
