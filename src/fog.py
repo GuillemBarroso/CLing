@@ -12,11 +12,16 @@ class Fog:
 
     def __init__(self):
         """Initialize object."""
-        # self.map_state = map_state
         self.fog = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+
+        # Vision camp parameters
         self.AWARENESS_RADIUS = 100
         self.VISION_ANGLE = 22.5
         self.VISION_LENGTH = 300
+
+        self.FOG_OPACITY = 150
+        self.SCALE_FACTOR = 0.995
+        self.NUM_POLYGONS = 100
 
     @staticmethod
     def get_polygon_centroid(vertices):
@@ -51,7 +56,7 @@ class Fog:
     def get_scaled_polygons(polygon, scale_factor, num_polygons):
         """Scale polygon a number of times using a scale factor."""
         scaled_polygons = []
-        for i in range(num_polygons):
+        for _ in range(num_polygons):
             scaled_polygons.append(polygon)
             scaled_polygon = [
                 (vertex[0] * scale_factor, vertex[1] * scale_factor)
@@ -62,18 +67,11 @@ class Fog:
 
     def draw(self, surface, player, offset):
         """Draw fog object to visualize the player's vision camp."""
-        self.fog.fill((0, 0, 0, 255))  # Fill with opaque black
+        # Fill surface with black color and alpha = fog_opacity
+        self.fog.fill((0, 0, 0, self.FOG_OPACITY))
 
         player_pos = player.rect.center - offset
         player_angle = player.aim_angle
-        player_vision_length = self.VISION_LENGTH
-        player_vision_angle = self.VISION_ANGLE
-        fog_opacity = 255
-
-        # Create a surface for the fog polygon
-        fog_polygon_surface = pygame.Surface(
-            (player_vision_length * 2, player_vision_length * 2), pygame.SRCALPHA
-        )
 
         circle_offset_x = math.sin(math.radians(player_angle)) * self.AWARENESS_RADIUS
         circle_offset_y = math.cos(math.radians(player_angle)) * self.AWARENESS_RADIUS
@@ -81,31 +79,31 @@ class Fog:
         vision_vertices = [
             (
                 player_pos[0]
-                + math.cos(math.radians(player_angle + player_vision_angle / 2))
+                + math.cos(math.radians(player_angle + self.VISION_ANGLE / 2))
                 * self.VISION_LENGTH,
                 player_pos[1]
-                + math.sin(math.radians(player_angle + player_vision_angle / 2))
+                + math.sin(math.radians(player_angle + self.VISION_ANGLE / 2))
                 * self.VISION_LENGTH,
             ),
             (
                 player_pos[0]
-                + math.cos(math.radians(player_angle - player_vision_angle / 2))
+                + math.cos(math.radians(player_angle - self.VISION_ANGLE / 2))
                 * self.VISION_LENGTH,
                 player_pos[1]
-                + math.sin(math.radians(player_angle - player_vision_angle / 2))
+                + math.sin(math.radians(player_angle - self.VISION_ANGLE / 2))
                 * self.VISION_LENGTH,
             ),
             (player_pos[0] + circle_offset_x, player_pos[1] - circle_offset_y),
             (player_pos[0] - circle_offset_x, player_pos[1] + circle_offset_y),
         ]
 
-        scale_factor = 0.995
-        num_polygons = 100
-        polygons = self.get_scaled_polygons(vision_vertices, scale_factor, num_polygons)
+        polygons = self.get_scaled_polygons(
+            vision_vertices, self.SCALE_FACTOR, self.NUM_POLYGONS
+        )
         polygons = self.center_polygons(polygons[0], polygons[1:])
 
-        for i in range(num_polygons):
-            alpha = 255 - i / num_polygons * 255
+        for i in range(self.NUM_POLYGONS):
+            alpha = self.FOG_OPACITY - i / self.NUM_POLYGONS * self.FOG_OPACITY
             pygame.draw.polygon(self.fog, (0, 0, 0, alpha), polygons[i])
 
         surface.blit(self.fog, (0, 0))
