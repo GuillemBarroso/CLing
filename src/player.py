@@ -35,7 +35,7 @@ class Player(Entity):
         # Player graphics setup
         self.import_player_assets()
         self.status = "S"
-        self.aim_angle = 180
+        self.aim_angle = 90
 
         # Movement
         self.attacking = False
@@ -141,32 +141,32 @@ class Player(Entity):
                 self.move_direction.y = -1
                 self.status = "NW"
                 if not self.rotating:
-                    self.aim_angle = -45
+                    self.aim_angle = -135
             elif keys_pressed[locals.K_w] and keys_pressed[locals.K_d]:
                 self.move_direction.y = -1
                 self.status = "NE"
                 if not self.rotating:
-                    self.aim_angle = 45
+                    self.aim_angle = -45
             elif keys_pressed[locals.K_s] and keys_pressed[locals.K_a]:
                 self.move_direction.y = 1
                 self.status = "SW"
                 if not self.rotating:
-                    self.aim_angle = -135
+                    self.aim_angle = 135
             elif keys_pressed[locals.K_s] and keys_pressed[locals.K_d]:
                 self.move_direction.y = 1
                 self.status = "SE"
                 if not self.rotating:
-                    self.aim_angle = 135
+                    self.aim_angle = 45
             elif keys_pressed[locals.K_w]:
                 self.move_direction.y = -1
                 self.status = "N"
                 if not self.rotating:
-                    self.aim_angle = 0
+                    self.aim_angle = -90
             elif keys_pressed[locals.K_s]:
                 self.move_direction.y = 1
                 self.status = "S"
                 if not self.rotating:
-                    self.aim_angle = 180
+                    self.aim_angle = 90
             else:
                 self.move_direction.y = 0
 
@@ -174,32 +174,32 @@ class Player(Entity):
                 self.move_direction.x = -1
                 self.status = "NW"
                 if not self.rotating:
-                    self.aim_angle = -45
+                    self.aim_angle = -135
             elif keys_pressed[locals.K_w] and keys_pressed[locals.K_d]:
                 self.move_direction.x = 1
                 self.status = "NE"
                 if not self.rotating:
-                    self.aim_angle = 45
+                    self.aim_angle = -45
             elif keys_pressed[locals.K_s] and keys_pressed[locals.K_a]:
                 self.move_direction.x = -1
                 self.status = "SW"
                 if not self.rotating:
-                    self.aim_angle = -135
+                    self.aim_angle = 135
             elif keys_pressed[locals.K_s] and keys_pressed[locals.K_d]:
                 self.move_direction.x = 1
                 self.status = "SE"
                 if not self.rotating:
-                    self.aim_angle = 135
+                    self.aim_angle = 45
             elif keys_pressed[locals.K_a]:
                 self.move_direction.x = -1
                 self.status = "W"
                 if not self.rotating:
-                    self.aim_angle = -90
+                    self.aim_angle = 180
             elif keys_pressed[locals.K_d]:
                 self.move_direction.x = 1
                 self.status = "E"
                 if not self.rotating:
-                    self.aim_angle = 90
+                    self.aim_angle = 0
             else:
                 self.move_direction.x = 0
 
@@ -209,8 +209,8 @@ class Player(Entity):
             elif keys_pressed[locals.K_LEFT]:
                 self.aim_angle -= self.ROTATION_SPEED % 360
 
-            self.aim_direction.x += math.cos(self.aim_angle)
-            self.aim_direction.y += math.sin(self.aim_angle)
+            self.aim_direction.x += math.cos(math.radians(self.aim_angle))
+            self.aim_direction.y += math.sin(math.radians(self.aim_angle))
 
             # Attack input
             if keys_pressed[pygame.K_SPACE]:
@@ -351,17 +351,29 @@ class Player(Entity):
             if sprite.rect.colliderect(self.hitbox):
                 pygame.event.post(pygame.event.Event(ENTRY_CAVE))
 
-    def draw_aim(self, surf, offset):
-        """Draw aiming arrow pointing to the aiming direction of the player."""
-        aim_surface = pygame.Surface((10, 20), pygame.SRCALPHA)
-        pivot = self.rect.center - offset
-        pygame.draw.polygon(
-            aim_surface, (255, 0, 0), ((5, 0), (0, 20), (5, 15), (10, 20))
-        )
-        offset = pygame.math.Vector2(0, -30)
-        rotated_image = pygame.transform.rotozoom(aim_surface, -self.aim_angle, 1)
+    def rotate_surface_with_pivot_offset(self, surface, pivot, offset):
+        """Return the rotated image and rectangle given a pivot point and an offset."""
+        rotated_image = pygame.transform.rotozoom(surface, -self.aim_angle, 1)
         rotated_offset = offset.rotate(self.aim_angle)
         rect = rotated_image.get_rect(center=pivot + rotated_offset)
+        return rotated_image, rect
+
+    def draw_aim(self, surf, player_offset):
+        """Draw aiming arrow pointing to the aiming direction of the player."""
+        aim_surface = pygame.Surface((20, 10), pygame.SRCALPHA)
+        pivot = self.rect.center - player_offset
+        pygame.draw.polygon(
+            aim_surface, (255, 0, 0), ((0, 5), (20, 0), (15, 5), (20, 10))
+        )
+        # pygame.draw.polygon(
+        #     aim_surface, (255, 0, 0), ((5, 0), (0, 20), (5, 15), (10, 20))
+        # )
+
+        offset = pygame.math.Vector2(30, 0)
+        # offset = pygame.math.Vector2(0, -30)
+        rotated_image, rect = self.rotate_surface_with_pivot_offset(
+            aim_surface, pivot, offset
+        )
         surf.blit(rotated_image, rect)
 
     def update(self):

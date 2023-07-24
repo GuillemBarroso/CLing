@@ -5,6 +5,7 @@ from random import choice, randint
 import pygame
 
 from src.enemy import Enemy
+from src.fog import Fog
 from src.magic import MagicPlayer
 from src.particles import AnimationPlayer
 from src.player import Player
@@ -294,6 +295,9 @@ class YsortedCameraGroup(pygame.sprite.Group):
         self.floor_surf = pygame.image.load(ground_map_path).convert()
         self.floor_rect = self.floor_surf.get_rect(topleft=(0, 0))
 
+        # Create fog object
+        self.fog = Fog()
+
     def custom_draw(self, player):
         """Custom draw for sprites."""
         # Get offset
@@ -308,6 +312,9 @@ class YsortedCameraGroup(pygame.sprite.Group):
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
+
+        # Display fog
+        self.fog.draw(self.display_surface, player, self.offset)
 
     def enemy_update(self, player):
         """Update enemy sprites."""
