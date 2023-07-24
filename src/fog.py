@@ -20,7 +20,7 @@ class Fog:
         self.VISION_LENGTH = 500
 
         self.FOG_OPACITY = 200
-        self.SCALE_FACTOR = 0.99
+        self.SCALE_FACTOR = 0.996
         self.NUM_POLYGONS = 100
 
     @staticmethod
