@@ -13,6 +13,7 @@ class Fog:
     def __init__(self):
         """Initialize object."""
         self.fog = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        self.ref_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 
         # Vision camp parameters
         self.AWARENESS_RADIUS = 100
@@ -79,17 +80,14 @@ class Fog:
             )
         return vertices
 
-    def draw(self, surface, player, offset):
-        """Draw fog object to visualize the player's vision camp."""
-        # Fill surface with black color and alpha = fog_opacity
-        self.fog.fill((0, 0, 0, self.FOG_OPACITY))
-
+    def update_FOV_vertices(self, player, offset):
+        """Return the vertices of the player's field of view."""
         # Get current player's parameters
         player_pos = player.rect.center - offset
         player_angle = player.aim_angle
 
         circle_vertices = self.get_circle_vertices(player_pos, player_angle)
-        vision_vertices = [
+        FOV_vertices = [
             (
                 player_pos[0]
                 + math.cos(math.radians(player_angle - self.VISION_ANGLE / 2))
@@ -107,15 +105,26 @@ class Fog:
                 * self.VISION_LENGTH,
             ),
         ]
-        vision_vertices = vision_vertices + circle_vertices
+        self.FOV_vertices = FOV_vertices + circle_vertices
 
+    def draw(self, surface):
+        """Draw fog object to visualize the player's field of view."""
+        # Fill surface with black color and alpha = fog_opacity
+        self.fog.fill((0, 0, 0, self.FOG_OPACITY))
+
+        # Get scaled polygons from reference polygon
         polygons = self.get_scaled_polygons(
-            vision_vertices, self.SCALE_FACTOR, self.NUM_POLYGONS
+            self.FOV_vertices, self.SCALE_FACTOR, self.NUM_POLYGONS
         )
+
+        # Shift all polygons so its center is always the same and equal to the reference polygon
         polygons = self.center_polygons(polygons[0], polygons[1:])
 
+        # Draw all polygons
         for i in range(self.NUM_POLYGONS):
             alpha = self.FOG_OPACITY - i / self.NUM_POLYGONS * self.FOG_OPACITY
             pygame.draw.polygon(self.fog, (0, 0, 0, alpha), polygons[i])
+            if i == 0:
+                pygame.draw.polygon(self.ref_surface, (0, 0, 0, 255), polygons[i])
 
         surface.blit(self.fog, (0, 0))
