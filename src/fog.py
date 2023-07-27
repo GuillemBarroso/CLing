@@ -118,9 +118,26 @@ class Fog:
         """Update reference surface by drawing the polygon into the surface."""
         pygame.draw.polygon(self.ref_surface, (0, 0, 0, 255), self.FOV_vertices)
 
-    def update_FOW_surface(self, offset):
+    def compute_polygons(self, ref_polygon):
+        """Return a number of scaled polygons given a reference polygon using scale factor."""
+        # Get scaled polygons from reference polygon
+        polygons = self.get_scaled_polygons(
+            ref_polygon, self.SCALE_FACTOR, self.NUM_POLYGONS
+        )
+
+        # Shift all polygons so its center is always the same and equal to the reference polygon
+        return self.center_polygons(polygons[0], polygons[1:])
+
+    def draw_polygons(self, polygons, max_alpha, surface):
+        """Draw all polygons with different alphas on a surface."""
+        for i in range(self.NUM_POLYGONS):
+            alpha = max_alpha - i / self.NUM_POLYGONS * max_alpha
+            pygame.draw.polygon(surface, (0, 0, 0, alpha), polygons[i])
+
+    def draw_FOW_surface(self, offset):
         """Draw the reference polygon to the fog of war surface."""
         shifted_vertices = [vertex + offset for vertex in self.FOV_vertices]
+
         pygame.draw.polygon(
             self.fog_of_war, (0, 0, 0, self.FOW_OPACITY), shifted_vertices
         )
@@ -130,18 +147,12 @@ class Fog:
         # Fill surface with black color and alpha = fog_opacity
         self.fog.fill((0, 0, 0, self.FOG_OPACITY))
 
-        # Get scaled polygons from reference polygon
-        polygons = self.get_scaled_polygons(
-            self.FOV_vertices, self.SCALE_FACTOR, self.NUM_POLYGONS
-        )
+        # Compute and draw polygons from FOV vertices
+        polygons = self.compute_polygons(self.FOV_vertices)
+        self.draw_polygons(polygons, self.FOG_OPACITY, self.fog)
 
-        # Shift all polygons so its center is always the same and equal to the reference polygon
-        polygons = self.center_polygons(polygons[0], polygons[1:])
-
-        # Draw all polygons on the fog surface
-        for i in range(self.NUM_POLYGONS):
-            alpha = self.FOG_OPACITY - i / self.NUM_POLYGONS * self.FOG_OPACITY
-            pygame.draw.polygon(self.fog, (0, 0, 0, alpha), polygons[i])
+        # Update and draw FOW surface
+        self.draw_FOW_surface(offset)
 
         # Blit FOW onto fog surface with the correct offset. Take the minimum alpha values.
         self.fog.blit(

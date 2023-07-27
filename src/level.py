@@ -306,7 +306,6 @@ class YsortedCameraGroup(pygame.sprite.Group):
 
         # Update Field-Of-View and Fog-Of-War
         self.fog.update_FOV_vertices(player, self.offset)
-        self.fog.update_FOW_surface(self.offset)
         # self.fog.update_ref_surface()
 
         # Draw the floor
