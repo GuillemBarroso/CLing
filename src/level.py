@@ -296,7 +296,7 @@ class YsortedCameraGroup(pygame.sprite.Group):
         self.floor_rect = self.floor_surf.get_rect(topleft=(0, 0))
 
         # Create fog object
-        self.fog = Fog()
+        self.fog = Fog(self.floor_rect)
 
     def custom_draw(self, player):
         """Custom draw for sprites."""
@@ -304,8 +304,10 @@ class YsortedCameraGroup(pygame.sprite.Group):
         self.offset.x = player.rect.centerx - self.half_width
         self.offset.y = player.rect.centery - self.half_height
 
-        # Update FOV vertices
+        # Update Field-Of-View and Fog-Of-War
         self.fog.update_FOV_vertices(player, self.offset)
+        self.fog.update_FOW_surface(self.offset)
+        # self.fog.update_ref_surface()
 
         # Draw the floor
         floor_offset_pos = self.floor_rect.topleft - self.offset
@@ -317,7 +319,7 @@ class YsortedCameraGroup(pygame.sprite.Group):
             self.display_surface.blit(sprite.image, offset_pos)
 
         # Display fog
-        self.fog.draw(self.display_surface)
+        self.fog.draw(self.display_surface, self.offset)
 
     def enemy_update(self, player):
         """Update enemy sprites."""
