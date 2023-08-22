@@ -10,16 +10,24 @@ from src.settings import HEIGHT, WIDTH
 class Fog:
     """Fog object."""
 
-    def __init__(self):
+    def __init__(self, floor_rect):
         """Initialize object."""
         self.fog = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        self.fog_of_war = pygame.Surface(
+            (floor_rect.width, floor_rect.height), pygame.SRCALPHA
+        )
+        # self.ref_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+
+        # Initialize FOW only once
+        self.fog_of_war.fill((0, 0, 0, 255))
 
         # Vision camp parameters
         self.AWARENESS_RADIUS = 100
         self.VISION_ANGLE = 75
         self.VISION_LENGTH = 500
 
-        self.FOG_OPACITY = 200
+        self.FOW_OPACITY = 100
+        self.FOG_OPACITY = 255
         self.SCALE_FACTOR = 0.996
         self.NUM_POLYGONS = 100
 
@@ -79,17 +87,14 @@ class Fog:
             )
         return vertices
 
-    def draw(self, surface, player, offset):
-        """Draw fog object to visualize the player's vision camp."""
-        # Fill surface with black color and alpha = fog_opacity
-        self.fog.fill((0, 0, 0, self.FOG_OPACITY))
-
+    def update_FOV_vertices(self, player, offset):
+        """Return the vertices of the player's field of view."""
         # Get current player's parameters
         player_pos = player.rect.center - offset
         player_angle = player.aim_angle
 
         circle_vertices = self.get_circle_vertices(player_pos, player_angle)
-        vision_vertices = [
+        FOV_vertices = [
             (
                 player_pos[0]
                 + math.cos(math.radians(player_angle - self.VISION_ANGLE / 2))
@@ -107,15 +112,52 @@ class Fog:
                 * self.VISION_LENGTH,
             ),
         ]
-        vision_vertices = vision_vertices + circle_vertices
+        self.FOV_vertices = FOV_vertices + circle_vertices
 
+    def update_ref_surface(self):
+        """Update reference surface by drawing the polygon into the surface."""
+        pygame.draw.polygon(self.ref_surface, (0, 0, 0, 255), self.FOV_vertices)
+
+    def compute_polygons(self, ref_polygon):
+        """Return a number of scaled polygons given a reference polygon using scale factor."""
+        # Get scaled polygons from reference polygon
         polygons = self.get_scaled_polygons(
-            vision_vertices, self.SCALE_FACTOR, self.NUM_POLYGONS
+            ref_polygon, self.SCALE_FACTOR, self.NUM_POLYGONS
         )
-        polygons = self.center_polygons(polygons[0], polygons[1:])
 
+        # Shift all polygons so its center is always the same and equal to the reference polygon
+        return self.center_polygons(polygons[0], polygons[1:])
+
+    def draw_polygons(self, polygons, max_alpha, surface):
+        """Draw all polygons with different alphas on a surface."""
         for i in range(self.NUM_POLYGONS):
-            alpha = self.FOG_OPACITY - i / self.NUM_POLYGONS * self.FOG_OPACITY
-            pygame.draw.polygon(self.fog, (0, 0, 0, alpha), polygons[i])
+            alpha = max_alpha - i / self.NUM_POLYGONS * max_alpha
+            pygame.draw.polygon(surface, (0, 0, 0, alpha), polygons[i])
 
+    def draw_FOW_surface(self, offset):
+        """Draw the reference polygon to the fog of war surface."""
+        shifted_vertices = [vertex + offset for vertex in self.FOV_vertices]
+
+        pygame.draw.polygon(
+            self.fog_of_war, (0, 0, 0, self.FOW_OPACITY), shifted_vertices
+        )
+
+    def draw(self, surface, offset):
+        """Draw fog object to visualize the player's field of view."""
+        # Fill surface with black color and alpha = fog_opacity
+        self.fog.fill((0, 0, 0, self.FOG_OPACITY))
+
+        # Compute and draw polygons from FOV vertices
+        polygons = self.compute_polygons(self.FOV_vertices)
+        self.draw_polygons(polygons, self.FOG_OPACITY, self.fog)
+
+        # Update and draw FOW surface
+        self.draw_FOW_surface(offset)
+
+        # Blit FOW onto fog surface with the correct offset. Take the minimum alpha values.
+        self.fog.blit(
+            self.fog_of_war, (0, 0) - offset, special_flags=pygame.BLEND_RGBA_MIN
+        )
+
+        # Blit fog surface on the screen
         surface.blit(self.fog, (0, 0))
